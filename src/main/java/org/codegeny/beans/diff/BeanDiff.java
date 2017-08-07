@@ -44,6 +44,7 @@ public final class BeanDiff<B> extends AbstractDiff<B> {
 	 * 
 	 * @param name The property name.
 	 * @return That property's diff.
+	 * @param <P> The property type.
 	 */
 	public <P> Diff<P> getProperty(String name) {
 		@SuppressWarnings("unchecked")

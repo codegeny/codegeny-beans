@@ -176,7 +176,7 @@ public interface Diff<T> extends Serializable {
 	Status getStatus();
 
 	/**
-	 * Transform this diff to a map [path -> @{linkplain Diff}].
+	 * Transform this diff to a map [path &rarr; @{linkplain Diff}].
 	 * 
 	 * @param root The name of the root element.
 	 * @return A map.

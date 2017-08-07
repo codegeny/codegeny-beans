@@ -74,7 +74,7 @@ public interface Model<T> {
 	 * @param keyDelegate The delegate {@link Model} to be used for keys.
 	 * @param valueDelegate The delegate {@link Model} to be used for values.
 	 * @return The map model.
-	 * @param <M> The type of the map of &lt;K, V<&gt; entries.
+	 * @param <M> The type of the map of &lt;K, V&gt; entries.
 	 * @param <K> The type of keys.
 	 * @param <V> The type of values.
 	 */
@@ -89,7 +89,7 @@ public interface Model<T> {
 	 * @param valueDelegate The delegate {@link Model} to be used for values.
 	 * @param extractor The collector is a function which transform objects of type &lt;M&gt; to a <code>Map&lt;K, V&gt;</code>.
 	 * @return The map model.
-	 * @param <M> The type of the map of &lt;K, V<&gt; entries.
+	 * @param <M> The type of the map of &lt;K, V&gt; entries.
 	 * @param <K> The type of keys.
 	 * @param <V> The type of values.
 	 */
