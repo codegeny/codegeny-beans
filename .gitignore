@@ -1,0 +1,7 @@
+*
+!/.gitignore
+!/.travis.yml
+!/src
+!/pom.xml
+!/README.md
+!/LICENSE
