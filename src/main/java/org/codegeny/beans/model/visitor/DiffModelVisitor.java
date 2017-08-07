@@ -57,12 +57,12 @@ public class DiffModelVisitor<T> extends CommonDiffModelVisitor<T> {
 					Diff<E> diff = values.acceptDelegate(newVisitor(left.get(a), r));
 					if (diff.getScore() >= threshold) {
 						if (removeFirst) {
-							IntStream.range(i - m, i = a).forEach(q -> result.add(values.acceptDelegate(new RemovedDiffModelVisitor<>(left.get(q)))));
-							IntStream.range(j - n, j).forEach(q -> result.add(values.acceptDelegate(new AddedDiffModelVisitor<>(right.get(q)))));
+							range(i - m, i = a).forEach(q -> result.add(values.acceptDelegate(new RemovedDiffModelVisitor<>(left.get(q)))));
+							range(j - n, j).forEach(q -> result.add(values.acceptDelegate(new AddedDiffModelVisitor<>(right.get(q)))));
 							removeFirst = n == 0;
 						} else {
-							IntStream.range(j - n, j).forEach(q -> result.add(values.acceptDelegate(new AddedDiffModelVisitor<>(right.get(q)))));
-							IntStream.range(i - m, i = a).forEach(q -> result.add(values.acceptDelegate(new RemovedDiffModelVisitor<>(left.get(q)))));
+							range(j - n, j).forEach(q -> result.add(values.acceptDelegate(new AddedDiffModelVisitor<>(right.get(q)))));
+							range(i - m, i = a).forEach(q -> result.add(values.acceptDelegate(new RemovedDiffModelVisitor<>(left.get(q)))));
 							removeFirst = m > 0;
 						}
 						result.add(diff);
@@ -76,12 +76,12 @@ public class DiffModelVisitor<T> extends CommonDiffModelVisitor<T> {
 					Diff<E> diff = values.acceptDelegate(newVisitor(l, right.get(b)));
 					if (diff.getScore() >= threshold) {
 						if (removeFirst) {
-							IntStream.range(i - m, i).forEach(q -> result.add(values.acceptDelegate(new RemovedDiffModelVisitor<>(left.get(q)))));
-							IntStream.range(j - n, j = b).forEach(q -> result.add(values.acceptDelegate(new AddedDiffModelVisitor<>(right.get(q)))));
+							range(i - m, i).forEach(q -> result.add(values.acceptDelegate(new RemovedDiffModelVisitor<>(left.get(q)))));
+							range(j - n, j = b).forEach(q -> result.add(values.acceptDelegate(new AddedDiffModelVisitor<>(right.get(q)))));
 							removeFirst = n == 0;
 						} else {
-							IntStream.range(j - n, j = b).forEach(q -> result.add(values.acceptDelegate(new AddedDiffModelVisitor<>(right.get(q)))));
-							IntStream.range(i - m, i).forEach(q -> result.add(values.acceptDelegate(new RemovedDiffModelVisitor<>(left.get(q)))));
+							range(j - n, j = b).forEach(q -> result.add(values.acceptDelegate(new AddedDiffModelVisitor<>(right.get(q)))));
+							range(i - m, i).forEach(q -> result.add(values.acceptDelegate(new RemovedDiffModelVisitor<>(left.get(q)))));
 							removeFirst = m > 0;
 						}
 						result.add(diff);
@@ -98,8 +98,8 @@ public class DiffModelVisitor<T> extends CommonDiffModelVisitor<T> {
 			n++;
 		}
 		if (removeFirst) {
-			IntStream.range(i - m, left.size()).forEach(q -> result.add(values.acceptDelegate(new RemovedDiffModelVisitor<>(left.get(q)))));
-			IntStream.range(j - n, right.size()).forEach(q -> result.add(values.acceptDelegate(new AddedDiffModelVisitor<>(right.get(q)))));
+			range(i - m, left.size()).forEach(q -> result.add(values.acceptDelegate(new RemovedDiffModelVisitor<>(left.get(q)))));
+			range(j - n, right.size()).forEach(q -> result.add(values.acceptDelegate(new AddedDiffModelVisitor<>(right.get(q)))));
 		} else {
 			IntStream.range(j - n, right.size()).forEach(q -> result.add(values.acceptDelegate(new AddedDiffModelVisitor<>(right.get(q)))));
 			IntStream.range(i - m, left.size()).forEach(q -> result.add(values.acceptDelegate(new RemovedDiffModelVisitor<>(left.get(q)))));

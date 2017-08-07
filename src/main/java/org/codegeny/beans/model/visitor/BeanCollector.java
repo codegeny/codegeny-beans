@@ -44,7 +44,7 @@ public class BeanCollector<T> implements ModelVisitor<T, Set<?>> {
 	}
 
 	public <K, V> Set<?> visitMap(MapModel<? super T, K, V> map) {
-		map.apply(this.target).values().forEach(e -> map.acceptValueDelegate(new BeanCollector<>(e, this.beans)));;
+		map.apply(this.target).values().forEach(e -> map.acceptValueDelegate(new BeanCollector<>(e, this.beans)));
 		return beans;
 	}
 
