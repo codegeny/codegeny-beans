@@ -12,7 +12,9 @@ import java.util.function.Function;
 
 import org.codegeny.beans.model.visitor.DescribeModelVisitor;
 import org.codegeny.beans.model.visitor.HashModelVisitor;
+import org.codegeny.beans.model.visitor.PathModelVisitor;
 import org.codegeny.beans.model.visitor.ToStringModelVisitor;
+import org.codegeny.beans.path.Path;
 import org.codegeny.beans.util.Hasher;
 
 /**
@@ -159,6 +161,17 @@ public interface Model<T> {
 	 */
 	default String describe() {
 		return accept(new DescribeModelVisitor<>()).toString();
+	}
+	
+	/**
+	 * Extract the given path from the target.
+	 * 
+	 * @param target The target.
+	 * @param path The path.
+	 * @return The extracted value according to path.
+	 */
+	default Object extract(T target, Path path) {
+		return accept(new PathModelVisitor<T>(target, path.elements().iterator()));
 	}
 	
 	/**

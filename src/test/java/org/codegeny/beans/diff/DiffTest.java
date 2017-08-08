@@ -14,7 +14,6 @@ import static org.junit.Assert.assertThat;
 
 import java.time.LocalDate;
 
-import org.codegeny.beans.diff.Diff;
 import org.codegeny.beans.model.Model;
 import org.codegeny.beans.model.visitor.DiffModelVisitor;
 import org.codegeny.beans.model.visitor.GlobalScoreOptimizer;
@@ -40,6 +39,10 @@ public class DiffTest {
 			.addProperty("formerAddresses", Person::getFormerAddresses, set(ADDRESS));
 	}
 	
+	public @Test void extractPath() {
+		System.out.println(PERSON.extract(createDefaultPerson(), path().property("formerAddresses").index(1).property("street")));
+	}
+	
 	public @Test void identicalObjectsShouldYieldNoDifferences() {
 		Person person = createDefaultPerson();
 		Diff<Person> diff = PERSON.accept(new DiffModelVisitor<>(person, person, 0.5, new GlobalScoreOptimizer(new TimeOut(5, SECONDS))));
@@ -53,7 +56,7 @@ public class DiffTest {
 		assertThat(diff.getStatus(), is(UNCHANGED));
 	}
 	
-	public @Test void objectsWithOneDifferentPropertyShouldYieldOneDifference() {
+	public @Test void objectsWithOneDifferentPropertyShouldYieldOneDiffrence() {
 		Person left = createDefaultPerson();
 		Person right = createDefaultPerson().setFirstName("Jack");
 		Diff<Person> diff = PERSON.accept(new DiffModelVisitor<>(left, right, 0.5, new GlobalScoreOptimizer(new TimeOut(5, SECONDS))));

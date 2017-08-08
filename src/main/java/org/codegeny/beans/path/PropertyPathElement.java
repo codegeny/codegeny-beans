@@ -1,6 +1,6 @@
 package org.codegeny.beans.path;
 
-final class PropertyPathElement implements PathElement {
+public final class PropertyPathElement implements PathElement {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -13,5 +13,9 @@ final class PropertyPathElement implements PathElement {
 	@Override
 	public <R> R accept(R parent, PathVisitor<R> visitor) {
 		return visitor.visitProperty(parent, property);
+	}
+	
+	public String getProperty() {
+		return property;
 	}
 }

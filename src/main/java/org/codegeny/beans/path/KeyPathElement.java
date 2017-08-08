@@ -1,6 +1,6 @@
 package org.codegeny.beans.path;
 
-final class KeyPathElement implements PathElement {
+public final class KeyPathElement implements PathElement {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -13,5 +13,9 @@ final class KeyPathElement implements PathElement {
 	@Override
 	public <R> R accept(R parent, PathVisitor<R> visitor) {
 		return visitor.visitKey(parent, key);
+	}
+	
+	public Object getKey() {
+		return key;
 	}
 }

@@ -1,6 +1,6 @@
 package org.codegeny.beans.path;
 
-final class IndexPathElement implements PathElement {
+public final class IndexPathElement implements PathElement {
 	
 	private static final long serialVersionUID = 1L;
 
@@ -13,5 +13,9 @@ final class IndexPathElement implements PathElement {
 	@Override
 	public <R> R accept(R parent, PathVisitor<R> visitor) {
 		return visitor.visitIndex(parent, index);
+	}
+	
+	public int getIndex() {
+		return index;
 	}
 }

@@ -1,7 +1,7 @@
 package org.codegeny.beans.diff;
 
 import java.time.LocalDate;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -10,9 +10,9 @@ public class Person {
 	private LocalDate birthDate;
 	private Address currentAddress;
 	private String firstName;
-	private Set<Address> formerAddresses = new HashSet<>();
+	private Set<Address> formerAddresses = new LinkedHashSet<>();
 	private String lastName;
-	private Set<String> middleNames = new HashSet<>();
+	private Set<String> middleNames = new LinkedHashSet<>();
 	
 	public Person addFormerAddress(Address formerAddress) {
 		formerAddresses.add(formerAddress);
