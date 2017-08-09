@@ -26,16 +26,20 @@ public class PathModelVisitor<T> implements ModelVisitor<T, Object> {
 		this.elements = elements;
 	}
 
-	private <E extends PathElement, S> Object apply(E element, Model<S> model, Function<E, S> extractor) {
-		return model.accept(new PathModelVisitor<>(extractor.apply(element), elements));
+	private <E extends PathElement, S> Object apply(E element, Model<? super S> model, Function<? super E, ? extends S> extractor) {
+		return process(model, extractor.apply(element));
 	}
 	
-	private <E extends PathElement, S> Object process(Class<E> expectedType, Function<E, ?> processor) {
+	private <E extends PathElement, S> Object process(Class<? extends E> expectedType, Function<? super E, ?> processor) {
 		return elements.hasNext() ? processor.apply(expectedType.cast(elements.next())) : target;
 	}
 
-	private <E extends PathElement, S> Object process(Class<E> expectedType, Model<S> model, Function<E, S> extractor) {
+	private <E extends PathElement, S> Object process(Class<? extends E> expectedType, Model<? super S> model, Function<? super E, ? extends S> extractor) {
 		return process(expectedType, element -> apply(element, model, extractor));
+	}
+	
+	private <S> Object process(Model<? super S> model, S value) {
+		return model.accept(new PathModelVisitor<>(value, elements));
 	}
 
 	@Override
@@ -54,7 +58,7 @@ public class PathModelVisitor<T> implements ModelVisitor<T, Object> {
 	}
 	
 	private <P> Object visitProperty(Property<? super T, P> property) {
-		return process(PathElement.class, property.getDelegate(), element -> property.apply(target));
+		return process(property.getDelegate(), property.apply(target));
 	}
 	
 	@Override
@@ -64,6 +68,8 @@ public class PathModelVisitor<T> implements ModelVisitor<T, Object> {
 	
 	@Override
 	public Object visitValue(ValueModel<? super T> value) {
-		return target;
+		return process(PathElement.class, element -> {
+			throw new RuntimeException("ValueModels cannot have subpaths");
+		});
 	}
 }
