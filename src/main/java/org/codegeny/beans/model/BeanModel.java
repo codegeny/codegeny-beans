@@ -90,10 +90,8 @@ public final class BeanModel<B> implements Model<B>, Iterable<Property<? super B
 	 * @param name The name of the property.
 	 * @return The corresponding property or null.
 	 */
-	public <P> Property<? super B, P> getProperty(String name) {
-		@SuppressWarnings("unchecked")
-		Property<? super B, P> property = (Property<? super B, P>) properties.get(requireNonNull(name));
-		return property;
+	public Property<? super B, ?> getProperty(String name) {
+		return properties.get(requireNonNull(name));
 	}
 	
 	/**
