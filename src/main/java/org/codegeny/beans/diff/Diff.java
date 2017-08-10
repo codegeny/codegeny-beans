@@ -135,6 +135,7 @@ public interface Diff<T> extends Serializable {
 	 * @param visitor
 	 *            The visitor.
 	 * @return The result.
+	 * @param <R> The visitor result type.
 	 */
 	<R> R accept(DiffVisitor<T, R> visitor);
 
