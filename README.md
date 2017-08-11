@@ -11,15 +11,15 @@ This project makes heavy (maybe too much) use of the visitor pattern to avoid ca
 
 ## The Model interface
 
-The `Model&lt;T&gt;` interface represent an object of type `T` and can be of one of the following concrete classes:
+The `Model<T>` interface represent an object of type `T` and can be of one of the following concrete classes:
 
-- `ValueModel&lt;T&gt;` which represents an atomic value of type `T`. Atomic values must be comparable or a comparator must be given to the `ValueModel`.
-- `ListModel&lt;C, E&gt;` represents a list-like value (of type `C`) of other models (of type `E`). Node that `C` is not required to be of type `List&lt;E&gt;` but then a transformation function (`Function&lt;C, List&lt;E&gt;&gt;`) must be given.
-- `SetModel&lt;C, E&gt;` represents a set-like value (of type `C`) of other models (of type `E`). Node that `C` is not required to be of type `Set&lt;E&gt;` but then a transformation function (`Function&lt;C, Set&lt;E&gt;&gt;`) must be given.
-- `MapModel&lt;M, K, V&gt;` represents a map-like value (of type `M`) of keys (`K`) and values (`V`). As with lists and sets, `M` is not required to be of type `Map&lt;K, V&gt;` but a `Function&lt;M, Map&lt;K, V&gt;&gt;` must be given.
-- `BeanModel&lt;B&gt;` represents a bean of type `B`. A `BeanModel` contains a map of properties (`Map&lt;String, Property&lt;B, ?&gt;&gt;`).
+- `ValueModel<T>` which represents an atomic value of type `T`. Atomic values must be comparable or a comparator must be given to the `ValueModel`.
+- `ListModel<C, E>` represents a list-like value (of type `C`) of other models (of type `E`). Node that `C` is not required to be of type `List<E>` but then a transformation function (`Function<C, List<E>>`) must be given.
+- `SetModel<C, E>` represents a set-like value (of type `C`) of other models (of type `E`). Node that `C` is not required to be of type `Set<E>` but then a transformation function (`Function<C, Set<E>>`) must be given.
+- `MapModel<M, K, V>` represents a map-like value (of type `M`) of keys (`K`) and values (`V`). As with lists and sets, `M` is not required to be of type `Map<K, V>` but a `Function<M, Map<K, V>>` must be given.
+- `BeanModel<B>` represents a bean of type `B`. A `BeanModel` contains a map of properties (`Map<String, Property<B, ?>>`).
 
-The `Model&lt;T&gt;` interface is just an interface which accepts a `DiffVisitor&lt;T, R&gt;` (`R` being the result).
+The `Model<T>` interface is just an interface which accepts a `DiffVisitor<T, R>` (`R` being the result).
 
 Example:
 
@@ -32,7 +32,7 @@ public class Person {
 	private String lastName;
 	private LocalDate birthDate;
 	private Address mainAddress;
-	private Set&lt;Address&gt; formerAddresses;
+	private Set<Address> formerAddresses;
 	
 	// getters and setters
 }
@@ -72,7 +72,7 @@ Model<Person> personModel = Model.bean()
 	.addProperty("formerAddresses", Person::getFormerAddresses, Model.set(addressModel));
 ```
 
-With that Model&lt;Person&gt; you could do the following:
+With that `Model<Person>` you could do the following:
 
 ```java
 Person person = ... // create some person instance
@@ -88,19 +88,19 @@ Diff<Person> diff = personModel.diff(anotherPerson, 0.8); // returns a Diff<Pers
 
 ## The Diff interface
 
-The `Diff&lt;T&gt;` interface represents the difference between two instances of `T` (left and right).
+The `Diff<T>` interface represents the difference between two instances of `T` (left and right).
 
 A diff:
 - has a score between 0 and 1
 - has a status in (`ADDED`, `REMOVED`, `UNCHANGED`, `MODIFIED`)
 - has left and right values of type `T`
-- can be visited by a `DiffVisitor&lt;T, R&gt`;
+- can be visited by a `DiffVisitor<T, R>`;
 
 A diff can be of one of the following concrete classes:
-- `SimpleDiff&lt;T&gt;` representing a diff between two atomic values
-- `ListDiff&lt;C, E&gt;` representing a diff between two list-like values of type `C` containing elements of type `E`
-- `MapDiff&lt;M, K, V&gt;` representing a diff between two map-like values of type `M` containing entries of key `K` and values `V`
-- `BeanDiff&lt;B&gt;` representing a diff between two beans of type `B`
+- `SimpleDiff<T>` representing a diff between two atomic values
+- `ListDiff<C, E>` representing a diff between two list-like values of type `C` containing elements of type `E`
+- `MapDiff<M, K, V>` representing a diff between two map-like values of type `M` containing entries of key `K` and values `V`
+- `BeanDiff<B>` representing a diff between two beans of type `B`
 
 ### Example
 
