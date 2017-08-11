@@ -139,9 +139,26 @@ diff(left, right) = BeanDiff<President>(score = 5/12, status = MODIFIED, left = 
 
 When comparing 2 collections (2 sets for example), at some point, the comparison algorithms will build a matrix like this:
 
-diff | left:0 | left:1 | left:2
-right:0 | 90% | 80% | 0%
-right:1 | 80% | 20% | 30%
+<table>
+    <tr>
+        <th>diff</th>
+        <th>left:0</th>
+        <th>left:1</th>
+        <th>left:2</th>
+    </tr>
+    <tr>
+        <th>right:0</th>
+        <th>90%</th>
+        <th>80%</th>
+        <th>0%</th>
+    </tr>
+    <tr>
+        <th>right:1</th>
+        <th>80%</th>
+        <th>20%</th>
+        <th>30%</th>
+    </tr>
+</table>
 
 which represents the diff score between each element in the left collection and each element in the right collection.
 
