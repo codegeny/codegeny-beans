@@ -94,12 +94,12 @@ A diff:
 - has a score between 0 and 1
 - has a status in (`ADDED`, `REMOVED`, `UNCHANGED`, `MODIFIED`)
 - has left and right values of type `T`
-- can be visited by a `DiffVisitor<T, R>`;
+- can be visited by a `DiffVisitor<T, R>`
 
 A diff can be of one of the following concrete classes:
-- `SimpleDiff<T>` representing a diff between two atomic values
+- `SimpleDiff<T>` representing a diff between two atomic values of type `T`
 - `ListDiff<C, E>` representing a diff between two list-like values of type `C` containing elements of type `E`
-- `MapDiff<M, K, V>` representing a diff between two map-like values of type `M` containing entries of key `K` and values `V`
+- `MapDiff<M, K, V>` representing a diff between two map-like values of type `M` containing entries with key of type `K` and value of type `V`
 - `BeanDiff<B>` representing a diff between two beans of type `B`
 
 ### Example
@@ -127,7 +127,7 @@ diff(left, right) = BeanDiff<President>(score = 5/12, status = MODIFIED, left = 
 	],
 	lastName: SimpleDiff<String>(score = 1, status = UNCHANGED, left = 'Bush', right = 'Bush'),
 	birthYear: SimpleDiff<Integer>(score = 0, status = MODIFIED, left = 1924, right = 1946),
-	electedYears: ListDiff<List<String>, String>(score = 0/3, status = MODIFIED, left = ..., right = ...) [
+	electedYears: ListDiff<List<Integer>, Integer>(score = 0/3, status = MODIFIED, left = ..., right = ...) [
 		SimpleDiff<Integer>(score = 0, status = REMOVED, left = 1989, right = null),
 		SimpleDiff<Integer>(score = 0, status = ADDED, left = null, right = 2001),
 		SimpleDiff<Integer>(score = 0, status = ADDED, left = null, right = 2005),
