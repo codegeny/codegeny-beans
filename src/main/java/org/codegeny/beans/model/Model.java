@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
+import org.codegeny.beans.model.visitor.CompareModelVisitor;
 import org.codegeny.beans.model.visitor.DescribeModelVisitor;
 import org.codegeny.beans.model.visitor.HashModelVisitor;
 import org.codegeny.beans.model.visitor.PathModelVisitor;
@@ -33,7 +34,7 @@ import org.codegeny.beans.util.Hasher;
  * @author Xavier DURY
  * @param <T> The type of object this model represent.
  */
-public interface Model<T> {
+public interface Model<T> extends Comparator<T> {
 	
 	/**
 	 * Construct a new empty {@link BeanModel}.
@@ -153,6 +154,14 @@ public interface Model<T> {
 	 * @param <R> The type of the result.
 	 */
 	<R> R accept(ModelVisitor<? extends T, ? extends R> visitor);
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	default int compare(T left, T right) {
+		return accept(new CompareModelVisitor<T>(left, right));
+	}
 	
 	/**
 	 * Create a string representation of the model.

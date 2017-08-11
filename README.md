@@ -11,17 +11,21 @@ This project makes heavy (maybe too much) use of the visitor pattern to avoid ca
 
 ## The Model interface
 
-The `Model<T>` interface represent an object of type `T` and can be of one of the following concrete classes:
+A `Model` is used to express the hierarchical structure of an object in a type-safe and reflection-free way.
+
+In turn, once you have your model defined, you can use it to generate a toString for your object, compare objects, diff objects, hash objects... 
+
+The `Model<T>` interface represents a node in the hierarchical structure for an object of type `T` and can be of one of the following concrete classes:
 
 - `ValueModel<T>` which represents an atomic value of type `T`. Atomic values must be comparable or a comparator must be given to the `ValueModel`.
-- `ListModel<C, E>` represents a list-like value (of type `C`) of other models (of type `E`). Node that `C` is not required to be of type `List<E>` but then a transformation function (`Function<C, List<E>>`) must be given.
-- `SetModel<C, E>` represents a set-like value (of type `C`) of other models (of type `E`). Node that `C` is not required to be of type `Set<E>` but then a transformation function (`Function<C, Set<E>>`) must be given.
-- `MapModel<M, K, V>` represents a map-like value (of type `M`) of keys (`K`) and values (`V`). As with lists and sets, `M` is not required to be of type `Map<K, V>` but a `Function<M, Map<K, V>>` must be given.
+- `ListModel<C, E>` represents a list-like value (of type `C`) of other models (of type `E`). Note that `C` is not required to be of type `List<E>` but then a transformation function (`Function<C, List<E>>`) must be given to the `ListModel`.
+- `SetModel<C, E>` represents a set-like value (of type `C`) of other models (of type `E`). Note that `C` is not required to be of type `Set<E>` but then a transformation function (`Function<C, Set<E>>`) must be given to the `SetModel`.
+- `MapModel<M, K, V>` represents a map-like value (of type `M`) of keys (`K`) and values (`V`). As with lists and sets, `M` is not required to be of type `Map<K, V>` but a `Function<M, Map<K, V>>` must be given to the `MapModel`.
 - `BeanModel<B>` represents a bean of type `B`. A `BeanModel` contains a map of properties (`Map<String, Property<B, ?>>`).
 
-The `Model<T>` interface is just an interface which accepts a `DiffVisitor<T, R>` (`R` being the result).
+The `Model<T>` interface accepts `DiffVisitor<T, R>`s (`R` being the result type).
 
-Example:
+### Example
 
 Lets define the following classes:
 
@@ -54,7 +58,7 @@ public enum Country {
 }
 ```
 
-The structure of the class Person can be defined as follows;
+The structure of the class Person can be defined as follows:
 
 ```java
 Model<Address> addressModel = Model.bean()
@@ -72,18 +76,21 @@ Model<Person> personModel = Model.bean()
 	.addProperty("formerAddresses", Person::getFormerAddresses, Model.set(addressModel));
 ```
 
+Note that instead of using getters method references (`Person::getFirstName`), a lambda could also be used (`(Person p) -> p.getFirstName().toUpperCase()`).
+This allows to transform the values before they are used (if that is necessary).
+
 With that `Model<Person>` you could do the following:
 
 ```java
 Person person = ... // create some person instance
 
-personModel.toString(person); // create a generic string representation for person
+String string = personModel.toString(person); // create a generic string representation for person
 
-personModel.compareTo(anotherPerson); // compare person with anotherPerson by comparing fields in the order they were defined (firstName, lastName, birthDate, mainAddress.street, mainAddress.houseNumber...
+int comparison = personModel.compare(person, anotherPerson); // compare person with anotherPerson by comparing fields in the order they were defined (firstName, lastName, birthDate, mainAddress.street, mainAddress.houseNumber...
 
 personModel.extract(person, Path.path().property("mainAddress").property("city")); // extract person.mainAddress.city
 
-Diff<Person> diff = personModel.diff(anotherPerson, 0.8); // returns a Diff<Person>, see further in the documentation.
+Diff<Person> diff = personModel.diff(person, anotherPerson, 0.8); // returns a Diff<Person>, see below for more explanation.
 ```
 
 ## The Diff interface
@@ -171,7 +178,7 @@ Local score will pair the result like this: (L0, R0), (L1, null), (L2, R1) = 90%
 
 The big difference here is the speed of execution:
 - Local score will find the best way to pair elements in O(m x n) (where m and n are the sizes of the left and right collections)
-- Global score will find the best way to pair elements in factorial times which could take very very long for big collections (especially if all elements are almost identical).
+- Global score will find the best way to pair elements in factorial time which could take very very long for big collections (especially if all elements are almost identical).
 
 For this reason, it is better to use the local strategy and only use global strategy if your object graph is very limited.
 
