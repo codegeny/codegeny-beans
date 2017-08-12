@@ -26,7 +26,7 @@ public final class ListDiff<C, E> extends AbstractDiff<C> {
 	 */
 	@Override
 	public <R> R accept(DiffVisitor<C, R> visitor) {
-		return visitor.visitListDiff(this);
+		return visitor.visitList(this);
 	}
 	
 	/**

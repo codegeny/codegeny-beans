@@ -67,7 +67,7 @@ public interface Model<T> extends Comparator<T> {
 	 * @param <C> The type of the list of &lt;E&gt; elements.
 	 * @param <E> The type of elements.
 	 */
-	static <C, E> ListModel<C, E> list(Model<? super E> delegate, Function<? super C, List<? extends E>> extractor) {
+	static <C, E> ListModel<C, E> list(Model<? super E> delegate, Function<? super C, ? extends List<? extends E>> extractor) {
 		return new ListModel<>(extractor, delegate);
 	}
 	
@@ -96,7 +96,7 @@ public interface Model<T> extends Comparator<T> {
 	 * @param <K> The type of keys.
 	 * @param <V> The type of values.
 	 */
-	static <M, K, V> MapModel<M, K, V> map(Model<? super K> keyDelegate, Model<? super V> valueDelegate, Function<? super M, Map<? extends K, ? extends V>> extractor) {
+	static <M, K, V> MapModel<M, K, V> map(Model<? super K> keyDelegate, Model<? super V> valueDelegate, Function<? super M, ? extends Map<? extends K, ? extends V>> extractor) {
 		return new MapModel<>(extractor, keyDelegate, valueDelegate);
 	}
 	
@@ -121,7 +121,7 @@ public interface Model<T> extends Comparator<T> {
 	 * @param <C> The type of the set of &lt;E&gt; elements.
 	 * @param <E> The type of elements.
 	 */
-	static <C, E> SetModel<C, E> set(Model<? super E> delegate, Function<? super C, Set<? extends E>> extractor) {
+	static <C, E> SetModel<C, E> set(Model<? super E> delegate, Function<? super C, ? extends Set<? extends E>> extractor) {
 		return new SetModel<>(extractor, delegate);
 	}
 	
@@ -160,7 +160,7 @@ public interface Model<T> extends Comparator<T> {
 	 */
 	@Override
 	default int compare(T left, T right) {
-		return accept(new CompareModelVisitor<T>(left, right));
+		return accept(new CompareModelVisitor<>(left, right));
 	}
 	
 	/**
@@ -180,7 +180,7 @@ public interface Model<T> extends Comparator<T> {
 	 * @return The extracted value according to path.
 	 */
 	default Object extract(T target, Path path) {
-		return accept(new PathModelVisitor<T>(target, path.elements().iterator()));
+		return accept(new PathModelVisitor<>(target, path.elements().iterator()));
 	}
 	
 	/**

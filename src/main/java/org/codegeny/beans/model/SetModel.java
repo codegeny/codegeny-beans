@@ -9,9 +9,9 @@ import java.util.function.Function;
 public final class SetModel<C, E> implements Model<C>, Function<C, Set<? extends E>> {
 
 	private final Model<? super E> delegate;
-	private final Function<? super C, Set<? extends E>> extractor;
+	private final Function<? super C, ? extends Set<? extends E>> extractor;
 
-	SetModel(Function<? super C, Set<? extends E>> extractor, Model<? super E> delegate) {
+	SetModel(Function<? super C, ? extends Set<? extends E>> extractor, Model<? super E> delegate) {
 		this.extractor = requireNonNull(extractor);
 		this.delegate = requireNonNull(delegate);
 	}

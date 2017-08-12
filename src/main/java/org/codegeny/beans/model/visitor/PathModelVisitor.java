@@ -18,10 +18,10 @@ import org.codegeny.beans.path.PropertyPathElement;
 
 public class PathModelVisitor<T> implements ModelVisitor<T, Object> {
 	
-	private final Iterator<PathElement> elements;
+	private final Iterator<? extends PathElement> elements;
 	private final T target;
 
-	public PathModelVisitor(T target, Iterator<PathElement> elements) {
+	public PathModelVisitor(T target, Iterator<? extends PathElement> elements) {
 		this.target = target;
 		this.elements = elements;
 	}
@@ -69,7 +69,7 @@ public class PathModelVisitor<T> implements ModelVisitor<T, Object> {
 	@Override
 	public Object visitValue(ValueModel<? super T> value) {
 		return process(PathElement.class, element -> {
-			throw new RuntimeException("ValueModels cannot have subpaths");
+			throw new IllegalStateException("ValueModels cannot have subpaths");
 		});
 	}
 }

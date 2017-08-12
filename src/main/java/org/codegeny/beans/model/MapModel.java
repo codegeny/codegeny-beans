@@ -8,11 +8,11 @@ import java.util.function.Function;
 
 public final class MapModel<M, K, V> implements Model<M>, Function<M, Map<? extends K, ? extends V>> {
 	
-	private final Function<? super M, Map<? extends K, ? extends V>> extractor;
+	private final Function<? super M, ? extends Map<? extends K, ? extends V>> extractor;
 	private final Model<? super K> keyDelegate;
 	private final Model<? super V> valueDelegate;
 	
-	MapModel(Function<? super M, Map<? extends K, ? extends V>> extractor, Model<? super K> keyDelegate, Model<? super V> valueDelegate) {
+	MapModel(Function<? super M, ? extends Map<? extends K, ? extends V>> extractor, Model<? super K> keyDelegate, Model<? super V> valueDelegate) {
 		this.extractor = requireNonNull(extractor);
 		this.keyDelegate = requireNonNull(keyDelegate);
 		this.valueDelegate = requireNonNull(valueDelegate);

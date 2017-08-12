@@ -1,11 +1,37 @@
-package org.codegeny.beans.diff;
+package org.codegeny.beans;
+
+import static org.codegeny.beans.model.Model.bean;
+import static org.codegeny.beans.model.Model.set;
+import static org.codegeny.beans.model.Model.value;
 
 import java.time.LocalDate;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import org.codegeny.beans.model.Model;
+
 public class Person {
+	
+	public static final Model<Person> MODEL = bean() //
+		.addProperty("firstName", Person::getFirstName, value()) //
+		.addProperty("middleNames", Person::getMiddleNames, set(value())) //
+		.addProperty("lastName", Person::getLastName, value()) //
+		.addProperty("birthDate", Person::getBirthDate, value()) //
+		.addProperty("currentAddress", Person::getCurrentAddress, Address.MODEL) //
+		.addProperty("formerAddresses", Person::getFormerAddresses, set(Address.MODEL));
+	
+	public static Person createDefaultPerson() {
+		return new Person() //
+			.setBirthDate(LocalDate.now()) //
+			.setFirstName("John") //
+			.addMiddleName("Patrick") //
+			.addMiddleName("Fitzgerald") //
+			.setLastName("Doe") //
+			.setCurrentAddress(new Address().setStreet("Evergreen Terrasse").setZipCode("90210").setCountry("USA")) //
+			.addFormerAddress(new Address().setStreet("Champs Elysées").setZipCode("1000").setCountry("France")) //
+			.addFormerAddress(new Address().setStreet("Grand Place").setZipCode("1000").setCountry("Belgium"));
+	}
 	
 	private LocalDate birthDate;
 	private Address currentAddress;

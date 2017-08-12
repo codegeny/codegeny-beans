@@ -23,6 +23,6 @@ public final class SimpleDiff<T> extends AbstractDiff<T> {
 	 */
 	@Override
 	public <R> R accept(DiffVisitor<T, R> visitor) {
-		return visitor.visitSimpleDiff(this);
+		return visitor.visitSimple(this);
 	}
 }

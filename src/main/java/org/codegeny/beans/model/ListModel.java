@@ -9,9 +9,9 @@ import java.util.function.Function;
 public final class ListModel<C, E> implements Model<C>, Function<C, List<? extends E>> {
 
 	private final Model<? super E> delegate;
-	private final Function<? super C, List<? extends E>> extractor;
+	private final Function<? super C, ? extends List<? extends E>> extractor;
 
-	ListModel(Function<? super C, List<? extends E>> extractor, Model<? super E> delegate) {
+	ListModel(Function<? super C, ? extends List<? extends E>> extractor, Model<? super E> delegate) {
 		this.extractor = requireNonNull(extractor);
 		this.delegate = requireNonNull(delegate);
 	}

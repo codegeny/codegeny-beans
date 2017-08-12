@@ -28,7 +28,7 @@ public final class MapDiff<M, K, V> extends AbstractDiff<M> {
 	 */
 	@Override
 	public <R> R accept(DiffVisitor<M, R> visitor) {
-		return visitor.visitMapDiff(this);
+		return visitor.visitMap(this);
 	}
 
 	/**

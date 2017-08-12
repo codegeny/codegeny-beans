@@ -27,7 +27,7 @@ public interface DiffVisitor<T, R> {
 			 * {@inheritDoc}
 			 */
 			@Override
-			public R visitBeanDiff(BeanDiff<T> bean) {
+			public R visitBean(BeanDiff<T> bean) {
 				return function.apply(bean);
 			}
 
@@ -35,7 +35,7 @@ public interface DiffVisitor<T, R> {
 			 * {@inheritDoc}
 			 */
 			@Override
-			public <E> R visitListDiff(ListDiff<T, E> list) {
+			public <E> R visitList(ListDiff<T, E> list) {
 				return function.apply(list);
 			}
 
@@ -43,7 +43,7 @@ public interface DiffVisitor<T, R> {
 			 * {@inheritDoc}
 			 */
 			@Override
-			public <K, V> R visitMapDiff(MapDiff<T, K, V> map) {
+			public <K, V> R visitMap(MapDiff<T, K, V> map) {
 				return function.apply(map);
 			}
 
@@ -51,7 +51,7 @@ public interface DiffVisitor<T, R> {
 			 * {@inheritDoc}
 			 */
 			@Override
-			public R visitSimpleDiff(SimpleDiff<T> simple) {
+			public R visitSimple(SimpleDiff<T> simple) {
 				return function.apply(simple);
 			}
 		};
@@ -86,7 +86,7 @@ public interface DiffVisitor<T, R> {
 	 * @param bean The bean to visit.
 	 * @return The computed result.
 	 */
-	R visitBeanDiff(BeanDiff<T> bean);
+	R visitBean(BeanDiff<T> bean);
 	
 	/**
 	 * Visit a <code>{@linkplain ListDiff}&lt;T, E&gt;</code>
@@ -95,7 +95,7 @@ public interface DiffVisitor<T, R> {
 	 * @return The computed result.
 	 * @param <E> The type of elements.
 	 */
-	<E> R visitListDiff(ListDiff<T, E> list);
+	<E> R visitList(ListDiff<T, E> list);
 	
 	/**
 	 * Visit a <code>{@linkplain MapDiff}&lt;T, K, V&gt;</code>
@@ -105,7 +105,7 @@ public interface DiffVisitor<T, R> {
 	 * @param <K> The type of the map key.
 	 * @param <V> The type of the map value.
 	 */
-	<K, V> R visitMapDiff(MapDiff<T, K, V> map);
+	<K, V> R visitMap(MapDiff<T, K, V> map);
 	
 	/**
 	 * Visit a <code>{@linkplain SimpleDiff}&lt;T&gt;</code>
@@ -113,5 +113,5 @@ public interface DiffVisitor<T, R> {
 	 * @param simple The simple value to visit.
 	 * @return The computed result.
 	 */
-	R visitSimpleDiff(SimpleDiff<T> simple);
+	R visitSimple(SimpleDiff<T> simple);
 }

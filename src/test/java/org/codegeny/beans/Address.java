@@ -1,6 +1,16 @@
-package org.codegeny.beans.diff;
+package org.codegeny.beans;
+
+import static org.codegeny.beans.model.Model.bean;
+import static org.codegeny.beans.model.Model.value;
+
+import org.codegeny.beans.model.Model;
 
 public class Address {
+	
+	public static final Model<Address> MODEL = bean() //
+		.addProperty("street", Address::getStreet, value()) //
+		.addProperty("zipCode", Address::getZipCode, value()) //
+		.addProperty("country", Address::getCountry, value());
 	
 	private String country;
 	private String street;
