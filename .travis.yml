@@ -1,6 +1,8 @@
 language: java
 jdk:
   - oraclejdk8
+notifications:
+  slack: $SLACK_TOKEN
 after_success:
   - bash <(curl -s https://codecov.io/bash)
   - curl -L https://github.com/codegeny/codegeny-keys/archive/master.tar.gz | tar xz -C ~

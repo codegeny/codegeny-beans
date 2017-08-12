@@ -169,10 +169,10 @@ public interface Diff<T> extends Serializable {
 	double getScore();
 
 	/**
-	 * Get the type for this diff which can be either ADDED, REMOVED, MODIFIED or
+	 * Get the status for this diff which can be either ADDED, REMOVED, MODIFIED or
 	 * UNCHANGED.
 	 * 
-	 * @return The type.
+	 * @return The status.
 	 */
 	Status getStatus();
 
@@ -196,7 +196,7 @@ public interface Diff<T> extends Serializable {
 	 */
 	default String toString(String root) {
 		StringBuilder builder = new StringBuilder();
-		traverse((p, d) -> builder.append(p.toString(root)).append(" = ").append(d));
+		traverse((p, d) -> builder.append(p.toString(root)).append(" = ").append(d).append(System.lineSeparator()));
 		return builder.toString();
 	}
 	

@@ -27,7 +27,7 @@ public final class BeanDiff<B> extends AbstractDiff<B> {
 	 */
 	@Override
 	public <R> R accept(DiffVisitor<B, R> visitor) {
-		return visitor.visitBeanDiff(this);
+		return visitor.visitBean(this);
 	}
 
 	/**
