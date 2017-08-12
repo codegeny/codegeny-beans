@@ -6,7 +6,7 @@ import static java.util.Objects.requireNonNull;
 import java.util.Map;
 
 /**
- * Implementation of {@link Diff} for beans.
+ * Implementation of <code>{@link Diff}</code> for beans.
  *
  * @author Xavier DURY
  * @param <B> The type of bean.
@@ -31,7 +31,7 @@ public final class BeanDiff<B> extends AbstractDiff<B> {
 	}
 
 	/**
-	 * Get the map of diffed properties.
+	 * Get the map of diff'ed properties.
 	 * 
 	 * @return The properties.
 	 */
@@ -40,7 +40,7 @@ public final class BeanDiff<B> extends AbstractDiff<B> {
 	}
 	
 	/**
-	 * Get the diffed for the given property name.
+	 * Get the diff'ed for the given property name.
 	 * 
 	 * @param name The property name.
 	 * @return That property's diff.

@@ -3,7 +3,7 @@ package org.codegeny.beans.util;
 /**
  * This implementation of hasher is not affected by the order of elements which are hashed.
  * 
- * @author Xavier Dury
+ * @author Xavier DURY
  */
 public class AddAndXorHasher implements Hasher {
 	

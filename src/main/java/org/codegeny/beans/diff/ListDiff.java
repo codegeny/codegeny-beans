@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Implementation of {@link Diff} for lists.
+ * Implementation of <code>{@link Diff}</code> for lists.
  *
  * @author Xavier DURY
  * @param <C> The type of list.
@@ -30,7 +30,7 @@ public final class ListDiff<C, E> extends AbstractDiff<C> {
 	}
 	
 	/**
-	 * Get the list of diffed elements.
+	 * Get the list of diff'ed elements.
 	 * 
 	 * @return The list.
 	 */

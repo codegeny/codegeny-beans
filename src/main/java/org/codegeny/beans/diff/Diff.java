@@ -8,13 +8,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
+import org.codegeny.beans.diff.visitor.DiffPathVisitor;
 import org.codegeny.beans.diff.visitor.TraversingDiffVisitor;
 import org.codegeny.beans.path.Path;
-import org.codegeny.beans.path.PathVisitor;
 
 /**
- * A diff represent a comparison between 2 objects (left and right). A diff provides a matching score (between 0 and 1 inclusive) and a {@link Status}.
- * All implementations must be immutable, thread-safe and {@link Serializable} (as long as &lt;T&gt; type is also Serializable).
+ * A diff represent a comparison between 2 objects (left and right). A diff provides a matching score (between 0 and 1 inclusive) and a <code>{@link Status}</code>.
+ * All implementations must be immutable, thread-safe and <code>{@link Serializable}</code> (as long as &lt;T&gt; type is also <code>{@link Serializable}</code>).
  * 
  * @author Xavier DURY
  * @param <T> The type of the 2 compared objects.
@@ -22,12 +22,12 @@ import org.codegeny.beans.path.PathVisitor;
 public interface Diff<T> extends Serializable {
 	
 	/**
-	 * The status of the {@link Diff}. Can be
+	 * The status of the <code>{@link Diff}</code>. Can be:
 	 * <ul>
-	 * <li>ADDED (left value does not exist while right does)</li>
-	 * <li>REMOVED (right value does not exist while left does)</li>
-	 * <li>MODIFIED (both values exist but are different)</li>
-	 * <li>UNCHANGED (both values exist and are the same or both values do not exist)</li>
+	 * <li><code>ADDED</code> (left value does not exist while right does)</li>
+	 * <li><code>REMOVED</code> (right value does not exist while left does)</li>
+	 * <li><code>MODIFIED</code> (both values exist but are different)</li>
+	 * <li><code>UNCHANGED</code> (both values exist and are the same or both values do not exist)</li>
 	 * </ul>
 	 */
 	enum Status {
@@ -38,7 +38,7 @@ public interface Diff<T> extends Serializable {
 		 * Combine 2 statuses given the following rules:
 		 * <ol>
 		 * <li>2 identical statuses must give the same status</li>
-		 * <li>MODIFIED + any status must give MODIFIED</li>
+		 * <li><code>MODIFIED</code> + any status must give <code>MODIFIED</code></li>
 		 * </ol> 
 		 * @param that The other status.
 		 * @return The combined status.
@@ -50,7 +50,7 @@ public interface Diff<T> extends Serializable {
 		/**
 		 * Is this status representing any change?
 		 * 
-		 * @return True only if this status is UNCHANGED.
+		 * @return True only if this status is <code>UNCHANGED</code>.
 		 */
 		public boolean isChanged() {
 			return !equals(UNCHANGED);
@@ -58,13 +58,13 @@ public interface Diff<T> extends Serializable {
 	}
 	
 	/**
-	 * Static method factory for {@linkplain BeanDiff}.
+	 * Static method factory for <code>{@link BeanDiff}</code>.
 	 * 
 	 * @param status The status.
 	 * @param left The left bean.
 	 * @param right The right bean.
-	 * @param properties The diffed properties as a map.
-	 * @return A {@linkplain BeanDiff}.
+	 * @param properties The diff'ed properties as a map.
+	 * @return A <code>{@link BeanDiff}</code>.
 	 * @param <B> The type of the bean.
 	 */
 	static <B> BeanDiff<B> bean(Status status, B left, B right, Map<String, ? extends Diff<?>> properties) {
@@ -72,13 +72,13 @@ public interface Diff<T> extends Serializable {
 	}
 	
 	/**
-	 * Static method factory for {@linkplain ListDiff}.
+	 * Static method factory for <code>{@link ListDiff}</code>.
 	 * 
 	 * @param status The status.
 	 * @param left The left list.
 	 * @param right The right list.
-	 * @param list The diffed elements as a list.
-	 * @return A {@linkplain ListDiff}
+	 * @param list The diff'ed elements as a list.
+	 * @return A <code>{@link ListDiff}</code>.
 	 * @param <C> The type of list.
 	 * @param <E> The type of the list elements.
 	 */
@@ -87,13 +87,13 @@ public interface Diff<T> extends Serializable {
 	}
 	
 	/**
-	 * Static method factory for {@linkplain MapDiff}.
+	 * Static method factory for <code>{@link MapDiff}</code>.
 	 * 
 	 * @param status The status.
 	 * @param left The left map.
 	 * @param right The right map.
 	 * @param map The diffed values as a map.
-	 * @return A {@linkplain MapDiff}.
+	 * @return A <code>{@link MapDiff}</code>.
 	 * @param <M> The type of the map.
 	 * @param <K> The type of the map keys.
 	 * @param <V> The type of the map values.
@@ -103,13 +103,13 @@ public interface Diff<T> extends Serializable {
 	}
 	
 	/**
-	 * Static method factory for {@linkplain SimpleDiff}.
+	 * Static method factory for <code>{@link SimpleDiff}</code>.
 	 * 
 	 * @param score The score.
 	 * @param status The status.
 	 * @param left The left value.
-	 * @param right Rhe right value.
-	 * @return A {@linkplain SimpleDiff}.
+	 * @param right The right value.
+	 * @return A <code>{@link SimpleDiff}</code>.
 	 * @param <T> The type of the value.
 	 */
 	static <T> SimpleDiff<T> simple(double score, Status status, T left, T right) {
@@ -117,12 +117,12 @@ public interface Diff<T> extends Serializable {
 	}
 	
 	/**
-	 * Static method factory for {@linkplain SimpleDiff}.
+	 * Static method factory for <code>{@link SimpleDiff}<c/ode>.
 	 * 
 	 * @param status The status.
 	 * @param left The left value.
 	 * @param right The right value.
-	 * @return A {@linkplain SimpleDiff}.
+	 * @return A <code>{@link SimpleDiff}</code>.
 	 * @param <T> The type of the value.
 	 */
 	static <T> SimpleDiff<T> simple(Status status, T left, T right) {
@@ -169,15 +169,14 @@ public interface Diff<T> extends Serializable {
 	double getScore();
 
 	/**
-	 * Get the status for this diff which can be either ADDED, REMOVED, MODIFIED or
-	 * UNCHANGED.
+	 * Get the status for this diff which can be either <code>ADDED</code>, <code>REMOVED</code>, <code>MODIFIED</code> or <code>UNCHANGED</code>.
 	 * 
 	 * @return The status.
 	 */
 	Status getStatus();
 
 	/**
-	 * Transform this diff to a map [path &rarr; @{linkplain Diff}].
+	 * Transform this diff to a map [path &rarr; <code>{@link Diff}</code>].
 	 * 
 	 * @param root The name of the root element.
 	 * @return A map.
@@ -207,23 +206,7 @@ public interface Diff<T> extends Serializable {
 	 * @return The resulting diff.
 	 */
 	default Diff<?> extract(Path path) {
-		return path.accept(this, new PathVisitor<Diff<?>>() {
-			
-			@Override
-			public Diff<?> visitIndex(Diff<?> parent, int index) {
-				return ((ListDiff<?, ?>) parent).getList().get(index);
-			}
-
-			@Override
-			public Diff<?> visitKey(Diff<?> parent, Object key) {
-				return ((MapDiff<?, ?, ?>) parent).getMap().get(key);
-			}
-
-			@Override
-			public Diff<?> visitProperty(Diff<?> parent, String property) {
-				return ((BeanDiff<?>) parent).getProperties().get(property);
-			}
-		});
+		return path.accept(this, DiffPathVisitor.INSTANCE);
 	}
 	
 	/**

@@ -10,6 +10,9 @@ public final class IndexPathElement implements PathElement {
 		this.index = index;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public <R> R accept(R parent, PathVisitor<R> visitor) {
 		return visitor.visitIndex(parent, index);

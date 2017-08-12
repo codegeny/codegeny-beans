@@ -38,6 +38,6 @@ public interface Path extends Serializable {
 	}
 	
 	default String toString(String root) {
-		return accept(new StringBuilder(root), new ToStringPathVisitor()).toString();
+		return accept(new StringBuilder(root), ToStringPathVisitor.INSTANCE).toString();
 	}
 }

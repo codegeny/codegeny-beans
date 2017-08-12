@@ -40,24 +40,40 @@ public final class TraversingDiffVisitor<T> implements DiffVisitor<T, Void> {
 		this.processor.accept(this.path, diff);
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public Void visitBean(BeanDiff<T> beanDiff) {
 		process(beanDiff);
 		beanDiff.getProperties().forEach((n, p) -> p.accept(childVisitor(path.property(n))));
 		return null;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public <E> Void visitList(ListDiff<T, E> listDiff) {
 		process(listDiff);
 		forEachIndexed(listDiff.getList(), (i, n) -> n.accept(childVisitor(path.index(i)))); 
 		return null;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public <K, V> Void visitMap(MapDiff<T, K, V> mapDiff) {
 		process(mapDiff);
 		mapDiff.getMap().forEach((k, v) -> v.accept(childVisitor(path.key(k))));
 		return null;
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public Void visitSimple(SimpleDiff<T> simpleDiff) {
 		process(simpleDiff);
 		return null;

@@ -5,7 +5,7 @@ import static java.util.Objects.requireNonNull;
 import java.util.Collection;
 
 /**
- * Abstract implementation of {@link Diff}.
+ * Abstract implementation of <code>{@link Diff}</code>.
  *
  * @author Xavier DURY
  * @param <T> The type of the 2 compared objects.

@@ -16,6 +16,9 @@ public final class ListModel<C, E> implements Model<C>, Function<C, List<? exten
 		this.delegate = requireNonNull(delegate);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public <R> R accept(ModelVisitor<? extends C, ? extends R> visitor) {
 		return requireNonNull(visitor).visitList(this);
@@ -25,6 +28,9 @@ public final class ListModel<C, E> implements Model<C>, Function<C, List<? exten
 		return this.delegate.accept(visitor);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public List<? extends E> apply(C values) {
 		return values == null ? emptyList() : this.extractor.apply(values);

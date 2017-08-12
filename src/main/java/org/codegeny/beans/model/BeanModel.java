@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 /**
- * An implementation of {@linkplain Model} for a bean.
+ * An implementation of {@link Model} for a bean.
  *  
  * @author Xavier DURY
  * @param <B> The type of the bean.
@@ -64,7 +64,7 @@ public final class BeanModel<B> implements Model<B>, Iterable<Property<? super B
 	 * </pre>
 	 * @param name The name of the property.
 	 * @param extractor The getter of the property or any function that can extract the property from the bean.
-	 * @param delegate The delegate {@linkplain Model} for that property.
+	 * @param delegate The delegate {@link Model} for that property.
 	 * @return A <strong>new</strong> <code>BeanModel</code> instance with the added property.
 	 * @param <C> The potentially upgraded type of the <code>BeanModel</code>.
 	 * @param <P> The type of the property.

@@ -1,7 +1,7 @@
 package org.codegeny.beans.diff;
 
 /**
- * Implementation of {@link Diff} for simple values.
+ * Implementation of <code>{@link Diff}</code> for simple values.
  *
  * @author Xavier DURY
  * @param <T> The type of the 2 compared objects.

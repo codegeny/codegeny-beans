@@ -10,6 +10,9 @@ public final class KeyPathElement implements PathElement {
 		this.key = key;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public <R> R accept(R parent, PathVisitor<R> visitor) {
 		return visitor.visitKey(parent, key);

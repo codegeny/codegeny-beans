@@ -20,6 +20,9 @@ public final class Property<B, P> implements Function<B, P> {
 		return this.delegate.accept(visitor);
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public P apply(B bean) {
 		return bean == null ? null : this.extractor.apply(bean);

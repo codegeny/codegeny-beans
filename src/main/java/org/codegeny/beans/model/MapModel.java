@@ -18,6 +18,9 @@ public final class MapModel<M, K, V> implements Model<M>, Function<M, Map<? exte
 		this.valueDelegate = requireNonNull(valueDelegate);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public <R> R accept(ModelVisitor<? extends M, ? extends R> visitor) {
 		return requireNonNull(visitor).visitMap(this);
@@ -31,6 +34,9 @@ public final class MapModel<M, K, V> implements Model<M>, Function<M, Map<? exte
 		return this.valueDelegate.accept(visitor);
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Map<? extends K, ? extends V> apply(M values) {
 		return values == null ? emptyMap() : this.extractor.apply(values);

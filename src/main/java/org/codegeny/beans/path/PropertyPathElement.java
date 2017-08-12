@@ -10,6 +10,9 @@ public final class PropertyPathElement implements PathElement {
 		this.property = property;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public <R> R accept(R parent, PathVisitor<R> visitor) {
 		return visitor.visitProperty(parent, property);

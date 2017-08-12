@@ -13,11 +13,17 @@ public final class ValueModel<T> implements Model<T>, Comparator<T> {
 		this.comparator = nullsLast(requireNonNull(comparator));
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public <R> R accept(ModelVisitor<? extends T, ? extends R> visitor) {
 		return requireNonNull(visitor).visitValue(this);
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public int compare(T left, T right) {
 		return this.comparator.compare(left, right);

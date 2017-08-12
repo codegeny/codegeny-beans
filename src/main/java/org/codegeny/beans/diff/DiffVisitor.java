@@ -4,20 +4,20 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
- * Visitor pattern for <code>{@linkplain Diff}</code>s.
+ * Visitor pattern for <code>{@link Diff}</code>s.
  * 
  * @author Xavier DURY
- * @param <T> The type of <code>{@linkplain Diff}&lt;T&gt;</code>.
+ * @param <T> The type of <code>{@link Diff}&lt;T&gt;</code>.
  * @param <R> The type of the result.
  */
 public interface DiffVisitor<T, R> {
 	
 	/**
-	 * Create a visitor which process all type of {@linkplain Diff} with the same function.
+	 * Create a visitor which process all type of {@link Diff} with the same function.
 	 * 
 	 * @param function The function.
 	 * @return A visitor.
-	 * @param <T> The type of <code>{@linkplain Diff}&lt;T&gt;</code>.
+	 * @param <T> The type of <code>{@link Diff}&lt;T&gt;</code>.
 	 * @param <R> The type of the result.
 	 */
 	static <T, R> DiffVisitor<T, R> adapter(Function<? super Diff<T>, ? extends R> function) {
@@ -58,10 +58,10 @@ public interface DiffVisitor<T, R> {
 	}
 	
 	/**
-	 * Visitor which returns the {@linkplain Diff} itself.
+	 * Visitor which returns the {@link Diff} itself.
 	 * 
 	 * @return A visitor.
-	 * @param <T> The type of <code>{@linkplain Diff}&lt;T&gt;</code>.
+	 * @param <T> The type of <code>{@link Diff}&lt;T&gt;</code>.
 	 */
 	static <T> DiffVisitor<T, Diff<T>> identity() {
 		return adapter(Function.identity());
@@ -81,7 +81,7 @@ public interface DiffVisitor<T, R> {
 	}
 	
 	/**
-	 * Visit a <code>{@linkplain BeanDiff}&lt;T&gt;</code>
+	 * Visit a <code>{@link BeanDiff}&lt;T&gt;</code>
 	 * 
 	 * @param bean The bean to visit.
 	 * @return The computed result.
@@ -89,7 +89,7 @@ public interface DiffVisitor<T, R> {
 	R visitBean(BeanDiff<T> bean);
 	
 	/**
-	 * Visit a <code>{@linkplain ListDiff}&lt;T, E&gt;</code>
+	 * Visit a <code>{@link ListDiff}&lt;T, E&gt;</code>
 	 * 
 	 * @param list The list to visit.
 	 * @return The computed result.
@@ -98,7 +98,7 @@ public interface DiffVisitor<T, R> {
 	<E> R visitList(ListDiff<T, E> list);
 	
 	/**
-	 * Visit a <code>{@linkplain MapDiff}&lt;T, K, V&gt;</code>
+	 * Visit a <code>{@link MapDiff}&lt;T, K, V&gt;</code>
 	 * 
 	 * @param map The map to visit.
 	 * @return The computed result.
@@ -108,7 +108,7 @@ public interface DiffVisitor<T, R> {
 	<K, V> R visitMap(MapDiff<T, K, V> map);
 	
 	/**
-	 * Visit a <code>{@linkplain SimpleDiff}&lt;T&gt;</code>
+	 * Visit a <code>{@link SimpleDiff}&lt;T&gt;</code>
 	 * 
 	 * @param simple The simple value to visit.
 	 * @return The computed result.

@@ -5,7 +5,7 @@ import static java.util.Collections.unmodifiableMap;
 import java.util.Map;
 
 /**
- * Implementation of {@link Diff} for maps.
+ * Implementation of <code>{@link Diff}</code> for maps.
  *
  * @author Xavier DURY
  * @param <M> The type of map.
@@ -32,7 +32,7 @@ public final class MapDiff<M, K, V> extends AbstractDiff<M> {
 	}
 
 	/**
-	 * Get the map of diffed values.
+	 * Get the map of diff'ed values.
 	 * 
 	 * @return The map.
 	 */
