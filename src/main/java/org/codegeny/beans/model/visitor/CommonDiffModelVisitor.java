@@ -47,19 +47,19 @@ public abstract class CommonDiffModelVisitor<T> implements ModelVisitor<T, Diff<
 		}
 
 		public <E> Diff<T> visitSet(SetModel<? super T, E> values) {
-			return Diff.list(type, left, right, values.apply(target).stream().map(e -> values.acceptDelegate(create(e))).collect(toList()));
+			return Diff.list(type, left, right, values.apply(target).stream().map(e -> values.acceptElement(create(e))).collect(toList()));
 		}
 		
 		public <E> Diff<T> visitList(ListModel<? super T, E> values) {
-			return Diff.list(type, left, right, values.apply(target).stream().map(e -> values.acceptDelegate(create(e))).collect(toList()));
+			return Diff.list(type, left, right, values.apply(target).stream().map(e -> values.acceptElement(create(e))).collect(toList()));
 		}
 
 		public <K, V> Diff<T> visitMap(MapModel<? super T, K, V> map) {
-			return Diff.map(type, left, right, map.apply(target).entrySet().stream().collect(toMap(e -> e.getKey(), e -> map.acceptValueDelegate(create(e.getValue())))));
+			return Diff.map(type, left, right, map.apply(target).entrySet().stream().collect(toMap(e -> e.getKey(), e -> map.acceptValue(create(e.getValue())))));
 		}
 		
 		private <P> Diff<P> visitProperty(Property<? super T, P> property) {
-			return property.getDelegate().accept(create(property.apply(target)));
+			return property.getModel().accept(create(property.apply(target)));
 		}
 		
 		public Diff<T> visitValue(ValueModel<? super T> value) {
@@ -81,7 +81,7 @@ public abstract class CommonDiffModelVisitor<T> implements ModelVisitor<T, Diff<
 	protected static class NullDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>> {
 
 		public Diff<T> visitBean(BeanModel<? super T> bean) {
-			return Diff.bean(UNCHANGED, null, null, bean.getProperties().stream().collect(toMap(Property::getName, p -> p.getDelegate().accept(new NullDiffModelVisitor<>()))));
+			return Diff.bean(UNCHANGED, null, null, bean.getProperties().stream().collect(toMap(Property::getName, p -> p.getModel().accept(new NullDiffModelVisitor<>()))));
 		}
 		
 		public <E> Diff<T> visitSet(SetModel<? super T, E> collection) {
@@ -147,12 +147,12 @@ public abstract class CommonDiffModelVisitor<T> implements ModelVisitor<T, Diff<
 		Set<K> keys = new HashSet<>();
 		keys.addAll(leftMap.keySet());
 		keys.addAll(rightMap.keySet());
-		Map<K, Diff<V>> result = keys.stream().collect(toMap(k -> k, k -> map.acceptValueDelegate(newVisitor(leftMap.get(k), rightMap.get(k)))));
+		Map<K, Diff<V>> result = keys.stream().collect(toMap(k -> k, k -> map.acceptValue(newVisitor(leftMap.get(k), rightMap.get(k)))));
 		return Diff.map(toStatus(result.values()), this.left, this.right, result);
 	}
 		
 	private <P> Diff<P> visitProperty(Property<? super T, P> property) {
-		return property.getDelegate().accept(newVisitor(property.apply(left), property.apply(right)));
+		return property.getModel().accept(newVisitor(property.apply(left), property.apply(right)));
 	}
 	
 	public Diff<T> visitValue(ValueModel<? super T> value) {

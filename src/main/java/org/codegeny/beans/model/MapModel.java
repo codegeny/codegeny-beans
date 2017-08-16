@@ -9,13 +9,13 @@ import java.util.function.Function;
 public final class MapModel<M, K, V> implements Model<M>, Function<M, Map<? extends K, ? extends V>> {
 	
 	private final Function<? super M, ? extends Map<? extends K, ? extends V>> extractor;
-	private final Model<? super K> keyDelegate;
-	private final Model<? super V> valueDelegate;
+	private final Model<? super K> keyModel;
+	private final Model<? super V> valueModel;
 	
-	MapModel(Function<? super M, ? extends Map<? extends K, ? extends V>> extractor, Model<? super K> keyDelegate, Model<? super V> valueDelegate) {
+	MapModel(Function<? super M, ? extends Map<? extends K, ? extends V>> extractor, Model<? super K> keyModel, Model<? super V> valueModel) {
 		this.extractor = requireNonNull(extractor);
-		this.keyDelegate = requireNonNull(keyDelegate);
-		this.valueDelegate = requireNonNull(valueDelegate);
+		this.keyModel = requireNonNull(keyModel);
+		this.valueModel = requireNonNull(valueModel);
 	}
 
 	/**
@@ -26,12 +26,12 @@ public final class MapModel<M, K, V> implements Model<M>, Function<M, Map<? exte
 		return requireNonNull(visitor).visitMap(this);
 	}
 	
-	public <R> R acceptKeyDelegate(ModelVisitor<? extends K, ? extends R> visitor) {
-		return this.keyDelegate.accept(visitor);
+	public <R> R acceptKey(ModelVisitor<? extends K, ? extends R> visitor) {
+		return this.keyModel.accept(visitor);
 	}
 	
-	public <R> R acceptValueDelegate(ModelVisitor<? extends V, ? extends R> visitor) {
-		return this.valueDelegate.accept(visitor);
+	public <R> R acceptValue(ModelVisitor<? extends V, ? extends R> visitor) {
+		return this.valueModel.accept(visitor);
 	}
 	
 	/**
@@ -42,11 +42,11 @@ public final class MapModel<M, K, V> implements Model<M>, Function<M, Map<? exte
 		return values == null ? emptyMap() : this.extractor.apply(values);
 	}
 
-	public Model<? super K> getKeyDelegate() {
-		return this.keyDelegate;
+	public Model<? super K> getKeyModel() {
+		return this.keyModel;
 	}
 
-	public Model<? super V> getValueDelegate() {
-		return this.valueDelegate;
+	public Model<? super V> getValueModel() {
+		return this.valueModel;
 	}
 }

@@ -26,11 +26,11 @@ public class DiffModelGenerator<T> implements ModelVisitor<T, Model<Diff<T>>> {
 	}
 
 	private @SuppressWarnings("unchecked") <P> BeanModel<Diff<T>> visitProperty(BeanModel<Diff<T>> bean, Property<? super T, P> property) {
-		return bean.addProperty(property.getName(), b -> (Diff<P>) ((BeanDiff<T>) b).getProperties().get(property.getName()), property.acceptDelegate(new DiffModelGenerator<>()));
+		return bean.addProperty(property.getName(), b -> (Diff<P>) ((BeanDiff<T>) b).getProperties().get(property.getName()), property.accept(new DiffModelGenerator<>()));
 	}
 	
 	public @SuppressWarnings("unchecked") <K, V> Model<Diff<T>> visitMap(MapModel<? super T, K, V> map) {
-		return map(map.getKeyDelegate(), map.acceptValueDelegate(new DiffModelGenerator<>()), m -> ((MapDiff<T, K, V>) m).getMap());
+		return map(map.getKeyModel(), map.acceptValue(new DiffModelGenerator<>()), m -> ((MapDiff<T, K, V>) m).getMap());
 	}
 
 	public Model<Diff<T>> visitValue(ValueModel<? super T> value) {
@@ -42,10 +42,10 @@ public class DiffModelGenerator<T> implements ModelVisitor<T, Model<Diff<T>>> {
 	}
 	
 	public @SuppressWarnings("unchecked") <E> Model<Diff<T>> visitSet(SetModel<? super T, E> collection) {
-		return set(collection.acceptDelegate(new DiffModelGenerator<>()), l -> new HashSet<>(((ListDiff<T, E>) l).getList()));
+		return set(collection.acceptElement(new DiffModelGenerator<>()), l -> new HashSet<>(((ListDiff<T, E>) l).getList()));
 	}
 	
 	public @SuppressWarnings("unchecked") <E> Model<Diff<T>> visitList(ListModel<? super T, E> collection) {
-		return set(collection.acceptDelegate(new DiffModelGenerator<>()), l -> new HashSet<>(((ListDiff<T, E>) l).getList()));
+		return set(collection.acceptElement(new DiffModelGenerator<>()), l -> new HashSet<>(((ListDiff<T, E>) l).getList()));
 	}
 }

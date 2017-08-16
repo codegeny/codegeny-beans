@@ -29,21 +29,21 @@ public class HashModelVisitor<T> implements ModelVisitor<T, Hasher> {
 	}
 
 	private <P> Hasher visitProperty(Property<? super T, P> property) {
-		return property.acceptDelegate(new HashModelVisitor<>(property.apply(target), hasher));
+		return property.accept(new HashModelVisitor<>(property.apply(target), hasher));
 	}
 	
 	public <K, V> Hasher visitMap(MapModel<? super T, K, V> map) {
-		map.apply(this.target).entrySet().forEach(e -> map.acceptKeyDelegate(new HashModelVisitor<>(e.getKey(), map.acceptValueDelegate(new HashModelVisitor<>(e.getValue(), hasher)))));
+		map.apply(this.target).entrySet().forEach(e -> map.acceptKey(new HashModelVisitor<>(e.getKey(), map.acceptValue(new HashModelVisitor<>(e.getValue(), hasher)))));
 		return this.hasher;
 	}
 
 	public <E> Hasher visitSet(SetModel<? super T, E> values) {
-		values.apply(this.target).forEach(e -> values.acceptDelegate(new HashModelVisitor<>(e, hasher)));
+		values.apply(this.target).forEach(e -> values.acceptElement(new HashModelVisitor<>(e, hasher)));
 		return this.hasher;
 	}
 	
 	public <E> Hasher visitList(ListModel<? super T, E> values) {
-		values.apply(this.target).forEach(e -> values.acceptDelegate(new HashModelVisitor<>(e, hasher)));
+		values.apply(this.target).forEach(e -> values.acceptElement(new HashModelVisitor<>(e, hasher)));
 		return this.hasher;
 	}
 }

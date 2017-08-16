@@ -53,25 +53,25 @@ public final class TraversingModelVisitor<T> implements ModelVisitor<T, Void> {
 	@Override
 	public <E> Void visitList(ListModel<? super T, E> list) {
 		process();
-		forEachIndexed(list.apply(this.target), (i, n) -> list.acceptDelegate(childVisitor(n, path.index(i)))); 
+		forEachIndexed(list.apply(this.target), (i, n) -> list.acceptElement(childVisitor(n, path.index(i)))); 
 		return null;
 	}
 
 	@Override
 	public <K, V> Void visitMap(MapModel<? super T, K, V> map) {
 		process();
-		map.apply(this.target).forEach((k, v) -> map.acceptValueDelegate(childVisitor(v, path.key(k))));
+		map.apply(this.target).forEach((k, v) -> map.acceptValue(childVisitor(v, path.key(k))));
 		return null;
 	}
 
 	private <P> void visitProperty(Property<? super T, P> property) {
-		property.acceptDelegate(childVisitor(property.apply(this.target), this.path.property(property.getName())));
+		property.accept(childVisitor(property.apply(this.target), this.path.property(property.getName())));
 	}
 
 	@Override
 	public <E> Void visitSet(SetModel<? super T, E> set) {
 		process();
-		forEachIndexed(set.apply(this.target), (i, n) -> set.acceptDelegate(childVisitor(n, path.index(i)))); 
+		forEachIndexed(set.apply(this.target), (i, n) -> set.acceptElement(childVisitor(n, path.index(i)))); 
 		return null;
 	}
 

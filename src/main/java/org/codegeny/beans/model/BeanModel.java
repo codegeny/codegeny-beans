@@ -64,14 +64,14 @@ public final class BeanModel<B> implements Model<B>, Iterable<Property<? super B
 	 * </pre>
 	 * @param name The name of the property.
 	 * @param extractor The getter of the property or any function that can extract the property from the bean.
-	 * @param delegate The delegate {@link Model} for that property.
+	 * @param propertyModel The delegate {@link Model} for that property.
 	 * @return A <strong>new</strong> <code>BeanModel</code> instance with the added property.
 	 * @param <C> The potentially upgraded type of the <code>BeanModel</code>.
 	 * @param <P> The type of the property.
 	 */
-	public <C extends B, P> BeanModel<C> addProperty(String name, Function<? super C, ? extends P> extractor, Model<? super P> delegate) {
+	public <C extends B, P> BeanModel<C> addProperty(String name, Function<? super C, ? extends P> extractor, Model<? super P> propertyModel) {
 		Map<String, Property<? super C, ?>> properties = new LinkedHashMap<>(this.properties);
-		properties.put(requireNonNull(name), new Property<>(name, extractor, delegate));
+		properties.put(requireNonNull(name), new Property<>(name, extractor, propertyModel));
 		return new BeanModel<>(properties);
 	}
 

@@ -7,16 +7,16 @@ import java.util.List;
  * Implementation of <code>{@link Diff}</code> for lists.
  *
  * @author Xavier DURY
- * @param <C> The type of list.
+ * @param <L> The type of list.
  * @param <E> The type of list element.
  */
-public final class ListDiff<C, E> extends AbstractDiff<C> {
+public final class ListDiff<L, E> extends AbstractDiff<L> {
 	
 	private static final long serialVersionUID = 1L;
 	
 	private final List<? extends Diff<E>> list;
 
-	ListDiff(Status status, C left, C right, List<? extends Diff<E>> list) {
+	ListDiff(Status status, L left, L right, List<? extends Diff<E>> list) {
 		super(list, status, left, right);
 		this.list = Collections.unmodifiableList(list);
 	}
@@ -25,7 +25,7 @@ public final class ListDiff<C, E> extends AbstractDiff<C> {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public <R> R accept(DiffVisitor<C, R> visitor) {
+	public <R> R accept(DiffVisitor<L, R> visitor) {
 		return visitor.visitList(this);
 	}
 	

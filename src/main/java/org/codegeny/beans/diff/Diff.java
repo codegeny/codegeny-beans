@@ -79,10 +79,10 @@ public interface Diff<T> extends Serializable {
 	 * @param right The right list.
 	 * @param list The diff'ed elements as a list.
 	 * @return A <code>{@link ListDiff}</code>.
-	 * @param <C> The type of list.
+	 * @param <L> The type of list.
 	 * @param <E> The type of the list elements.
 	 */
-	static <C, E> ListDiff<C, E> list(Status status, C left, C right, List<? extends Diff<E>> list) {
+	static <L, E> ListDiff<L, E> list(Status status, L left, L right, List<? extends Diff<E>> list) {
 		return new ListDiff<>(status, left, right, list);
 	}
 	

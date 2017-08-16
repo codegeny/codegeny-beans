@@ -5,11 +5,11 @@ import static java.util.Objects.requireNonNull;
 
 import java.util.Comparator;
 
-public final class ValueModel<T> implements Model<T>, Comparator<T> {
+public final class ValueModel<V> implements Model<V>, Comparator<V> {
 	
-	private final Comparator<? super T> comparator;
+	private final Comparator<? super V> comparator;
 	
-	ValueModel(Comparator<? super T> comparator) {
+	ValueModel(Comparator<? super V> comparator) {
 		this.comparator = nullsLast(requireNonNull(comparator));
 	}
 
@@ -17,7 +17,7 @@ public final class ValueModel<T> implements Model<T>, Comparator<T> {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public <R> R accept(ModelVisitor<? extends T, ? extends R> visitor) {
+	public <R> R accept(ModelVisitor<? extends V, ? extends R> visitor) {
 		return requireNonNull(visitor).visitValue(this);
 	}
 	
@@ -25,7 +25,7 @@ public final class ValueModel<T> implements Model<T>, Comparator<T> {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public int compare(T left, T right) {
+	public int compare(V left, V right) {
 		return this.comparator.compare(left, right);
 	}
 }

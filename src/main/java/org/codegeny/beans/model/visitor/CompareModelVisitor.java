@@ -30,7 +30,7 @@ public class CompareModelVisitor<T> implements ModelVisitor<T, Integer> {
 	}
 	
 	private <P> Integer visitProperty(Property<? super T, P> property) {
-		return new ModelComparator<>(property.getDelegate()).compare(property.apply(left), property.apply(right));
+		return new ModelComparator<>(property.getModel()).compare(property.apply(left), property.apply(right));
 	}
 
 	public Integer visitValue(ValueModel<? super T> value) {
@@ -40,15 +40,15 @@ public class CompareModelVisitor<T> implements ModelVisitor<T, Integer> {
 	public <K, V> Integer visitMap(MapModel<? super T, K, V> map) {
 		Map<? extends K, ? extends V> leftMap = map.apply(this.left);
 		Map<? extends K, ? extends V> rightMap = map.apply(this.right);
-		Set<K> keys = new TreeSet<>(new ModelComparator<>(map.getKeyDelegate()));
+		Set<K> keys = new TreeSet<>(new ModelComparator<>(map.getKeyModel()));
 		keys.addAll(leftMap.keySet());
 		keys.addAll(rightMap.keySet());
-		Comparator<? super V> valueComparator = new ModelComparator<>(map.getValueDelegate());
+		Comparator<? super V> valueComparator = new ModelComparator<>(map.getValueModel());
 		return keys.stream().mapToInt(k -> valueComparator.compare(leftMap.get(k), rightMap.get(k))).filter(i -> i != 0).findFirst().orElse(0);
 	}
 
 	public <E> Integer visitSet(SetModel<? super T, E> values) {
-		Comparator<? super E> comparator = new ModelComparator<>(values.getDelegate());
+		Comparator<? super E> comparator = new ModelComparator<>(values.getElementModel());
 		Iterator<? extends E> leftIterator = values.apply(this.left).stream().sorted(comparator).iterator();
 		Iterator<? extends E> rightIterator = values.apply(this.right).stream().sorted(comparator).iterator();
 		while (leftIterator.hasNext() && rightIterator.hasNext()) {
@@ -61,7 +61,7 @@ public class CompareModelVisitor<T> implements ModelVisitor<T, Integer> {
 	}
 	
 	public <E> Integer visitList(ListModel<? super T, E> values) {
-		Comparator<? super E> comparator = new ModelComparator<>(values.getDelegate());
+		Comparator<? super E> comparator = new ModelComparator<>(values.getElementModel());
 		Iterator<? extends E> leftIterator = values.apply(this.left).stream().iterator();
 		Iterator<? extends E> rightIterator = values.apply(this.right).stream().iterator();
 		while (leftIterator.hasNext() && rightIterator.hasNext()) {

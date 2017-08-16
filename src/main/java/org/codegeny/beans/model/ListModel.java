@@ -6,37 +6,37 @@ import static java.util.Objects.requireNonNull;
 import java.util.List;
 import java.util.function.Function;
 
-public final class ListModel<C, E> implements Model<C>, Function<C, List<? extends E>> {
+public final class ListModel<L, E> implements Model<L>, Function<L, List<? extends E>> {
 
-	private final Model<? super E> delegate;
-	private final Function<? super C, ? extends List<? extends E>> extractor;
+	private final Model<? super E> elementModel;
+	private final Function<? super L, ? extends List<? extends E>> extractor;
 
-	ListModel(Function<? super C, ? extends List<? extends E>> extractor, Model<? super E> delegate) {
+	ListModel(Function<? super L, ? extends List<? extends E>> extractor, Model<? super E> elementModel) {
 		this.extractor = requireNonNull(extractor);
-		this.delegate = requireNonNull(delegate);
+		this.elementModel = requireNonNull(elementModel);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public <R> R accept(ModelVisitor<? extends C, ? extends R> visitor) {
+	public <R> R accept(ModelVisitor<? extends L, ? extends R> visitor) {
 		return requireNonNull(visitor).visitList(this);
 	}
 
-	public <R> R acceptDelegate(ModelVisitor<? extends E, ? extends R> visitor) {
-		return this.delegate.accept(visitor);
+	public <R> R acceptElement(ModelVisitor<? extends E, ? extends R> visitor) {
+		return this.elementModel.accept(visitor);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public List<? extends E> apply(C values) {
+	public List<? extends E> apply(L values) {
 		return values == null ? emptyList() : this.extractor.apply(values);
 	}
 
-	public Model<? super E> getDelegate() {
-		return this.delegate;
+	public Model<? super E> getElementModel() {
+		return this.elementModel;
 	}
 }

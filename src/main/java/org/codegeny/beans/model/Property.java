@@ -6,18 +6,18 @@ import java.util.function.Function;
 
 public final class Property<B, P> implements Function<B, P> {
 	
-	private final Model<? super P> delegate;
+	private final Model<? super P> model;
 	private final Function<? super B, ? extends P> extractor;
 	private final String name;
 	
-	Property(String name, Function<? super B, ? extends P> extractor, Model<? super P> delegate) {
+	Property(String name, Function<? super B, ? extends P> extractor, Model<? super P> model) {
 		this.name = requireNonNull(name);
 		this.extractor = requireNonNull(extractor);
-		this.delegate = requireNonNull(delegate);
+		this.model = requireNonNull(model);
 	}
 	
-	public <R> R acceptDelegate(ModelVisitor<? extends P, ? extends R> visitor) {
-		return this.delegate.accept(visitor);
+	public <R> R accept(ModelVisitor<? extends P, ? extends R> visitor) {
+		return this.model.accept(visitor);
 	}
 	
 	/**
@@ -28,8 +28,8 @@ public final class Property<B, P> implements Function<B, P> {
 		return bean == null ? null : this.extractor.apply(bean);
 	}
 	
-	public Model<? super P> getDelegate() {
-		return this.delegate;
+	public Model<? super P> getModel() {
+		return this.model;
 	}
 	
 	public String getName() {

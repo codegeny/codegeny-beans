@@ -49,89 +49,89 @@ public interface Model<T> extends Comparator<T> {
 	/**
 	 * Construct a new {@link ListModel} for a list of &lt;E&gt; elements which implements the {@link List} interface. 
 	 * 
-	 * @param delegate The delegate {@link Model} to be used for elements.
+	 * @param elementModel The delegate {@link Model} to be used for elements.
 	 * @return The list model.
-	 * @param <C> The type of the list of &lt;E&gt; elements.
+	 * @param <L> The type of the list of &lt;E&gt; elements.
 	 * @param <E> The type of elements.
 	 */
-	static <C extends List<? extends E>, E> ListModel<C, E> list(Model<? super E> delegate) {
-		return list(delegate, identity());
+	static <L extends List<? extends E>, E> ListModel<L, E> list(Model<? super E> elementModel) {
+		return list(elementModel, identity());
 	}
 	
 	/**
 	 * Construct a new {@link ListModel} for a list of &lt;E&gt; objects which does not implement the {@link List} interface. 
 	 * 
-	 * @param delegate The delegate {@link Model} to be used for elements.
+	 * @param elementModel The delegate {@link Model} to be used for elements.
 	 * @param extractor The collector is a function which transform objects of type &lt;C&gt; to a <code>List&lt;E&gt;</code>.
 	 * @return The list model.
-	 * @param <C> The type of the list of &lt;E&gt; elements.
+	 * @param <L> The type of the list of &lt;E&gt; elements.
 	 * @param <E> The type of elements.
 	 */
-	static <C, E> ListModel<C, E> list(Model<? super E> delegate, Function<? super C, ? extends List<? extends E>> extractor) {
-		return new ListModel<>(extractor, delegate);
+	static <L, E> ListModel<L, E> list(Model<? super E> elementModel, Function<? super L, ? extends List<? extends E>> extractor) {
+		return new ListModel<>(extractor, elementModel);
 	}
 	
 	/**
 	 * Construct a new {@link MapModel} for a map of &lt;K, V&gt; entries which implements the {@link Map} interface. 
 	 * 
-	 * @param keyDelegate The delegate {@link Model} to be used for keys.
-	 * @param valueDelegate The delegate {@link Model} to be used for values.
+	 * @param keyModel The delegate {@link Model} to be used for keys.
+	 * @param valueModel The delegate {@link Model} to be used for values.
 	 * @return The map model.
 	 * @param <M> The type of the map of &lt;K, V&gt; entries.
 	 * @param <K> The type of keys.
 	 * @param <V> The type of values.
 	 */
-	static <M extends Map<? extends K, ? extends V>, K, V> MapModel<M, K, V> map(Model<? super K> keyDelegate, Model<? super V> valueDelegate) {
-		return map(keyDelegate, valueDelegate, identity());
+	static <M extends Map<? extends K, ? extends V>, K, V> MapModel<M, K, V> map(Model<? super K> keyModel, Model<? super V> valueModel) {
+		return map(keyModel, valueModel, identity());
 	}
 	
 	/**
 	 * Construct a new {@link MapModel} for a map of &lt;K, V&gt; entries which does not implement the {@link Map} interface. 
 	 * 
-	 * @param keyDelegate The delegate {@link Model} to be used for keys.
-	 * @param valueDelegate The delegate {@link Model} to be used for values.
+	 * @param keyModel The delegate {@link Model} to be used for keys.
+	 * @param valueModel The delegate {@link Model} to be used for values.
 	 * @param extractor The collector is a function which transform objects of type &lt;M&gt; to a <code>Map&lt;K, V&gt;</code>.
 	 * @return The map model.
 	 * @param <M> The type of the map of &lt;K, V&gt; entries.
 	 * @param <K> The type of keys.
 	 * @param <V> The type of values.
 	 */
-	static <M, K, V> MapModel<M, K, V> map(Model<? super K> keyDelegate, Model<? super V> valueDelegate, Function<? super M, ? extends Map<? extends K, ? extends V>> extractor) {
-		return new MapModel<>(extractor, keyDelegate, valueDelegate);
+	static <M, K, V> MapModel<M, K, V> map(Model<? super K> keyModel, Model<? super V> valueModel, Function<? super M, ? extends Map<? extends K, ? extends V>> extractor) {
+		return new MapModel<>(extractor, keyModel, valueModel);
 	}
 	
 	/**
 	 * Construct a new {@link SetModel} for a set of &lt;E&gt; elements which implements the {@link Set} interface.
 	 * 
-	 * @param delegate The delegate {@link Model} to be used for elements.
+	 * @param elementModel The delegate {@link Model} to be used for elements.
 	 * @return The set model.
-	 * @param <C> The type of the set of &lt;E&gt; elements.
+	 * @param <S> The type of the set of &lt;E&gt; elements.
 	 * @param <E> The type of elements.
 	 */
-	static <C extends Set<? extends E>, E> SetModel<C, E> set(Model<? super E> delegate) {
-		return set(delegate, identity());
+	static <S extends Set<? extends E>, E> SetModel<S, E> set(Model<? super E> elementModel) {
+		return set(elementModel, identity());
 	}
 	
 	/**
 	 * Construct a new {@link SetModel} for a set of &lt;E&gt; objects which does not implement the {@link Set} interface. 
 	 * 
-	 * @param delegate The delegate {@link Model} to be used for elements.
+	 * @param elementModel The delegate {@link Model} to be used for elements.
 	 * @param extractor The collector is a function which transform objects of type &lt;C&gt; to a <code>Collection&lt;E&gt;</code>.
 	 * @return The set model.
-	 * @param <C> The type of the set of &lt;E&gt; elements.
+	 * @param <S> The type of the set of &lt;E&gt; elements.
 	 * @param <E> The type of elements.
 	 */
-	static <C, E> SetModel<C, E> set(Model<? super E> delegate, Function<? super C, ? extends Set<? extends E>> extractor) {
-		return new SetModel<>(extractor, delegate);
+	static <S, E> SetModel<S, E> set(Model<? super E> elementModel, Function<? super S, ? extends Set<? extends E>> extractor) {
+		return new SetModel<>(extractor, elementModel);
 	}
 	
 	/**
 	 * Construct a new {@link ValueModel} for an object which implements the {@link Comparable} interface.
 	 *  
 	 * @return The value model.
-	 * @param <T> The type of the value which must be comparable.
+	 * @param <V> The type of the value which must be comparable.
 	 */
-	static <T extends Comparable<? super T>> ValueModel<T> value() {
+	static <V extends Comparable<? super V>> ValueModel<V> value() {
 		return value(naturalOrder());
 	}
 	
@@ -140,9 +140,9 @@ public interface Model<T> extends Comparator<T> {
 	 * 
 	 * @param comparator The {@link Comparator} to be used to compare objects of type &lt;T&gt;
 	 * @return The value model.
-	 * @param <T> The type of the value.
+	 * @param <V> The type of the value.
 	 */
-	static <T> ValueModel<T> value(Comparator<? super T> comparator) {
+	static <V> ValueModel<V> value(Comparator<? super V> comparator) {
 		return new ValueModel<>(comparator);
 	}
 	

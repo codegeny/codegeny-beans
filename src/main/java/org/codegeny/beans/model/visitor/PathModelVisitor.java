@@ -49,21 +49,21 @@ public class PathModelVisitor<T> implements ModelVisitor<T, Object> {
 
 	@Override
 	public <E> Object visitList(ListModel<? super T, E> list) {
-		return process(IndexPathElement.class, list.getDelegate(), element -> list.apply(target).get(element.getIndex()));
+		return process(IndexPathElement.class, list.getElementModel(), element -> list.apply(target).get(element.getIndex()));
 	}
 
 	@Override
 	public <K, V> Object visitMap(MapModel<? super T, K, V> map) {
-		return process(KeyPathElement.class, map.getValueDelegate(), element -> map.apply(target).get(element.getKey()));
+		return process(KeyPathElement.class, map.getValueModel(), element -> map.apply(target).get(element.getKey()));
 	}
 	
 	private <P> Object visitProperty(Property<? super T, P> property) {
-		return process(property.getDelegate(), property.apply(target));
+		return process(property.getModel(), property.apply(target));
 	}
 	
 	@Override
 	public <E> Object visitSet(SetModel<? super T, E> set) {
-		return process(IndexPathElement.class, set.getDelegate(), element -> set.apply(target).stream().skip(element.getIndex()).findFirst().get());
+		return process(IndexPathElement.class, set.getElementModel(), element -> set.apply(target).stream().skip(element.getIndex()).findFirst().get());
 	}
 	
 	@Override

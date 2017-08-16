@@ -43,7 +43,7 @@ public class ToStringModelVisitor<T> implements ModelVisitor<T, StringBuilder> {
 	}
 	
 	private <P> StringBuilder visitProperty(Property<? super T, P> property) {
-		return property.acceptDelegate(new ToStringModelVisitor<>(property.apply(this.target), this.builder, this.indent.concat("  ")));
+		return property.accept(new ToStringModelVisitor<>(property.apply(this.target), this.builder, this.indent.concat("  ")));
 	}
 	
 	public StringBuilder visitValue(ValueModel<? super T> value) {
@@ -52,24 +52,24 @@ public class ToStringModelVisitor<T> implements ModelVisitor<T, StringBuilder> {
 	
 	public <K, V> StringBuilder visitMap(MapModel<? super T, K, V> map) {
 		this.builder.append("[");
-		Comparator<? super K> comparator = new ModelComparator<>(map.getKeyDelegate());
+		Comparator<? super K> comparator = new ModelComparator<>(map.getKeyModel());
 		Map<? extends K, ? extends V> entries = map.apply(this.target);
 		Collection<K> sorted = entries.keySet().stream().sorted(comparator).collect(toList());
 		int count = forEachIndexed(sorted, (i, v) -> {
 			this.builder.append(i > 0 ? "," : "").append("\n").append(this.indent).append("  ").append(v).append(": ");
-			map.acceptValueDelegate(new ToStringModelVisitor<>(entries.get(v), this.builder, this.indent.concat("  ")));
+			map.acceptValue(new ToStringModelVisitor<>(entries.get(v), this.builder, this.indent.concat("  ")));
 		});
 		return this.builder.append(count > 0 ? "\n".concat(this.indent) : "").append("]");
 	}
 
 	public <E> StringBuilder visitSet(SetModel<? super T, E> values) {
 		this.builder.append("[");
-		Comparator<? super E> comparator = new ModelComparator<>(values.getDelegate());
+		Comparator<? super E> comparator = new ModelComparator<>(values.getElementModel());
 		Set<? extends E> collection = values.apply(this.target);
 		Collection<E> sorted = collection.stream().sorted(comparator).collect(toList());
 		int count = forEachIndexed(sorted, (i, v) -> {
 			this.builder.append(i > 0 ? "," : "").append("\n").append(this.indent).append("  ");
-			values.acceptDelegate(new ToStringModelVisitor<>(v, this.builder, this.indent.concat("  ")));
+			values.acceptElement(new ToStringModelVisitor<>(v, this.builder, this.indent.concat("  ")));
 		});
 		return this.builder.append(count > 0 ? "\n".concat(this.indent) : "").append("]");
 	}
@@ -79,7 +79,7 @@ public class ToStringModelVisitor<T> implements ModelVisitor<T, StringBuilder> {
 		List<? extends E> list = values.apply(this.target);
 		int count = forEachIndexed(list, (i, v) -> {
 			this.builder.append(i > 0 ? "," : "").append("\n").append(this.indent).append("  ");
-			values.acceptDelegate(new ToStringModelVisitor<>(v, this.builder, this.indent.concat("  ")));
+			values.acceptElement(new ToStringModelVisitor<>(v, this.builder, this.indent.concat("  ")));
 		});
 		return this.builder.append(count > 0 ? "\n".concat(this.indent) : "").append("]");
 	}

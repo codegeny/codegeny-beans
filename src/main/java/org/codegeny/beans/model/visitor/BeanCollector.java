@@ -34,22 +34,22 @@ public class BeanCollector<T> implements ModelVisitor<T, Set<?>> {
 	}
 	
 	public <E> Set<?> visitSet(SetModel<? super T, E> collection) {
-		collection.apply(this.target).forEach(e -> collection.acceptDelegate(new BeanCollector<>(e, this.beans)));
+		collection.apply(this.target).forEach(e -> collection.acceptElement(new BeanCollector<>(e, this.beans)));
 		return beans;
 	}
 	
 	public <E> Set<?> visitList(ListModel<? super T, E> collection) {
-		collection.apply(this.target).forEach(e -> collection.acceptDelegate(new BeanCollector<>(e, this.beans)));
+		collection.apply(this.target).forEach(e -> collection.acceptElement(new BeanCollector<>(e, this.beans)));
 		return beans;
 	}
 
 	public <K, V> Set<?> visitMap(MapModel<? super T, K, V> map) {
-		map.apply(this.target).values().forEach(e -> map.acceptValueDelegate(new BeanCollector<>(e, this.beans)));
+		map.apply(this.target).values().forEach(e -> map.acceptValue(new BeanCollector<>(e, this.beans)));
 		return beans;
 	}
 
 	private <P> void visitProperty(Property<? super T, P> property) {
-		property.acceptDelegate(new BeanCollector<>(property.apply(this.target), this.beans));
+		property.accept(new BeanCollector<>(property.apply(this.target), this.beans));
 	}
 
 	public Set<?> visitValue(ValueModel<? super T> value) {
