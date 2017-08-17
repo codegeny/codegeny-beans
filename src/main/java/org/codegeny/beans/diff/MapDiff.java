@@ -16,7 +16,7 @@ public final class MapDiff<M, K, V> extends AbstractDiff<M> {
 	
 	private static final long serialVersionUID = 1L;
 
-	private final Map<K, ? extends Diff<V>> map;
+	private final Map<K, Diff<V>> map;
 
 	MapDiff(Status status, M left, M right, Map<K, ? extends Diff<V>> map) {
 		super(map.values(), status, left, right);
@@ -36,7 +36,7 @@ public final class MapDiff<M, K, V> extends AbstractDiff<M> {
 	 * 
 	 * @return The map.
 	 */
-	public Map<K, ? extends Diff<V>> getMap() {
+	public Map<K, Diff<V>> getMap() {
 		return map;
 	}
 }

@@ -1,6 +1,7 @@
 package org.codegeny.beans.diff;
 
-import java.util.Collections;
+import static java.util.Collections.unmodifiableList;
+
 import java.util.List;
 
 /**
@@ -14,11 +15,11 @@ public final class ListDiff<L, E> extends AbstractDiff<L> {
 	
 	private static final long serialVersionUID = 1L;
 	
-	private final List<? extends Diff<E>> list;
+	private final List<Diff<E>> list;
 
 	ListDiff(Status status, L left, L right, List<? extends Diff<E>> list) {
 		super(list, status, left, right);
-		this.list = Collections.unmodifiableList(list);
+		this.list = unmodifiableList(list);
 	}
 	
 	/**
@@ -34,7 +35,7 @@ public final class ListDiff<L, E> extends AbstractDiff<L> {
 	 * 
 	 * @return The list.
 	 */
-	public List<? extends Diff<E>> getList() {
+	public List<Diff<E>> getList() {
 		return list;
 	}
 }

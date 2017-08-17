@@ -15,7 +15,7 @@ public final class BeanDiff<B> extends AbstractDiff<B> {
 	
 	private static final long serialVersionUID = 1L;
 
-	private final Map<String, ? extends Diff<?>> properties;
+	private final Map<String, Diff<?>> properties;
 
 	BeanDiff(Status status, B left, B right, Map<String, ? extends Diff<?>> properties) {
 		super(requireNonNull(properties, "Properties cannot be null").values(), status, left, right);
@@ -35,7 +35,7 @@ public final class BeanDiff<B> extends AbstractDiff<B> {
 	 * 
 	 * @return The properties.
 	 */
-	public Map<String, ? extends Diff<?>> getProperties() {
+	public Map<String, Diff<?>> getProperties() {
 		return properties;
 	}
 	
