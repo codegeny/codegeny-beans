@@ -1,17 +1,18 @@
 package org.codegeny.beans.model;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.io.IOException;
 import java.time.LocalDate;
+import java.util.Arrays;
 
 import org.codegeny.beans.Person;
+import org.codegeny.beans.model.visitor.TraversingModelVisitor;
 import org.codegeny.beans.model.visitor.Typer;
 import org.codegeny.beans.model.visitor.json.FromStringJsonDeserializer;
-import org.codegeny.beans.model.visitor.json.JavaTypeModelVisitor;
+import org.codegeny.beans.model.visitor.json.JsonTyper;
 import org.codegeny.beans.model.visitor.json.ToStringJsonSerializer;
 import org.codegeny.beans.path.Path;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -21,25 +22,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
 public class ModelTest {
-	
-	private static class JsonTyper implements Typer<String> {
 		
-		private final ObjectMapper mapper;
-
-		public JsonTyper(ObjectMapper mapper) {
-			this.mapper = mapper;
-		}
-		
-		@Override
-		public <T> T retype(Model<T> model, String value) {
-			try {
-				return mapper.readerFor(model.accept(new JavaTypeModelVisitor<>(mapper.getTypeFactory()))).readValue(value);
-			} catch (IOException ioException) {
-				throw new RuntimeException(ioException);
-			}
-		}
-	}
-	
 	@Test
 	public void extractPath() throws Exception {
 		
@@ -64,36 +47,30 @@ public class ModelTest {
 		
 		Person person = Person.createDefaultPerson();
 		
-		System.out.println(person.getMiddleNames());
+		assertEquals(Arrays.asList("Patrick", "Fitzgerald"), person.getMiddleNames());
 		Person.MODEL.set(person, Path.of("middleNames", 0), "Fridrick");
-		System.out.println(person.getMiddleNames());
+		assertEquals(Arrays.asList("Fridrick", "Fitzgerald"), person.getMiddleNames());
 		
-//		
-		Person.MODEL.set(person, Path.of("\"birthDate\""), "\"2018-01-01\"", typer);
 		Person.MODEL.set(person, Path.of("\"middleNames\"", "0"), "\"Yannick\"", typer);
+		assertEquals(Arrays.asList("Yannick", "Fitzgerald"), person.getMiddleNames());
 		
-		System.out.println(Person.MODEL.get(person, Path.of("\"middleNames\"", "0"), typer));
+		Person.MODEL.set(person, Path.of("\"birthDate\""), "\"2018-01-01\"", typer);
+		assertEquals(LocalDate.of(2018, 1, 1), person.getBirthDate());
 		
-		System.out.println(person.getMiddleNames());
-		
-		System.out.println(person.getBirthDate());
-		
-		
-		System.out.println(person.getFirstName());
+		assertEquals("John", person.getFirstName());
 		Person.MODEL.set(person, Path.of("firstName"), "Jack");
-		System.out.println(person.getFirstName());
-		
+		assertEquals("Jack", person.getFirstName());
 		
 		assertEquals("Grand Place", Person.MODEL.get(Person.createDefaultPerson(), Path.of("formerAddresses", 1, "street")));
 	}
 	
-//	@Test
-//	public void testToString() {
-//		System.out.println(Person.MODEL.toString(Person.createDefaultPerson()));
-//	}
-//	
-//	@Test
-//	public void testToPath() {
-//		Person.MODEL.accept(new TraversingModelVisitor<>(Person.createDefaultPerson(), (p, v) -> System.out.printf("%s = %s%n", p.toString("person"), v)));
-//	}
+	@Test
+	public void testToString() {
+		System.out.println(Person.MODEL.toString(Person.createDefaultPerson()));
+	}
+
+	@Test
+	public void testToPath() {
+		Person.MODEL.accept(new TraversingModelVisitor<>(Person.createDefaultPerson(), (p, v) -> System.out.printf("%s = %s%n", p, v)));
+	}
 }

@@ -22,20 +22,24 @@ import org.codegeny.beans.path.Path;
 public final class TraversingDiffVisitor<T> implements DiffVisitor<T, Void> {
 	
 	private final Path<Object> path;
-	private final BiPredicate<? super Path<?>, ? super Diff<?>> processor;
+	private final BiPredicate<? super Path<Object>, ? super Diff<?>> processor;
 
-	public TraversingDiffVisitor(BiPredicate<? super Path<?>, ? super Diff<?>> processor) {
+	public TraversingDiffVisitor(BiPredicate<? super Path<Object>, ? super Diff<?>> processor) {
 		this(Path.root(), processor);
 	}
 	
-	public TraversingDiffVisitor(BiConsumer<? super Path<?>, ? super Diff<?>> processor) {
-		this(Path.root(), (a, b) -> {
+	public TraversingDiffVisitor(BiConsumer<? super Path<Object>, ? super Diff<?>> processor) {
+		this(Path.root(), processor);
+	}
+	
+	private TraversingDiffVisitor(Path<Object> path, BiConsumer<? super Path<Object>, ? super Diff<?>> processor) {
+		this(path, (a, b) -> {
 			processor.accept(a, b);
 			return true;
 		});
 	}
 
-	private TraversingDiffVisitor(Path<Object> path, BiPredicate<? super Path<?>, ? super Diff<?>> processor) {
+	private TraversingDiffVisitor(Path<Object> path, BiPredicate<? super Path<Object>, ? super Diff<?>> processor) {
 		this.path = path;
 		this.processor = processor;
 	}

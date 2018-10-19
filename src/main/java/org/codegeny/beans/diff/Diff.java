@@ -181,7 +181,7 @@ public interface Diff<T> extends Serializable {
 	 * @param root The name of the root element.
 	 * @return A map.
 	 */
-	default Map<String, Diff<?>> toMap(String root) {
+	default Map<String, Diff<?>> toMap() {
 		Map<String, Diff<?>> map = new LinkedHashMap<>();
 		traverse((p, d) -> map.put(p.toString(), d));
 		return map;
@@ -193,7 +193,7 @@ public interface Diff<T> extends Serializable {
 	 * @param root The name of the root element.
 	 * @return A string.
 	 */
-	default String toString(String root) {
+	default String describe() {
 		StringBuilder builder = new StringBuilder();
 		traverse((p, d) -> builder.append(p.toString()).append(" = ").append(d).append(System.lineSeparator()));
 		return builder.toString();
@@ -205,7 +205,7 @@ public interface Diff<T> extends Serializable {
 	 * @param path The path.
 	 * @return The resulting diff.
 	 */
-	default Diff<?> extract(Path<?> path) {
+	default Diff<?> get(Path<?> path) {
 		return accept(new GetDiffVisitor<>(path));
 	}
 	
@@ -214,7 +214,7 @@ public interface Diff<T> extends Serializable {
 	 * 
 	 * @param consumer The consumer.
 	 */
-	default void traverse(BiConsumer<? super Path<?>, ? super Diff<?>> consumer) {
+	default void traverse(BiConsumer<? super Path<Object>, ? super Diff<?>> consumer) {
 		accept(new TraversingDiffVisitor<>(consumer));	
 	}
 }

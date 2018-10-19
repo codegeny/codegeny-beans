@@ -29,17 +29,17 @@ public class JavaTypeModelVisitor<T> implements ModelVisitor<T, JavaType> {
 
 	@Override
 	public <E> JavaType visitList(ListModel<T, E> list) {
-		return typeFactory.constructCollectionLikeType(List.class, list.acceptElement(newvisitor()));
+		return typeFactory.constructCollectionLikeType(List.class, list.acceptElement(newVisitor()));
 	}
 
 	@Override
 	public <K, V> JavaType visitMap(MapModel<T, K, V> map) {
-		return typeFactory.constructMapLikeType(Map.class, map.acceptKey(newvisitor()), map.acceptValue(newvisitor()));
+		return typeFactory.constructMapLikeType(Map.class, map.acceptKey(newVisitor()), map.acceptValue(newVisitor()));
 	}
 
 	@Override
 	public <E> JavaType visitSet(SetModel<T, E> set) {
-		return typeFactory.constructCollectionLikeType(Set.class, set.acceptElement(newvisitor()));
+		return typeFactory.constructCollectionLikeType(Set.class, set.acceptElement(newVisitor()));
 	}
 
 	@Override
@@ -47,7 +47,7 @@ public class JavaTypeModelVisitor<T> implements ModelVisitor<T, JavaType> {
 		return typeFactory.constructType(value.getType());
 	}
 	
-	private <S> JavaTypeModelVisitor<S> newvisitor() {
+	private <S> JavaTypeModelVisitor<S> newVisitor() {
 		return new JavaTypeModelVisitor<>(typeFactory);
 	}
 }

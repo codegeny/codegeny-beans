@@ -2,35 +2,63 @@ package org.codegeny.beans.path;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
-public interface Path<P> extends Iterable<P> {
+public final class Path<P> implements Iterable<P> {
 	
-	static <P> Path<P> root() {
+	private final List<P> elements;
+	
+	private Path(List<P> elements) {
+		this.elements = Collections.unmodifiableList(elements);
+	}
+
+	public static <P> Path<P> root() {
 		return of();
 	}
 	
 	@SafeVarargs
-	static <P> Path<P> of(P... pathElements) {
-		return of(Arrays.asList(pathElements));
+	public static <P> Path<P> of(P... elements) {
+		return of(Arrays.asList(elements));
 	}
 	
-	static <P> Path<P> of(List<P> pathElements) {
-		return new ArrayList<>(pathElements)::iterator;
+	public static <P> Path<P> of(List<P> elements) {
+		return new Path<>(new ArrayList<>(elements));
 	}
 	
-	default Path<P> append(P pathElement) {
-		List<P> result = new LinkedList<>();
+	public Path<P> append(P element) {
+		List<P> result = new ArrayList<>(elements.size() + 1);
 		forEach(result::add);
-		result.add(pathElement);
-		return of(result);
+		result.add(element);
+		return new Path<>(result);
 	}
 	
-	default Path<P> prepend(P pathElement) {
-		List<P> result = new LinkedList<>();
-		result.add(pathElement);
+	public Path<P> prepend(P element) {
+		List<P> result = new ArrayList<>(elements.size() + 1);
+		result.add(element);
 		forEach(result::add);
-		return of(result);
+		return new Path<>(result);
+	}
+	
+	@Override
+	public Iterator<P> iterator() {
+		return elements.iterator();
+	}
+	
+	@Override
+	public String toString() {
+		return elements.stream().map(Object::toString).collect(Collectors.joining("/", "/", ""));
+	}
+	
+	@Override
+	public int hashCode() {
+		return elements.hashCode();
+	}
+	
+	@Override
+	public boolean equals(Object that) {
+		return super.equals(that) || that instanceof Path && ((Path<?>) that).elements.equals(this.elements);
 	}
 }

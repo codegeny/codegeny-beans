@@ -61,19 +61,21 @@ public enum Country {
 The structure of the class Person can be defined as follows:
 
 ```java
-Model<Address> addressModel = Model.bean()
-	.addProperty("street", Address::getStreet, Model.value())
-	.addProperty("houseNumber", Address::getHouseNumber, Model.value())
-	.addProperty("city", Address::getZipCode, Model.value())
-	.addProperty("country", Address::getCity, Model.value())
-	.addProperty("street", Address::getCountry, Model.value());
+Model<Address> addressModel = Model.bean(Address.class,
+	Model.property("street", Address::getStreet, Model.value(String.class)),
+	Model.property("houseNumber", Address::getHouseNumber, Model.value(String.class)),
+	Model.property("city", Address::getZipCode, Model.value(String.class)),
+	Model.property("country", Address::getCity, Model.value(String.class)),
+	Model.property("street", Address::getCountry, Model.value(Country.class))
+);
 
-Model<Person> personModel = Model.bean()
-	.addProperty("firstName", Person::getFirstName, Model.value())
-	.addProperty("lastName", Person::getLastName, Model.value())
-	.addProperty("birthDate", Person::getBirthDate, Model.value())
-	.addProperty("mainAddress", Person::getMainAddress, addressModel)
-	.addProperty("formerAddresses", Person::getFormerAddresses, Model.set(addressModel));
+Model<Person> personModel = Model.bean(Person.class,
+	Model.property("firstName", Person::getFirstName, Model.value(String.class)),
+	Model.property("lastName", Person::getLastName, Model.value(String.class)),
+	Model.property("birthDate", Person::getBirthDate, Model.value(LocalDate.class)),
+	Model.property("mainAddress", Person::getMainAddress, addressModel),
+	Model.property("formerAddresses", Person::getFormerAddresses, Model.set(addressModel)
+);
 ```
 
 Note that instead of using getters method references (`Person::getFirstName`), a lambda could also be used (`(Person p) -> p.getFirstName().toUpperCase()`).
@@ -88,7 +90,7 @@ String string = personModel.toString(person); // create a generic string represe
 
 int comparison = personModel.compare(person, anotherPerson); // compare person with anotherPerson by comparing fields in the order they were defined (firstName, lastName, birthDate, mainAddress.street, mainAddress.houseNumber...
 
-personModel.extract(person, Path.path().property("mainAddress").property("city")); // extract person.mainAddress.city
+personModel.get(person, Path.of("mainAddress", "city")); // extract person.mainAddress.city
 
 Diff<Person> diff = personModel.diff(person, anotherPerson, 0.8); // returns a Diff<Person>, see below for more explanation.
 ```
@@ -173,10 +175,12 @@ There are currently two available strategies for comparing collections:
 - Global score maximizer which will try to find the best permutation to achieve the greater score
 - Local score maximizer which will always take the greatest score in the matrix without maximizing the global result
 
-Global score will pair the result like this: (L0, R1), (L1, R0), (L2, null) = 80% + 80% + 0% giving an average of ~53.33%
-Local score will pair the result like this: (L0, R0), (L1, null), (L2, R1) = 90% + 0% + 30% giving an average of 40%
+Global score will pair the result like this: (L0, R1), (L1, R0), (L2, null) = 80% + 80% + 0% giving an average of ~53.33%.
+
+Local score will pair the result like this: (L0, R0), (L1, null), (L2, R1) = 90% + 0% + 30% giving an average of 40%.
 
 The big difference here is the speed of execution:
+
 - Local score will find the best way to pair elements in O(m x n) (where m and n are the sizes of the left and right collections)
 - Global score will find the best way to pair elements in factorial time which could take very very long for big collections (especially if all elements are almost identical).
 
@@ -184,16 +188,16 @@ For this reason, it is better to use the local strategy and only use global stra
 
 ## Paths
 
-A path API which is used by both `Model` and `Diff` is also available:
+A path object which can be used by both `Model` and `Diff` is also available:
 
 ```java
-Path path = Path.path().property("previousAddresses").index(2).property("street");
+Path path = Path.of("previousAddresses", 2, "street");
 
 Person left = ...
 Person right = ...
 Model<Person> personModel = ...
 Diff<Person> personDiff = personModel.diff(left, right);
 
-Object object = personModel.extract(left, path); // extract value from left
-Diff<?> diff = personDiff.extract(path); // extract diff
+Object object = personModel.get(left, path); // extract value from left
+Diff<?> diff = personDiff.get(path); // extract diff
 ```
