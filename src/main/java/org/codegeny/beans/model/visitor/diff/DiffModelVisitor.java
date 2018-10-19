@@ -1,4 +1,4 @@
-package org.codegeny.beans.model.visitor;
+package org.codegeny.beans.model.visitor.diff;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
@@ -17,6 +17,7 @@ import java.util.stream.IntStream;
 import org.codegeny.beans.diff.Diff;
 import org.codegeny.beans.model.ListModel;
 import org.codegeny.beans.model.SetModel;
+import org.codegeny.beans.model.visitor.ModelComparator;
 import org.codegeny.beans.util.AddAndXorHasher;
 
 // TODO optimize this shit
@@ -42,9 +43,9 @@ public class DiffModelVisitor<T> extends CommonDiffModelVisitor<T> {
 	}
 	
 	@Override
-	public <E> Diff<T> visitList(ListModel<? super T, E> values) {
-		List<? extends E> left = values.apply(super.left);
-		List<? extends E> right = values.apply(super.right);
+	public <E> Diff<T> visitList(ListModel<T, E> values) {
+		List<E> left = values.apply(super.left);
+		List<E> right = values.apply(super.right);
 		List<Diff<E>> result = new LinkedList<>();
 		boolean removeFirst = true;
 		int i = 0, j = 0;
@@ -107,7 +108,7 @@ public class DiffModelVisitor<T> extends CommonDiffModelVisitor<T> {
 		return Diff.list(toStatus(result), super.left, super.right, result);
 	}
 	
-	public <E> Diff<T> visitSet(SetModel<? super T, E> values) {
+	public <E> Diff<T> visitSet(SetModel<T, E> values) {
 		
 		List<E> leftValues = new ArrayList<>(values.apply(super.left));
 		List<E> rightValues = new ArrayList<>(values.apply(super.right));

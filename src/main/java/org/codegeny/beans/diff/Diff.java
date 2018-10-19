@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
-import org.codegeny.beans.diff.visitor.DiffPathVisitor;
+import org.codegeny.beans.diff.visitor.GetDiffVisitor;
 import org.codegeny.beans.diff.visitor.TraversingDiffVisitor;
 import org.codegeny.beans.path.Path;
 
@@ -183,7 +183,7 @@ public interface Diff<T> extends Serializable {
 	 */
 	default Map<String, Diff<?>> toMap(String root) {
 		Map<String, Diff<?>> map = new LinkedHashMap<>();
-		traverse((p, d) -> map.put(p.toString(root), d));
+		traverse((p, d) -> map.put(p.toString(), d));
 		return map;
 	}
 
@@ -195,7 +195,7 @@ public interface Diff<T> extends Serializable {
 	 */
 	default String toString(String root) {
 		StringBuilder builder = new StringBuilder();
-		traverse((p, d) -> builder.append(p.toString(root)).append(" = ").append(d).append(System.lineSeparator()));
+		traverse((p, d) -> builder.append(p.toString()).append(" = ").append(d).append(System.lineSeparator()));
 		return builder.toString();
 	}
 	
@@ -205,8 +205,8 @@ public interface Diff<T> extends Serializable {
 	 * @param path The path.
 	 * @return The resulting diff.
 	 */
-	default Diff<?> extract(Path path) {
-		return path.accept(this, DiffPathVisitor.INSTANCE);
+	default Diff<?> extract(Path<?> path) {
+		return accept(new GetDiffVisitor<>(path));
 	}
 	
 	/**
@@ -214,7 +214,7 @@ public interface Diff<T> extends Serializable {
 	 * 
 	 * @param consumer The consumer.
 	 */
-	default void traverse(BiConsumer<? super Path, ? super Diff<?>> consumer) {
+	default void traverse(BiConsumer<? super Path<?>, ? super Diff<?>> consumer) {
 		accept(new TraversingDiffVisitor<>(consumer));	
 	}
 }

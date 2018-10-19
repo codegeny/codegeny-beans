@@ -10,7 +10,7 @@ import java.util.Collection;
  * @author Xavier DURY
  * @param <T> The type of the 2 compared objects.
  */
-public abstract class AbstractDiff<T> implements Diff<T> {
+abstract class AbstractDiff<T> implements Diff<T> {
 	
 	private static final long serialVersionUID = 1L;
 	

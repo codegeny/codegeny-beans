@@ -23,8 +23,8 @@ public class DescribeModelVisitor<T> implements ModelVisitor<T, StringBuilder> {
 		this.indent = indent;
 	}
 	
-	public StringBuilder visitBean(BeanModel<? super T> bean) {
-		this.builder.append("Bean {");
+	public StringBuilder visitBean(BeanModel<T> bean) {
+		this.builder.append("BeanModel {");
 		int count = forEachIndexed(bean.getProperties(), (i, p) -> {
 			this.builder.append(i > 0 ? "," : "").append("\n").append(this.indent).append("  ").append(p.getName()).append(": ");
 			p.accept(new DescribeModelVisitor<>(this.builder, this.indent.concat("  ")));
@@ -32,7 +32,7 @@ public class DescribeModelVisitor<T> implements ModelVisitor<T, StringBuilder> {
 		return this.builder.append(count > 0 ? "\n" : "").append(this.indent).append("}"); 
 	}
 	
-	public <K, V> StringBuilder visitMap(MapModel<? super T, K, V> map) {
+	public <K, V> StringBuilder visitMap(MapModel<T, K, V> map) {
 		this.builder.append("Map {");
 		this.builder.append("\n").append(this.indent).append("  ").append("key: ");
 		map.acceptKey(new DescribeModelVisitor<>(this.builder, this.indent.concat("  ")));
@@ -41,17 +41,17 @@ public class DescribeModelVisitor<T> implements ModelVisitor<T, StringBuilder> {
 		return this.builder.append("\n").append(this.indent).append("}"); 
 	}
 	
-	public StringBuilder visitValue(ValueModel<? super T> value) {
+	public StringBuilder visitValue(ValueModel<T> value) {
 		return this.builder.append("Value");
 	}
 	
-	public <E> StringBuilder visitSet(SetModel<? super T, E> values) {
+	public <E> StringBuilder visitSet(SetModel<T, E> values) {
 		this.builder.append("Set [");
 		values.acceptElement(new DescribeModelVisitor<>(this.builder, this.indent));
 		return this.builder.append("]");
 	}
 	
-	public <E> StringBuilder visitList(ListModel<? super T, E> values) {
+	public <E> StringBuilder visitList(ListModel<T, E> values) {
 		this.builder.append("List [");
 		values.acceptElement(new DescribeModelVisitor<>(this.builder, this.indent));
 		return this.builder.append("]");

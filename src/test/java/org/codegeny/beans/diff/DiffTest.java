@@ -7,13 +7,13 @@ import static org.codegeny.beans.diff.Diff.Status.ADDED;
 import static org.codegeny.beans.diff.Diff.Status.MODIFIED;
 import static org.codegeny.beans.diff.Diff.Status.REMOVED;
 import static org.codegeny.beans.diff.Diff.Status.UNCHANGED;
-import static org.codegeny.beans.path.Path.path;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import org.codegeny.beans.Person;
-import org.codegeny.beans.model.visitor.DiffModelVisitor;
-import org.codegeny.beans.model.visitor.GlobalScoreOptimizer;
+import org.codegeny.beans.model.visitor.diff.DiffModelVisitor;
+import org.codegeny.beans.model.visitor.diff.GlobalScoreOptimizer;
+import org.codegeny.beans.path.Path;
 import org.codegeny.beans.util.TimeOut;
 import org.junit.Test;
 
@@ -40,12 +40,12 @@ public class DiffTest {
 		Person right = createDefaultPerson().setFirstName("Jack");
 		Diff<Person> diff = MODEL.accept(new DiffModelVisitor<>(left, right, 0.5, new GlobalScoreOptimizer(new TimeOut(5, SECONDS))));
 		assertThat(diff.getStatus(), is(MODIFIED));
-		assertThat(diff.extract(path().property("birthDate")).getStatus(), is(UNCHANGED));
-		assertThat(diff.extract(path().property("lastName")).getStatus(), is(UNCHANGED));
-		assertThat(diff.extract(path().property("middleNames")).getStatus(), is(UNCHANGED));
-		assertThat(diff.extract(path().property("firstName")).getStatus(), is(MODIFIED));
-		assertThat(diff.extract(path().property("currentAddress")).getStatus(), is(UNCHANGED));
-		assertThat(diff.extract(path().property("formerAddresses")).getStatus(), is(UNCHANGED));
+		assertThat(diff.extract(Path.of("birthDate")).getStatus(), is(UNCHANGED));
+		assertThat(diff.extract(Path.of("lastName")).getStatus(), is(UNCHANGED));
+		assertThat(diff.extract(Path.of("middleNames")).getStatus(), is(UNCHANGED));
+		assertThat(diff.extract(Path.of("firstName")).getStatus(), is(MODIFIED));
+		assertThat(diff.extract(Path.of("currentAddress")).getStatus(), is(UNCHANGED));
+		assertThat(diff.extract(Path.of("formerAddresses")).getStatus(), is(UNCHANGED));
 	}
 	
 	@Test
@@ -54,12 +54,12 @@ public class DiffTest {
 		Person right = createDefaultPerson().setFirstName(null);
 		Diff<Person> diff = MODEL.accept(new DiffModelVisitor<>(left, right, 0.5, new GlobalScoreOptimizer(new TimeOut(5, SECONDS))));
 		assertThat(diff.getStatus(), is(MODIFIED));
-		assertThat(diff.extract(path().property("birthDate")).getStatus(), is(UNCHANGED));
-		assertThat(diff.extract(path().property("lastName")).getStatus(), is(UNCHANGED));
-		assertThat(diff.extract(path().property("middleNames")).getStatus(), is(UNCHANGED));
-		assertThat(diff.extract(path().property("firstName")).getStatus(), is(REMOVED));
-		assertThat(diff.extract(path().property("currentAddress")).getStatus(), is(UNCHANGED));
-		assertThat(diff.extract(path().property("formerAddresses")).getStatus(), is(UNCHANGED));
+		assertThat(diff.extract(Path.of("birthDate")).getStatus(), is(UNCHANGED));
+		assertThat(diff.extract(Path.of("lastName")).getStatus(), is(UNCHANGED));
+		assertThat(diff.extract(Path.of("middleNames")).getStatus(), is(UNCHANGED));
+		assertThat(diff.extract(Path.of("firstName")).getStatus(), is(REMOVED));
+		assertThat(diff.extract(Path.of("currentAddress")).getStatus(), is(UNCHANGED));
+		assertThat(diff.extract(Path.of("formerAddresses")).getStatus(), is(UNCHANGED));
 	}
 	
 	@Test
@@ -68,31 +68,34 @@ public class DiffTest {
 		Person right = createDefaultPerson().setCurrentAddress(null);
 		Diff<Person> diff = MODEL.accept(new DiffModelVisitor<>(left, right, 0.5, new GlobalScoreOptimizer(new TimeOut(5, SECONDS))));
 		assertThat(diff.getStatus(), is(MODIFIED));
-		assertThat(diff.extract(path().property("birthDate")).getStatus(), is(UNCHANGED));
-		assertThat(diff.extract(path().property("lastName")).getStatus(), is(UNCHANGED));
-		assertThat(diff.extract(path().property("middleNames")).getStatus(), is(UNCHANGED));
-		assertThat(diff.extract(path().property("firstName")).getStatus(), is(UNCHANGED));
-		assertThat(diff.extract(path().property("currentAddress")).getStatus(), is(REMOVED));
-		assertThat(diff.extract(path().property("currentAddress").property("street")).getStatus(), is(REMOVED));
-		assertThat(diff.extract(path().property("currentAddress").property("zipCode")).getStatus(), is(REMOVED));
-		assertThat(diff.extract(path().property("currentAddress").property("country")).getStatus(), is(REMOVED));
-		assertThat(diff.extract(path().property("formerAddresses")).getStatus(), is(UNCHANGED));
+		assertThat(diff.extract(Path.of("birthDate")).getStatus(), is(UNCHANGED));
+		assertThat(diff.extract(Path.of("lastName")).getStatus(), is(UNCHANGED));
+		assertThat(diff.extract(Path.of("middleNames")).getStatus(), is(UNCHANGED));
+		assertThat(diff.extract(Path.of("firstName")).getStatus(), is(UNCHANGED));
+		assertThat(diff.extract(Path.of("currentAddress")).getStatus(), is(REMOVED));
+		assertThat(diff.extract(Path.of("currentAddress", "street")).getStatus(), is(REMOVED));
+		assertThat(diff.extract(Path.of("currentAddress", "zipCode")).getStatus(), is(REMOVED));
+		assertThat(diff.extract(Path.of("currentAddress", "country")).getStatus(), is(REMOVED));
+		assertThat(diff.extract(Path.of("formerAddresses")).getStatus(), is(UNCHANGED));
 	}
 	
 	@Test
 	public void test50() {
 		Person left = createDefaultPerson();
-		Person right = createDefaultPerson().addMiddleName("Michael").removeMiddleName(middleName -> middleName.startsWith("Fitz"));
+		Person right = createDefaultPerson() //
+				.addMiddleName("Michael") //
+				.removeMiddleName(middleName -> middleName.startsWith("Fitz"));
+		
 		Diff<Person> diff = MODEL.accept(new DiffModelVisitor<>(left, right, 0.5, new GlobalScoreOptimizer(new TimeOut(5, SECONDS))));
 		assertThat(diff.getStatus(), is(MODIFIED));
-		assertThat(diff.extract(path().property("birthDate")).getStatus(), is(UNCHANGED));
-		assertThat(diff.extract(path().property("lastName")).getStatus(), is(UNCHANGED));
-		assertThat(diff.extract(path().property("middleNames")).getStatus(), is(MODIFIED));
-		assertThat(diff.extract(path().property("middleNames").index(0)).getStatus(), is(REMOVED)); // Fitzgerald
-		assertThat(diff.extract(path().property("middleNames").index(1)).getStatus(), is(ADDED)); // Michael
-		assertThat(diff.extract(path().property("middleNames").index(2)).getStatus(), is(UNCHANGED)); // Patrick
-		assertThat(diff.extract(path().property("firstName")).getStatus(), is(UNCHANGED));
-		assertThat(diff.extract(path().property("currentAddress")).getStatus(), is(UNCHANGED));
-		assertThat(diff.extract(path().property("formerAddresses")).getStatus(), is(UNCHANGED));
+		assertThat(diff.extract(Path.of("birthDate")).getStatus(), is(UNCHANGED));
+		assertThat(diff.extract(Path.of("lastName")).getStatus(), is(UNCHANGED));
+		assertThat(diff.extract(Path.of("middleNames")).getStatus(), is(MODIFIED));
+		assertThat(diff.extract(Path.of("middleNames", 0)).getStatus(), is(UNCHANGED)); // Patrick
+		assertThat(diff.extract(Path.of("middleNames", 1)).getStatus(), is(REMOVED)); // -Fitzgerald
+		assertThat(diff.extract(Path.of("middleNames", 2)).getStatus(), is(ADDED)); // +Michael
+		assertThat(diff.extract(Path.of("firstName")).getStatus(), is(UNCHANGED));
+		assertThat(diff.extract(Path.of("currentAddress")).getStatus(), is(UNCHANGED));
+		assertThat(diff.extract(Path.of("formerAddresses")).getStatus(), is(UNCHANGED));
 	}
 }

@@ -1,43 +1,36 @@
 package org.codegeny.beans.path;
 
-import java.io.Serializable;
-import java.util.stream.Stream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
-import org.codegeny.beans.path.visitor.ToStringPathVisitor;
-
-public interface Path extends Serializable {
-
-	static Path path() {
-		return Stream::empty;
+public interface Path<P> extends Iterable<P> {
+	
+	static <P> Path<P> root() {
+		return of();
 	}
 	
-	default <R> R accept(R parent, PathVisitor<R> visitor) {
-		return elements().reduce(parent, (p, e) -> e.accept(p, visitor), (a, b) -> b);
+	@SafeVarargs
+	static <P> Path<P> of(P... pathElements) {
+		return of(Arrays.asList(pathElements));
 	}
 	
-	default Path append(Path path) {
-		return () -> Stream.concat(elements(), path.elements());
-	}
-		
-	default Path append(PathElement element) {
-		return () -> Stream.concat(elements(), Stream.of(element));
+	static <P> Path<P> of(List<P> pathElements) {
+		return new ArrayList<>(pathElements)::iterator;
 	}
 	
-	Stream<PathElement> elements();
-
-	default Path index(int index) {
-		return append(new IndexPathElement(index));
-	}
-
-	default Path key(Object key) {
-		return append(new KeyPathElement(key));
-	}
-
-	default Path property(String property) {
-		return append(new PropertyPathElement(property));
+	default Path<P> append(P pathElement) {
+		List<P> result = new LinkedList<>();
+		forEach(result::add);
+		result.add(pathElement);
+		return of(result);
 	}
 	
-	default String toString(String root) {
-		return accept(new StringBuilder(root), ToStringPathVisitor.INSTANCE).toString();
+	default Path<P> prepend(P pathElement) {
+		List<P> result = new LinkedList<>();
+		result.add(pathElement);
+		forEach(result::add);
+		return of(result);
 	}
 }

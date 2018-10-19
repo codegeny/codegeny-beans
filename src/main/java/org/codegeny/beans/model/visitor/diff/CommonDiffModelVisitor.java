@@ -1,4 +1,4 @@
-package org.codegeny.beans.model.visitor;
+package org.codegeny.beans.model.visitor.diff;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
@@ -42,27 +42,27 @@ public abstract class CommonDiffModelVisitor<T> implements ModelVisitor<T, Diff<
 
 		protected abstract <N> AbstractDiffModelVisitor<N> create(N value);
 		
-		public Diff<T> visitBean(BeanModel<? super T> bean) {
+		public Diff<T> visitBean(BeanModel<T> bean) {
 			return Diff.bean(type, left, right, bean.getProperties().stream().collect(toMap(Property::getName, this::visitProperty)));
 		}
 
-		public <E> Diff<T> visitSet(SetModel<? super T, E> values) {
+		public <E> Diff<T> visitSet(SetModel<T, E> values) {
 			return Diff.list(type, left, right, values.apply(target).stream().map(e -> values.acceptElement(create(e))).collect(toList()));
 		}
 		
-		public <E> Diff<T> visitList(ListModel<? super T, E> values) {
+		public <E> Diff<T> visitList(ListModel<T, E> values) {
 			return Diff.list(type, left, right, values.apply(target).stream().map(e -> values.acceptElement(create(e))).collect(toList()));
 		}
 
-		public <K, V> Diff<T> visitMap(MapModel<? super T, K, V> map) {
+		public <K, V> Diff<T> visitMap(MapModel<T, K, V> map) {
 			return Diff.map(type, left, right, map.apply(target).entrySet().stream().collect(toMap(e -> e.getKey(), e -> map.acceptValue(create(e.getValue())))));
 		}
 		
-		private <P> Diff<P> visitProperty(Property<? super T, P> property) {
-			return property.getModel().accept(create(property.apply(target)));
+		private <P> Diff<P> visitProperty(Property<T, P> property) {
+			return property.accept(create(property.get(target)));
 		}
 		
-		public Diff<T> visitValue(ValueModel<? super T> value) {
+		public Diff<T> visitValue(ValueModel<T> value) {
 			return Diff.simple(type, left, right);
 		}
 	}
@@ -80,23 +80,23 @@ public abstract class CommonDiffModelVisitor<T> implements ModelVisitor<T, Diff<
 	
 	protected static class NullDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>> {
 
-		public Diff<T> visitBean(BeanModel<? super T> bean) {
-			return Diff.bean(UNCHANGED, null, null, bean.getProperties().stream().collect(toMap(Property::getName, p -> p.getModel().accept(new NullDiffModelVisitor<>()))));
+		public Diff<T> visitBean(BeanModel<T> bean) {
+			return Diff.bean(UNCHANGED, null, null, bean.getProperties().stream().collect(toMap(Property::getName, p -> p.accept(new NullDiffModelVisitor<>()))));
 		}
 		
-		public <E> Diff<T> visitSet(SetModel<? super T, E> collection) {
+		public <E> Diff<T> visitSet(SetModel<T, E> collection) {
 			return Diff.list(UNCHANGED, null, null, emptyList());
 		}
 		
-		public <E> Diff<T> visitList(ListModel<? super T, E> collection) {
+		public <E> Diff<T> visitList(ListModel<T, E> collection) {
 			return Diff.list(UNCHANGED, null, null, emptyList());
 		}
 
-		public <K, V> Diff<T> visitMap(MapModel<? super T, K, V> map) {
+		public <K, V> Diff<T> visitMap(MapModel<T, K, V> map) {
 			return Diff.map(UNCHANGED, null, null, emptyMap());
 		}
 		
-		public Diff<T> visitValue(ValueModel<? super T> value) {
+		public Diff<T> visitValue(ValueModel<T> value) {
 			return Diff.simple(UNCHANGED, null, null);
 		}
 	}
@@ -129,7 +129,7 @@ public abstract class CommonDiffModelVisitor<T> implements ModelVisitor<T, Diff<
 	
 	protected abstract <S> ModelVisitor<S, Diff<S>> newVisitor(S left, S right);
 	
-	public Diff<T> visitBean(BeanModel<? super T> bean) {
+	public Diff<T> visitBean(BeanModel<T> bean) {
 		if (left == null ^ right == null) {
 			return bean.accept(left == null ? new AddedDiffModelVisitor<>(right) : new RemovedDiffModelVisitor<>(left));
 		}
@@ -138,7 +138,7 @@ public abstract class CommonDiffModelVisitor<T> implements ModelVisitor<T, Diff<
 	}
 	
 	@Override
-	public <K, V> Diff<T> visitMap(MapModel<? super T, K, V> map) {
+	public <K, V> Diff<T> visitMap(MapModel<T, K, V> map) {
 		if (left == null ^ right == null) {
 			return map.accept(left == null ? new AddedDiffModelVisitor<>(right) : new RemovedDiffModelVisitor<>(left));
 		}
@@ -151,11 +151,11 @@ public abstract class CommonDiffModelVisitor<T> implements ModelVisitor<T, Diff<
 		return Diff.map(toStatus(result.values()), this.left, this.right, result);
 	}
 		
-	private <P> Diff<P> visitProperty(Property<? super T, P> property) {
-		return property.getModel().accept(newVisitor(property.apply(left), property.apply(right)));
+	private <P> Diff<P> visitProperty(Property<T, P> property) {
+		return property.getModel().accept(newVisitor(property.get(left), property.get(right)));
 	}
 	
-	public Diff<T> visitValue(ValueModel<? super T> value) {
+	public Diff<T> visitValue(ValueModel<T> value) {
 		return Diff.simple(left == null ^ right == null ? left == null ? ADDED : REMOVED : Objects.equals(left, right) ? UNCHANGED : MODIFIED, left, right); 
 	}
 }

@@ -8,8 +8,10 @@ import java.util.Comparator;
 public final class ValueModel<V> implements Model<V>, Comparator<V> {
 	
 	private final Comparator<? super V> comparator;
+	private final Class<? extends V> type;
 	
-	ValueModel(Comparator<? super V> comparator) {
+	ValueModel(Class<? extends V> type, Comparator<? super V> comparator) {
+		this.type = requireNonNull(type);
 		this.comparator = nullsLast(requireNonNull(comparator));
 	}
 
@@ -17,7 +19,7 @@ public final class ValueModel<V> implements Model<V>, Comparator<V> {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public <R> R accept(ModelVisitor<? extends V, ? extends R> visitor) {
+	public <R> R accept(ModelVisitor<V, ? extends R> visitor) {
 		return requireNonNull(visitor).visitValue(this);
 	}
 	
@@ -27,5 +29,9 @@ public final class ValueModel<V> implements Model<V>, Comparator<V> {
 	@Override
 	public int compare(V left, V right) {
 		return this.comparator.compare(left, right);
+	}
+	
+	public Class<? extends V> getType() {
+		return type;
 	}
 }

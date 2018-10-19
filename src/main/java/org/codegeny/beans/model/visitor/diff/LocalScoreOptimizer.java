@@ -1,4 +1,4 @@
-package org.codegeny.beans.model.visitor;
+package org.codegeny.beans.model.visitor.diff;
 
 /**
  * This implementation will find the successive best local scores, the result

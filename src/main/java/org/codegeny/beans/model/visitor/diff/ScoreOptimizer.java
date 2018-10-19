@@ -1,4 +1,4 @@
-package org.codegeny.beans.model.visitor;
+package org.codegeny.beans.model.visitor.diff;
 
 public interface ScoreOptimizer {
 	

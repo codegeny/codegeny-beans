@@ -6,12 +6,12 @@ import static java.util.Objects.requireNonNull;
 import java.util.List;
 import java.util.function.Function;
 
-public final class ListModel<L, E> implements Model<L>, Function<L, List<? extends E>> {
+public final class ListModel<L, E> implements Model<L>, Function<L, List<E>> {
 
-	private final Model<? super E> elementModel;
-	private final Function<? super L, ? extends List<? extends E>> extractor;
+	private final Model<E> elementModel;
+	private final Function<? super L, ? extends List<E>> extractor;
 
-	ListModel(Function<? super L, ? extends List<? extends E>> extractor, Model<? super E> elementModel) {
+	ListModel(Function<? super L, ? extends List<E>> extractor, Model<E> elementModel) {
 		this.extractor = requireNonNull(extractor);
 		this.elementModel = requireNonNull(elementModel);
 	}
@@ -20,11 +20,11 @@ public final class ListModel<L, E> implements Model<L>, Function<L, List<? exten
 	 * {@inheritDoc}
 	 */
 	@Override
-	public <R> R accept(ModelVisitor<? extends L, ? extends R> visitor) {
+	public <R> R accept(ModelVisitor<L, ? extends R> visitor) {
 		return requireNonNull(visitor).visitList(this);
 	}
 
-	public <R> R acceptElement(ModelVisitor<? extends E, ? extends R> visitor) {
+	public <R> R acceptElement(ModelVisitor<E, ? extends R> visitor) {
 		return this.elementModel.accept(visitor);
 	}
 
@@ -32,11 +32,11 @@ public final class ListModel<L, E> implements Model<L>, Function<L, List<? exten
 	 * {@inheritDoc}
 	 */
 	@Override
-	public List<? extends E> apply(L values) {
+	public List<E> apply(L values) {
 		return values == null ? emptyList() : this.extractor.apply(values);
 	}
 
-	public Model<? super E> getElementModel() {
+	public Model<E> getElementModel() {
 		return this.elementModel;
 	}
 }

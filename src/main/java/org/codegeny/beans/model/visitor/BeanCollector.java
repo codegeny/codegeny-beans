@@ -25,7 +25,7 @@ public class BeanCollector<T> implements ModelVisitor<T, Set<?>> {
 		this.beans = beans;
 	}
 
-	public Set<?> visitBean(BeanModel<? super T> bean) {
+	public Set<?> visitBean(BeanModel<T> bean) {
 		if (this.target != null) {
 			this.beans.add(this.target);
 			bean.forEach(this::visitProperty);
@@ -33,26 +33,26 @@ public class BeanCollector<T> implements ModelVisitor<T, Set<?>> {
 		return beans;
 	}
 	
-	public <E> Set<?> visitSet(SetModel<? super T, E> collection) {
+	public <E> Set<?> visitSet(SetModel<T, E> collection) {
 		collection.apply(this.target).forEach(e -> collection.acceptElement(new BeanCollector<>(e, this.beans)));
 		return beans;
 	}
 	
-	public <E> Set<?> visitList(ListModel<? super T, E> collection) {
+	public <E> Set<?> visitList(ListModel<T, E> collection) {
 		collection.apply(this.target).forEach(e -> collection.acceptElement(new BeanCollector<>(e, this.beans)));
 		return beans;
 	}
 
-	public <K, V> Set<?> visitMap(MapModel<? super T, K, V> map) {
+	public <K, V> Set<?> visitMap(MapModel<T, K, V> map) {
 		map.apply(this.target).values().forEach(e -> map.acceptValue(new BeanCollector<>(e, this.beans)));
 		return beans;
 	}
 
-	private <P> void visitProperty(Property<? super T, P> property) {
-		property.accept(new BeanCollector<>(property.apply(this.target), this.beans));
+	private <P> void visitProperty(Property<T, P> property) {
+		property.accept(new BeanCollector<>(property.get(this.target), this.beans));
 	}
 
-	public Set<?> visitValue(ValueModel<? super T> value) {
+	public Set<?> visitValue(ValueModel<T> value) {
 		return beans;
 	}
 }

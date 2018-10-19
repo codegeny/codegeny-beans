@@ -1,6 +1,5 @@
 package org.codegeny.beans.model;
 
-import static java.util.Collections.emptyMap;
 import static java.util.Comparator.naturalOrder;
 import static java.util.function.Function.identity;
 
@@ -9,12 +8,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.codegeny.beans.model.visitor.CompareModelVisitor;
 import org.codegeny.beans.model.visitor.DescribeModelVisitor;
+import org.codegeny.beans.model.visitor.GetModelVisitor;
 import org.codegeny.beans.model.visitor.HashModelVisitor;
-import org.codegeny.beans.model.visitor.PathModelVisitor;
+import org.codegeny.beans.model.visitor.SetModelVisitor;
 import org.codegeny.beans.model.visitor.ToStringModelVisitor;
+import org.codegeny.beans.model.visitor.Typer;
 import org.codegeny.beans.path.Path;
 import org.codegeny.beans.util.Hasher;
 
@@ -35,17 +38,47 @@ import org.codegeny.beans.util.Hasher;
  * @param <T> The type of object this model represent.
  */
 public interface Model<T> extends Comparator<T> {
+
+	/** A {@link ValueModel} for {@link Boolean}s. */
+	Model<Boolean> BOOLEAN = value(Boolean.class);
+
+	/** A {@link ValueModel} for {@link Byte}s. */
+	Model<Byte> BYTE = value(Byte.class);
 	
+	/** A {@link ValueModel} for {@link Short}s. */
+	Model<Short> SHORT = value(Short.class);
+	
+	/** A {@link ValueModel} for {@link Integer}s. */
+	Model<Integer> INTEGER = value(Integer.class);
+	
+	/** A {@link ValueModel} for {@link Long}s. */
+	Model<Long> LONG = value(Long.class);
+	
+	/** A {@link ValueModel} for {@link Float}s. */
+	Model<Float> FLOAT = value(Float.class);
+	
+	/** A {@link ValueModel} for {@link Double}s. */
+	Model<Double> DOUBLE = value(Double.class);
+	
+	/** A {@link ValueModel} for {@link Character}s. */
+	Model<Character> CHARACTER = value(Character.class);
+	
+	/** A {@link ValueModel} for {@link String}s. */
+	Model<String> STRING = value(String.class);
+
 	/**
 	 * Construct a new empty {@link BeanModel}.
 	 * 
+	 * @param beanClass The bean class.
+	 * @param properties The bean properties.
 	 * @return The bean model.
 	 * @param <B> The bean type.
 	 */
-	static <B> BeanModel<B> bean() {
-		return new BeanModel<>(emptyMap());
+	@SafeVarargs
+	static <B> BeanModel<B> bean(Class<B> beanClass, Property<B, ?>... properties) {
+		return new BeanModel<>(beanClass, Stream.of(properties).collect(Collectors.toMap(Property::getName, Function.identity())));
 	}
-
+		
 	/**
 	 * Construct a new {@link ListModel} for a list of &lt;E&gt; elements which implements the {@link List} interface. 
 	 * 
@@ -53,7 +86,7 @@ public interface Model<T> extends Comparator<T> {
 	 * @return The list model.
 	 * @param <E> The type of elements.
 	 */
-	static <E> ListModel<List<E>, E> list(Model<? super E> elementModel) {
+	static <E> ListModel<List<E>, E> list(Model<E> elementModel) {
 		return list(elementModel, identity());
 	}
 	
@@ -66,7 +99,7 @@ public interface Model<T> extends Comparator<T> {
 	 * @param <L> The type of the list of &lt;E&gt; elements.
 	 * @param <E> The type of elements.
 	 */
-	static <L, E> ListModel<L, E> list(Model<? super E> elementModel, Function<? super L, ? extends List<? extends E>> extractor) {
+	static <L, E> ListModel<L, E> list(Model<E> elementModel, Function<? super L, ? extends List<E>> extractor) {
 		return new ListModel<>(extractor, elementModel);
 	}
 	
@@ -79,7 +112,7 @@ public interface Model<T> extends Comparator<T> {
 	 * @param <K> The type of keys.
 	 * @param <V> The type of values.
 	 */
-	static <K, V> MapModel<Map<K, V>, K, V> map(Model<? super K> keyModel, Model<? super V> valueModel) {
+	static <K, V> MapModel<Map<K, V>, K, V> map(Model<K> keyModel, Model<V> valueModel) {
 		return map(keyModel, valueModel, identity());
 	}
 	
@@ -94,7 +127,7 @@ public interface Model<T> extends Comparator<T> {
 	 * @param <K> The type of keys.
 	 * @param <V> The type of values.
 	 */
-	static <M, K, V> MapModel<M, K, V> map(Model<? super K> keyModel, Model<? super V> valueModel, Function<? super M, ? extends Map<? extends K, ? extends V>> extractor) {
+	static <M, K, V> MapModel<M, K, V> map(Model<K> keyModel, Model<V> valueModel, Function<? super M, ? extends Map<K, V>> extractor) {
 		return new MapModel<>(extractor, keyModel, valueModel);
 	}
 	
@@ -105,7 +138,7 @@ public interface Model<T> extends Comparator<T> {
 	 * @return The set model.
 	 * @param <E> The type of elements.
 	 */
-	static <E> SetModel<Set<E>, E> set(Model<? super E> elementModel) {
+	static <E> SetModel<Set<E>, E> set(Model<E> elementModel) {
 		return set(elementModel, identity());
 	}
 	
@@ -118,7 +151,7 @@ public interface Model<T> extends Comparator<T> {
 	 * @param <S> The type of the set of &lt;E&gt; elements.
 	 * @param <E> The type of elements.
 	 */
-	static <S, E> SetModel<S, E> set(Model<? super E> elementModel, Function<? super S, ? extends Set<? extends E>> extractor) {
+	static <S, E> SetModel<S, E> set(Model<E> elementModel, Function<? super S, ? extends Set<E>> extractor) {
 		return new SetModel<>(extractor, elementModel);
 	}
 	
@@ -128,8 +161,8 @@ public interface Model<T> extends Comparator<T> {
 	 * @return The value model.
 	 * @param <V> The type of the value which must be comparable.
 	 */
-	static <V extends Comparable<? super V>> ValueModel<V> value() {
-		return value(naturalOrder());
+	static <V extends Comparable<? super V>> ValueModel<V> value(Class<? extends V> type) {
+		return value(type, naturalOrder());
 	}
 	
 	/**
@@ -139,8 +172,8 @@ public interface Model<T> extends Comparator<T> {
 	 * @return The value model.
 	 * @param <V> The type of the value.
 	 */
-	static <V> ValueModel<V> value(Comparator<? super V> comparator) {
-		return new ValueModel<>(comparator);
+	static <V> ValueModel<V> value(Class<? extends V> type, Comparator<? super V> comparator) {
+		return new ValueModel<>(type, comparator);
 	}
 	
 	/**
@@ -150,7 +183,7 @@ public interface Model<T> extends Comparator<T> {
 	 * @return The result of the visitor computation.
 	 * @param <R> The type of the result.
 	 */
-	<R> R accept(ModelVisitor<? extends T, ? extends R> visitor);
+	<R> R accept(ModelVisitor<T, ? extends R> visitor);
 	
 	/**
 	 * {@inheritDoc}
@@ -169,15 +202,20 @@ public interface Model<T> extends Comparator<T> {
 		return accept(new DescribeModelVisitor<>()).toString();
 	}
 	
-	/**
-	 * Extract the given path from the target.
-	 * 
-	 * @param target The target.
-	 * @param path The path.
-	 * @return The extracted value according to path.
-	 */
-	default Object extract(T target, Path path) {
-		return accept(new PathModelVisitor<>(target, path.elements().iterator()));
+	default <S> void set(T target, Path<S> path, S value, Typer<S> typer) {
+		accept(new SetModelVisitor<>(target, value, typer, path));
+	}
+	
+	default <S> Object get(T target, Path<S> path, Typer<S> typer) {
+		return accept(new GetModelVisitor<>(target, typer, path));
+	}
+	
+	default void set(T target, Path<Object> path, Object value) {
+		set(target, path, value, Typer.IDENTITY);
+	}
+	
+	default Object get(T target, Path<Object> path) {
+		return get(target, path, Typer.IDENTITY);
 	}
 	
 	/**

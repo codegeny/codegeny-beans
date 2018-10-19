@@ -33,7 +33,7 @@ public class ToStringModelVisitor<T> implements ModelVisitor<T, StringBuilder> {
 		this.indent = indent;
 	}
 	
-	public StringBuilder visitBean(BeanModel<? super T> bean) {
+	public StringBuilder visitBean(BeanModel<T> bean) {
 		this.builder.append("{");
 		int count = forEachIndexed(bean.getProperties(), (i, p) -> {
 			this.builder.append(i > 0 ? "," : "").append("\n").append(this.indent).append("  ").append(p.getName()).append(": ");
@@ -43,14 +43,14 @@ public class ToStringModelVisitor<T> implements ModelVisitor<T, StringBuilder> {
 	}
 	
 	private <P> StringBuilder visitProperty(Property<? super T, P> property) {
-		return property.accept(new ToStringModelVisitor<>(property.apply(this.target), this.builder, this.indent.concat("  ")));
+		return property.accept(new ToStringModelVisitor<>(property.get(this.target), this.builder, this.indent.concat("  ")));
 	}
 	
-	public StringBuilder visitValue(ValueModel<? super T> value) {
+	public StringBuilder visitValue(ValueModel<T> value) {
 		return this.builder.append(this.target);
 	}
 	
-	public <K, V> StringBuilder visitMap(MapModel<? super T, K, V> map) {
+	public <K, V> StringBuilder visitMap(MapModel<T, K, V> map) {
 		this.builder.append("[");
 		Comparator<? super K> comparator = new ModelComparator<>(map.getKeyModel());
 		Map<? extends K, ? extends V> entries = map.apply(this.target);
@@ -62,7 +62,7 @@ public class ToStringModelVisitor<T> implements ModelVisitor<T, StringBuilder> {
 		return this.builder.append(count > 0 ? "\n".concat(this.indent) : "").append("]");
 	}
 
-	public <E> StringBuilder visitSet(SetModel<? super T, E> values) {
+	public <E> StringBuilder visitSet(SetModel<T, E> values) {
 		this.builder.append("[");
 		Comparator<? super E> comparator = new ModelComparator<>(values.getElementModel());
 		Set<? extends E> collection = values.apply(this.target);
@@ -74,7 +74,7 @@ public class ToStringModelVisitor<T> implements ModelVisitor<T, StringBuilder> {
 		return this.builder.append(count > 0 ? "\n".concat(this.indent) : "").append("]");
 	}
 	
-	public <E> StringBuilder visitList(ListModel<? super T, E> values) {
+	public <E> StringBuilder visitList(ListModel<T, E> values) {
 		this.builder.append("[");
 		List<? extends E> list = values.apply(this.target);
 		int count = forEachIndexed(list, (i, v) -> {

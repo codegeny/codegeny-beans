@@ -19,30 +19,30 @@ public class HashModelVisitor<T> implements ModelVisitor<T, Hasher> {
 		this.hasher = hasher;
 	}
 
-	public Hasher visitBean(BeanModel<? super T> bean) {
+	public Hasher visitBean(BeanModel<T> bean) {
 		bean.forEach(this::visitProperty);
 		return hasher;
 	}
 
-	public Hasher visitValue(ValueModel<? super T> value) {
+	public Hasher visitValue(ValueModel<T> value) {
 		return this.hasher.hash(this.target);
 	}
 
 	private <P> Hasher visitProperty(Property<? super T, P> property) {
-		return property.accept(new HashModelVisitor<>(property.apply(target), hasher));
+		return property.accept(new HashModelVisitor<>(property.get(target), hasher));
 	}
 	
-	public <K, V> Hasher visitMap(MapModel<? super T, K, V> map) {
+	public <K, V> Hasher visitMap(MapModel<T, K, V> map) {
 		map.apply(this.target).entrySet().forEach(e -> map.acceptKey(new HashModelVisitor<>(e.getKey(), map.acceptValue(new HashModelVisitor<>(e.getValue(), hasher)))));
 		return this.hasher;
 	}
 
-	public <E> Hasher visitSet(SetModel<? super T, E> values) {
+	public <E> Hasher visitSet(SetModel<T, E> values) {
 		values.apply(this.target).forEach(e -> values.acceptElement(new HashModelVisitor<>(e, hasher)));
 		return this.hasher;
 	}
 	
-	public <E> Hasher visitList(ListModel<? super T, E> values) {
+	public <E> Hasher visitList(ListModel<T, E> values) {
 		values.apply(this.target).forEach(e -> values.acceptElement(new HashModelVisitor<>(e, hasher)));
 		return this.hasher;
 	}
