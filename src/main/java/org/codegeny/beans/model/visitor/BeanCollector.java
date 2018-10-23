@@ -68,7 +68,7 @@ public class BeanCollector<T> implements ModelVisitor<T, Set<?>> {
 		return beans;
 	}
 
-	private <P> void visitProperty(Property<T, P> property) {
+	private <P> void visitProperty(Property<? super T, P> property) {
 		property.accept(new BeanCollector<>(property.get(this.target), this.beans));
 	}
 

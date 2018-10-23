@@ -233,7 +233,7 @@ public interface Diff<T> extends Serializable {
 	 * 
 	 * @param consumer The consumer.
 	 */
-	default void traverse(BiConsumer<? super Path<Object>, ? super Diff<?>> consumer) {
+	default void traverse(BiConsumer<? super Path<?>, ? super Diff<?>> consumer) {
 		accept(new TraversingDiffVisitor<>(consumer));	
 	}
 }

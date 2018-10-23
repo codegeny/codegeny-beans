@@ -94,7 +94,7 @@ public interface Model<T> extends Comparator<T> {
 	 * @param <B> The bean type.
 	 */
 	@SafeVarargs
-	static <B> BeanModel<B> bean(Class<B> beanClass, Property<B, ?>... properties) {
+	static <B> BeanModel<B> bean(Class<? extends B> beanClass, Property<? super B, ?>... properties) {
 		return new BeanModel<>(beanClass, Stream.of(properties).collect(Collectors.toMap(Property::getName, Function.identity())));
 	}
 		

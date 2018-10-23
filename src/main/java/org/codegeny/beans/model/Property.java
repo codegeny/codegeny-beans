@@ -38,7 +38,7 @@ public final class Property<B, P> {
 	 * @param <B> The bean type.
 	 * @param <P> The property type.
 	 */
-	public static <B, P> Property<B, P> mutable(String name, Function<? super B, P> extractor, BiConsumer<? super B, P> mutator, Model<P> model) {
+	public static <B, P> Property<B, P> mutable(String name, Function<? super B, ? extends P> extractor, BiConsumer<? super B, ? super P> mutator, Model<P> model) {
 		return new Property<>(name, extractor, mutator, model);
 	}
 	
@@ -52,18 +52,19 @@ public final class Property<B, P> {
 	 * @param <B> The bean type.
 	 * @param <P> The property type.
 	 */
-	public static <B, P> Property<B, P> immutable(String name, Function<? super B, P> extractor,  Model<P> model) {
+	public static <B, P> Property<B, P> immutable(String name, Function<? super B, ? extends P> extractor,  Model<P> model) {
 		return new Property<>(name, extractor, (b, p) -> {
 			throw new UnsupportedOperationException(String.format("Property '%s' is immutable", name));
 		} , model);
 	}
 	
-	private final Model<P> model;
+	private final String name;
 	private final Function<? super B, ? extends P> extractor;
 	private final BiConsumer<? super B, ? super P> mutator;
-	private final String name;
+	private final Model<P> model;
 	
-	private Property(String name, Function<? super B, ? extends P> extractor, BiConsumer<? super B, P> mutator, Model<P> model) {
+	
+	private Property(String name, Function<? super B, ? extends P> extractor, BiConsumer<? super B, ? super P> mutator, Model<P> model) {
 		this.name = requireNonNull(name);
 		this.extractor = requireNonNull(extractor);
 		this.mutator = requireNonNull(mutator);

@@ -49,19 +49,37 @@ public final class Path<P> implements Iterable<P> {
 	}
 	
 	public Path<P> append(P element) {
-		List<P> result = new ArrayList<>(elements.size() + 1);
+		List<P> result = new ArrayList<>(size() + 1);
 		forEach(result::add);
 		result.add(element);
 		return new Path<>(result);
 	}
 	
 	public Path<P> prepend(P element) {
-		List<P> result = new ArrayList<>(elements.size() + 1);
+		List<P> result = new ArrayList<>(size() + 1);
 		result.add(element);
 		forEach(result::add);
 		return new Path<>(result);
 	}
+
+	public Path<P> append(Path<P> path) {
+		List<P> result = new ArrayList<>(size() + path.size());
+		forEach(result::add);
+		path.forEach(result::add);
+		return new Path<>(result);
+	}
 	
+	public Path<P> prepend(Path<P> path) {
+		List<P> result = new ArrayList<>(size() + path.size());
+		path.forEach(result::add);
+		forEach(result::add);
+		return new Path<>(result);
+	}
+	
+	public int size() {
+		return elements.size();
+	}
+
 	@Override
 	public Iterator<P> iterator() {
 		return elements.iterator();

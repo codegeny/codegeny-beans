@@ -67,7 +67,7 @@ public final class SetModelVisitor<S, T> implements ModelVisitor<T, Void> {
 		return process(k -> visitProperty(bean.getProperty(typer.retype(Model.STRING, k))), setter, bean);
 	}
 	
-	private <P> void visitProperty(Property<T, P> property) {
+	private <P> void visitProperty(Property<? super T, P> property) {
 		property.accept(visitor(property.get(current), a -> property.set(current, a)));
 	}
 	

@@ -77,7 +77,7 @@ public abstract class CommonDiffModelVisitor<T> implements ModelVisitor<T, Diff<
 			return Diff.map(type, left, right, map.apply(target).entrySet().stream().collect(toMap(e -> e.getKey(), e -> map.acceptValue(create(e.getValue())))));
 		}
 		
-		private <P> Diff<P> visitProperty(Property<T, P> property) {
+		private <P> Diff<P> visitProperty(Property<? super T, P> property) {
 			return property.accept(create(property.get(target)));
 		}
 		
@@ -170,7 +170,7 @@ public abstract class CommonDiffModelVisitor<T> implements ModelVisitor<T, Diff<
 		return Diff.map(toStatus(result.values()), this.left, this.right, result);
 	}
 		
-	private <P> Diff<P> visitProperty(Property<T, P> property) {
+	private <P> Diff<P> visitProperty(Property<? super T, P> property) {
 		return property.getModel().accept(newVisitor(property.get(left), property.get(right)));
 	}
 	

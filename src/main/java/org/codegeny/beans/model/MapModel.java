@@ -26,7 +26,7 @@ import static java.util.Objects.requireNonNull;
 import java.util.Map;
 import java.util.function.Function;
 
-public final class MapModel<M, K, V> implements Model<M>, Function<M, Map<? extends K, ? extends V>> {
+public final class MapModel<M, K, V> implements Model<M>, Function<M, Map<K, V>> {
 	
 	private final Function<? super M, ? extends Map<K, V>> extractor;
 	private final Model<K> keyModel;

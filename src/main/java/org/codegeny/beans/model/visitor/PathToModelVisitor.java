@@ -53,7 +53,7 @@ public final class PathToModelVisitor<S, T> implements ModelVisitor<T, Model<?>>
 		return process(bean, k -> visitProperty(bean.getProperty(typer.retype(Model.STRING, k))));
 	}
 	
-	private <P> Model<?> visitProperty(Property<T, P> property) {
+	private <P> Model<?> visitProperty(Property<? super T, P> property) {
 		return property.accept(visitor());
 	}
 	

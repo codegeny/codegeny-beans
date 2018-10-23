@@ -57,7 +57,7 @@ public final class GetModelVisitor<S, T> implements ModelVisitor<T, Object> {
 		return process(k -> visitProperty(bean.getProperty(typer.retype(Model.STRING, k))));
 	}
 	
-	private <P> Object visitProperty(Property<T, P> property) {
+	private <P> Object visitProperty(Property<? super T, P> property) {
 		return property.accept(visitor(property.get(current)));
 	}
 	

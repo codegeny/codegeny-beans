@@ -32,12 +32,12 @@ import java.util.Map;
  * @author Xavier DURY
  * @param <B> The type of the bean.
  */
-public final class BeanModel<B> implements Model<B>, Iterable<Property<B, ?>> {
+public final class BeanModel<B> implements Model<B>, Iterable<Property<? super B, ?>> {
 	
-	private final Class<B> type;
-	private final Map<String, Property<B, ?>> properties;
+	private final Class<? extends B> type;
+	private final Map<String, Property<? super B, ?>> properties;
 	
-	BeanModel(Class<B> type, Map<String, Property<B, ?>> properties) {
+	BeanModel(Class<? extends B> type, Map<String, Property<? super B, ?>> properties) {
 		this.type = requireNonNull(type);
 		this.properties = requireNonNull(properties);
 	}
@@ -55,7 +55,7 @@ public final class BeanModel<B> implements Model<B>, Iterable<Property<B, ?>> {
 	 * 
 	 * @return The properties.
 	 */
-	public Collection<Property<B, ?>> getProperties() {
+	public Collection<Property<? super B, ?>> getProperties() {
 		return unmodifiableCollection(this.properties.values());
 	}
 
@@ -65,7 +65,7 @@ public final class BeanModel<B> implements Model<B>, Iterable<Property<B, ?>> {
 	 * @param name The name of the property.
 	 * @return The corresponding property or null.
 	 */
-	public Property<B, ?> getProperty(String name) {
+	public Property<? super B, ?> getProperty(String name) {
 		return properties.get(requireNonNull(name));
 	}
 	
@@ -74,7 +74,7 @@ public final class BeanModel<B> implements Model<B>, Iterable<Property<B, ?>> {
 	 * 
 	 * @return The bean class.
 	 */
-	public Class<B> getType() {
+	public Class<? extends B> getType() {
 		return type;
 	}
 	
@@ -84,7 +84,7 @@ public final class BeanModel<B> implements Model<B>, Iterable<Property<B, ?>> {
 	 * @return An iterator of all properties.
 	 */
 	@Override
-	public Iterator<Property<B, ?>> iterator() {
+	public Iterator<Property<? super B, ?>> iterator() {
 		return getProperties().iterator();
 	}
 }
