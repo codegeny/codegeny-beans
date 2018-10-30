@@ -31,7 +31,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.IntConsumer;
-import java.util.stream.IntStream;
 
 import org.codegeny.beans.diff.Diff;
 import org.codegeny.beans.model.ListModel;
@@ -40,7 +39,7 @@ import org.codegeny.beans.model.visitor.ModelComparator;
 import org.codegeny.beans.util.AddAndXorHasher;
 
 // TODO optimize this shit
-public class DiffModelVisitor<T> extends CommonDiffModelVisitor<T> {
+public class GetDiffModelVisitor<T> extends CommonDiffModelVisitor<T> {
 	
 	private interface Adder<T> {
 		
@@ -50,7 +49,7 @@ public class DiffModelVisitor<T> extends CommonDiffModelVisitor<T> {
 	protected final ScoreOptimizer optimizer;
 	protected final double threshold;
 	
-	public DiffModelVisitor(T left, T right, double threshold, ScoreOptimizer optimizer) {
+	public GetDiffModelVisitor(T left, T right, double threshold, ScoreOptimizer optimizer) {
 		super(left, right);
 		this.threshold = threshold;
 		this.optimizer = optimizer;
@@ -58,13 +57,13 @@ public class DiffModelVisitor<T> extends CommonDiffModelVisitor<T> {
 	
 	@Override
 	protected <S> CommonDiffModelVisitor<S> newVisitor(S left, S right) {
-		return new DiffModelVisitor<>(left, right, threshold, optimizer);
+		return new GetDiffModelVisitor<>(left, right, threshold, optimizer);
 	}
 	
 	@Override
 	public <E> Diff<T> visitList(ListModel<T, E> values) {
-		List<E> left = values.apply(super.left);
-		List<E> right = values.apply(super.right);
+		List<E> left = values.toList(super.left);
+		List<E> right = values.toList(super.right);
 		List<Diff<E>> result = new LinkedList<>();
 		boolean removeFirst = true;
 		int i = 0, j = 0;
@@ -121,16 +120,16 @@ public class DiffModelVisitor<T> extends CommonDiffModelVisitor<T> {
 			range(i - m, left.size()).forEach(q -> result.add(values.acceptElement(new RemovedDiffModelVisitor<>(left.get(q)))));
 			range(j - n, right.size()).forEach(q -> result.add(values.acceptElement(new AddedDiffModelVisitor<>(right.get(q)))));
 		} else {
-			IntStream.range(j - n, right.size()).forEach(q -> result.add(values.acceptElement(new AddedDiffModelVisitor<>(right.get(q)))));
-			IntStream.range(i - m, left.size()).forEach(q -> result.add(values.acceptElement(new RemovedDiffModelVisitor<>(left.get(q)))));
+			range(j - n, right.size()).forEach(q -> result.add(values.acceptElement(new AddedDiffModelVisitor<>(right.get(q)))));
+			range(i - m, left.size()).forEach(q -> result.add(values.acceptElement(new RemovedDiffModelVisitor<>(left.get(q)))));
 		}
 		return Diff.list(toStatus(result), super.left, super.right, result);
 	}
 	
 	public <E> Diff<T> visitSet(SetModel<T, E> values) {
 		
-		List<E> leftValues = new ArrayList<>(values.apply(super.left));
-		List<E> rightValues = new ArrayList<>(values.apply(super.right));
+		List<E> leftValues = new ArrayList<>(values.toSet(super.left));
+		List<E> rightValues = new ArrayList<>(values.toSet(super.right));
 		
 		final int leftSize = leftValues.size();
 		final int rightSize = rightValues.size();

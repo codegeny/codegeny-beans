@@ -66,15 +66,15 @@ public abstract class CommonDiffModelVisitor<T> implements ModelVisitor<T, Diff<
 		}
 
 		public <E> Diff<T> visitSet(SetModel<T, E> values) {
-			return Diff.list(type, left, right, values.apply(target).stream().map(e -> values.acceptElement(create(e))).collect(toList()));
+			return Diff.list(type, left, right, values.toSet(target).stream().map(e -> values.acceptElement(create(e))).collect(toList()));
 		}
 		
 		public <E> Diff<T> visitList(ListModel<T, E> values) {
-			return Diff.list(type, left, right, values.apply(target).stream().map(e -> values.acceptElement(create(e))).collect(toList()));
+			return Diff.list(type, left, right, values.toList(target).stream().map(e -> values.acceptElement(create(e))).collect(toList()));
 		}
 
 		public <K, V> Diff<T> visitMap(MapModel<T, K, V> map) {
-			return Diff.map(type, left, right, map.apply(target).entrySet().stream().collect(toMap(e -> e.getKey(), e -> map.acceptValue(create(e.getValue())))));
+			return Diff.map(type, left, right, map.toMap(target).entrySet().stream().collect(toMap(e -> e.getKey(), e -> map.acceptValue(create(e.getValue())))));
 		}
 		
 		private <P> Diff<P> visitProperty(Property<? super T, P> property) {
@@ -161,8 +161,8 @@ public abstract class CommonDiffModelVisitor<T> implements ModelVisitor<T, Diff<
 		if (left == null ^ right == null) {
 			return map.accept(left == null ? new AddedDiffModelVisitor<>(right) : new RemovedDiffModelVisitor<>(left));
 		}
-		Map<? extends K, ? extends V> leftMap = map.apply(left);
-		Map<? extends K, ? extends V> rightMap = map.apply(right);
+		Map<? extends K, ? extends V> leftMap = map.toMap(left);
+		Map<? extends K, ? extends V> rightMap = map.toMap(right);
 		Set<K> keys = new HashSet<>();
 		keys.addAll(leftMap.keySet());
 		keys.addAll(rightMap.keySet());

@@ -39,7 +39,7 @@ public class HashModelVisitor<T> implements ModelVisitor<T, Hasher> {
 	}
 
 	public Hasher visitBean(BeanModel<T> bean) {
-		bean.forEach(this::visitProperty);
+		bean.getProperties().forEach(this::visitProperty);
 		return hasher;
 	}
 
@@ -52,17 +52,17 @@ public class HashModelVisitor<T> implements ModelVisitor<T, Hasher> {
 	}
 	
 	public <K, V> Hasher visitMap(MapModel<T, K, V> map) {
-		map.apply(this.target).entrySet().forEach(e -> map.acceptKey(new HashModelVisitor<>(e.getKey(), map.acceptValue(new HashModelVisitor<>(e.getValue(), hasher)))));
+		map.toMap(this.target).entrySet().forEach(e -> map.acceptKey(new HashModelVisitor<>(e.getKey(), map.acceptValue(new HashModelVisitor<>(e.getValue(), hasher)))));
 		return this.hasher;
 	}
 
 	public <E> Hasher visitSet(SetModel<T, E> values) {
-		values.apply(this.target).forEach(e -> values.acceptElement(new HashModelVisitor<>(e, hasher)));
+		values.toSet(this.target).forEach(e -> values.acceptElement(new HashModelVisitor<>(e, hasher)));
 		return this.hasher;
 	}
 	
 	public <E> Hasher visitList(ListModel<T, E> values) {
-		values.apply(this.target).forEach(e -> values.acceptElement(new HashModelVisitor<>(e, hasher)));
+		values.toList(this.target).forEach(e -> values.acceptElement(new HashModelVisitor<>(e, hasher)));
 		return this.hasher;
 	}
 }

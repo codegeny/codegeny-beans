@@ -27,79 +27,47 @@ import java.util.function.Function;
 
 public final class Property<B, P> {
 	
-	/**
-	 * Construct a property to be used for beans.
-	 * 
-	 * @param name The property name.
-	 * @param extractor The property extractor/getter.
-	 * @param mutator The property mutator/Setter.
-	 * @param model The property model.
-	 * @return A property.
-	 * @param <B> The bean type.
-	 * @param <P> The property type.
-	 */
-	public static <B, P> Property<B, P> mutable(String name, Function<? super B, ? extends P> extractor, BiConsumer<? super B, ? super P> mutator, Model<P> model) {
-		return new Property<>(name, extractor, mutator, model);
-	}
-	
-	/**
-	 * Construct a read-only property to be used for beans.
-	 * 
-	 * @param name The property name.
-	 * @param extractor The property extractor/getter.
-	 * @param model The property model.
-	 * @return A property.
-	 * @param <B> The bean type.
-	 * @param <P> The property type.
-	 */
-	public static <B, P> Property<B, P> immutable(String name, Function<? super B, ? extends P> extractor,  Model<P> model) {
-		return new Property<>(name, extractor, (b, p) -> {
-			throw new UnsupportedOperationException(String.format("Property '%s' is immutable", name));
-		} , model);
-	}
-	
 	private final String name;
-	private final Function<? super B, ? extends P> extractor;
-	private final BiConsumer<? super B, ? super P> mutator;
+	private final Function<? super B, ? extends P> getter;
+	private final BiConsumer<? super B, ? super P> setter;
 	private final Model<P> model;
 	
-	
-	private Property(String name, Function<? super B, ? extends P> extractor, BiConsumer<? super B, ? super P> mutator, Model<P> model) {
+	Property(String name, Function<? super B, ? extends P> getter, BiConsumer<? super B, ? super P> setter, Model<P> model) {
 		this.name = requireNonNull(name);
-		this.extractor = requireNonNull(extractor);
-		this.mutator = requireNonNull(mutator);
+		this.getter = requireNonNull(getter);
+		this.setter = requireNonNull(setter);
 		this.model = requireNonNull(model);
 	}
 	
 	public <R> R accept(ModelVisitor<P, ? extends R> visitor) {
-		return this.model.accept(visitor);
+		return model.accept(visitor);
 	}
 	
 	public P get(B bean) {
-		return bean == null ? null : this.extractor.apply(bean);
+		return bean == null ? null : getter.apply(bean);
 	}
 	
 	public void set(B bean, P value) {
 		if (bean != null) {
-			this.mutator.accept(bean, value);
+			setter.accept(bean, value);
 		}
 	}
 	
 	public Model<P> getModel() {
-		return this.model;
+		return model;
 	}
 	
 	public String getName() {
-		return this.name;
+		return name;
 	}
 	
 	@Override
 	public boolean equals(Object that) {
-		return this == that || that instanceof Property<?, ?> && Objects.equals(this.name, ((Property<?, ?>) that).name);
+		return this == that || that instanceof Property<?, ?> && Objects.equals(name, ((Property<?, ?>) that).name);
 	}
 	
 	@Override
 	public int hashCode() {
-		return this.name.hashCode();
+		return name.hashCode();
 	}
 }

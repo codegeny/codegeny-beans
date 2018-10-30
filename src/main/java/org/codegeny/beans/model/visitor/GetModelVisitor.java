@@ -63,20 +63,20 @@ public final class GetModelVisitor<S, T> implements ModelVisitor<T, Object> {
 	
 	@Override
 	public <K, V> Object visitMap(MapModel<T, K, V> map) {
-		Map<K, V> m = map.apply(current);
+		Map<K, V> m = map.toMap(current);
 		return process(map.getValueModel(), map.getKeyModel(), m::get);
 	}
 	
 	@Override
 	public <E> Object visitSet(SetModel<T, E> set) {
-		Set<E> s = set.apply(current);
+		Set<E> s = set.toSet(current);
 		return process(set.getElementModel(), Model.INTEGER, v -> s.stream().skip(v).findAny().orElse(null));
 //		return process(set.getElementModel(), set.getElementModel(), v -> s.stream().filter(isEqual(v)).findAny().orElse(null));
 	}
 	
 	@Override
 	public <E> Object visitList(ListModel<T, E> list) {
-		List<E> l = list.apply(current);
+		List<E> l = list.toList(current);
 		return process(list.getElementModel(), Model.INTEGER, l::get);
 	}
 	

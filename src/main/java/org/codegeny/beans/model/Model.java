@@ -26,9 +26,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.codegeny.beans.model.visitor.CompareModelVisitor;
 import org.codegeny.beans.model.visitor.DescribeModelVisitor;
@@ -88,14 +87,14 @@ public interface Model<T> extends Comparator<T> {
 	/**
 	 * Construct a new empty {@link BeanModel}.
 	 * 
-	 * @param beanClass The bean class.
+	 * @param type The bean class.
 	 * @param properties The bean properties.
 	 * @return The bean model.
 	 * @param <B> The bean type.
 	 */
 	@SafeVarargs
-	static <B> BeanModel<B> bean(Class<? extends B> beanClass, Property<? super B, ?>... properties) {
-		return new BeanModel<>(beanClass, Stream.of(properties).collect(Collectors.toMap(Property::getName, Function.identity())));
+	static <B> BeanModel<B> bean(Class<? extends B> type, Property<? super B, ?>... properties) {
+		return new BeanModel<>(type, properties);
 	}
 		
 	/**
@@ -113,13 +112,13 @@ public interface Model<T> extends Comparator<T> {
 	 * Construct a new {@link ListModel} for a list of &lt;E&gt; objects which does not implement the {@link List} interface. 
 	 * 
 	 * @param elementModel The delegate {@link Model} to be used for elements.
-	 * @param extractor The collector is a function which transform objects of type &lt;L&gt; to a <code>List&lt;E&gt;</code>.
+	 * @param converter The converter is a function which transforms objects of type &lt;L&gt; to a <code>List&lt;E&gt;</code>.
 	 * @return The list model.
 	 * @param <L> The type of the list of &lt;E&gt; elements.
 	 * @param <E> The type of elements.
 	 */
-	static <L, E> ListModel<L, E> list(Model<E> elementModel, Function<? super L, ? extends List<E>> extractor) {
-		return new ListModel<>(extractor, elementModel);
+	static <L, E> ListModel<L, E> list(Model<E> elementModel, Function<? super L, ? extends List<E>> converter) {
+		return new ListModel<>(converter, elementModel);
 	}
 	
 	/**
@@ -140,14 +139,14 @@ public interface Model<T> extends Comparator<T> {
 	 * 
 	 * @param keyModel The delegate {@link Model} to be used for keys.
 	 * @param valueModel The delegate {@link Model} to be used for values.
-	 * @param extractor The collector is a function which transform objects of type &lt;M&gt; to a <code>Map&lt;K, V&gt;</code>.
+	 * @param converter The collector is a function which transforms objects of type &lt;M&gt; to a <code>Map&lt;K, V&gt;</code>.
 	 * @return The map model.
 	 * @param <M> The type of the map of &lt;K, V&gt; entries.
 	 * @param <K> The type of keys.
 	 * @param <V> The type of values.
 	 */
-	static <M, K, V> MapModel<M, K, V> map(Model<K> keyModel, Model<V> valueModel, Function<? super M, ? extends Map<K, V>> extractor) {
-		return new MapModel<>(extractor, keyModel, valueModel);
+	static <M, K, V> MapModel<M, K, V> map(Model<K> keyModel, Model<V> valueModel, Function<? super M, ? extends Map<K, V>> converter) {
+		return new MapModel<>(converter, keyModel, valueModel);
 	}
 	
 	/**
@@ -165,13 +164,13 @@ public interface Model<T> extends Comparator<T> {
 	 * Construct a new {@link SetModel} for a set of &lt;E&gt; objects which does not implement the {@link Set} interface. 
 	 * 
 	 * @param elementModel The delegate {@link Model} to be used for elements.
-	 * @param extractor The collector is a function which transform objects of type &lt;S&gt; to a <code>Collection&lt;E&gt;</code>.
+	 * @param converter The collector is a function which transforms objects of type &lt;S&gt; to a <code>Collection&lt;E&gt;</code>.
 	 * @return The set model.
 	 * @param <S> The type of the set of &lt;E&gt; elements.
 	 * @param <E> The type of elements.
 	 */
-	static <S, E> SetModel<S, E> set(Model<E> elementModel, Function<? super S, ? extends Set<E>> extractor) {
-		return new SetModel<>(extractor, elementModel);
+	static <S, E> SetModel<S, E> set(Model<E> elementModel, Function<? super S, ? extends Set<E>> converter) {
+		return new SetModel<>(converter, elementModel);
 	}
 	
 	/**
@@ -193,6 +192,37 @@ public interface Model<T> extends Comparator<T> {
 	 */
 	static <V> ValueModel<V> value(Class<? extends V> type, Comparator<? super V> comparator) {
 		return new ValueModel<>(type, comparator);
+	}
+	
+	/**
+	 * Construct a property to be used for beans.
+	 * 
+	 * @param name The property name.
+	 * @param getter The property extractor/getter.
+	 * @param setter The property mutator/Setter.
+	 * @param model The property model.
+	 * @return A property.
+	 * @param <B> The bean type.
+	 * @param <P> The property type.
+	 */
+	static <B, P> Property<B, P> property(String name, Function<? super B, ? extends P> getter, BiConsumer<? super B, ? super P> setter, Model<P> model) {
+		return new Property<>(name, getter, setter, model);
+	}
+	
+	/**
+	 * Construct a read-only property to be used for beans.
+	 * 
+	 * @param name The property name.
+	 * @param getter The property extractor/getter.
+	 * @param model The property model.
+	 * @return A property.
+	 * @param <B> The bean type.
+	 * @param <P> The property type.
+	 */
+	static <B, P> Property<B, P> property(String name, Function<? super B, ? extends P> getter, Model<P> model) {
+		return property(name, getter,  (b, p) -> {
+			throw new UnsupportedOperationException(String.format("Property '%s' is read-only", name));
+		}, model);
 	}
 	
 	/**

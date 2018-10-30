@@ -57,8 +57,8 @@ public class CompareModelVisitor<T> implements ModelVisitor<T, Integer> {
 	}
 	
 	public <K, V> Integer visitMap(MapModel<T, K, V> map) {
-		Map<? extends K, ? extends V> leftMap = map.apply(this.left);
-		Map<? extends K, ? extends V> rightMap = map.apply(this.right);
+		Map<? extends K, ? extends V> leftMap = map.toMap(this.left);
+		Map<? extends K, ? extends V> rightMap = map.toMap(this.right);
 		Set<K> keys = new TreeSet<>(new ModelComparator<>(map.getKeyModel()));
 		keys.addAll(leftMap.keySet());
 		keys.addAll(rightMap.keySet());
@@ -68,8 +68,8 @@ public class CompareModelVisitor<T> implements ModelVisitor<T, Integer> {
 
 	public <E> Integer visitSet(SetModel<T, E> values) {
 		Comparator<? super E> comparator = new ModelComparator<>(values.getElementModel());
-		Iterator<? extends E> leftIterator = values.apply(this.left).stream().sorted(comparator).iterator();
-		Iterator<? extends E> rightIterator = values.apply(this.right).stream().sorted(comparator).iterator();
+		Iterator<? extends E> leftIterator = values.toSet(this.left).stream().sorted(comparator).iterator();
+		Iterator<? extends E> rightIterator = values.toSet(this.right).stream().sorted(comparator).iterator();
 		while (leftIterator.hasNext() && rightIterator.hasNext()) {
 			int comparison = comparator.compare(leftIterator.next(), rightIterator.next());
 			if (comparison != 0) {
@@ -81,8 +81,8 @@ public class CompareModelVisitor<T> implements ModelVisitor<T, Integer> {
 	
 	public <E> Integer visitList(ListModel<T, E> values) {
 		Comparator<? super E> comparator = new ModelComparator<>(values.getElementModel());
-		Iterator<? extends E> leftIterator = values.apply(this.left).stream().iterator();
-		Iterator<? extends E> rightIterator = values.apply(this.right).stream().iterator();
+		Iterator<? extends E> leftIterator = values.toList(this.left).stream().iterator();
+		Iterator<? extends E> rightIterator = values.toList(this.right).stream().iterator();
 		while (leftIterator.hasNext() && rightIterator.hasNext()) {
 			int comparison = comparator.compare(leftIterator.next(), rightIterator.next());
 			if (comparison != 0) {

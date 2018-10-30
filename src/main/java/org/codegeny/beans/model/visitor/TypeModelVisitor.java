@@ -1,5 +1,16 @@
 package org.codegeny.beans.model.visitor;
 
+import static java.util.stream.Collectors.joining;
+
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Stream;
+
 /*-
  * #%L
  * codegeny-beans
@@ -27,30 +38,76 @@ import org.codegeny.beans.model.ModelVisitor;
 import org.codegeny.beans.model.SetModel;
 import org.codegeny.beans.model.ValueModel;
 
-public class TypeModelVisitor<T> implements ModelVisitor<T, Class<? extends T>> {
+public class TypeModelVisitor<T>  implements ModelVisitor<T, Type> {
 
+	private static final class ParameterizedTypeImpl implements ParameterizedType {
+		
+		private final Type[] actualTypeArguments;
+		private final Type rawType;
+
+		private ParameterizedTypeImpl(Type rawType, Type... actualTypeArguments) {
+			this.actualTypeArguments = Objects.requireNonNull(actualTypeArguments);
+			this.rawType = Objects.requireNonNull(rawType);
+		}
+
+		public Type[] getActualTypeArguments() {
+			return Arrays.copyOf(actualTypeArguments, actualTypeArguments.length);
+		}
+
+		public Type getOwnerType() {
+			return null;
+		}
+
+		public Type getRawType() {
+			return rawType;
+		}
+
+		@Override
+		public int hashCode() {
+			return Arrays.hashCode(actualTypeArguments) ^ rawType.hashCode();
+		}
+
+		@Override
+		public boolean equals(Object that) {
+			return super.equals(that) || that instanceof ParameterizedType && equals((ParameterizedType) that);
+		}
+		
+		private boolean equals(ParameterizedType that) {
+			return that.getOwnerType() == null && rawType.equals(that.getRawType()) && Arrays.equals(actualTypeArguments, that.getActualTypeArguments());
+		}
+
+		@Override
+		public String toString() {
+			StringBuilder sb = new StringBuilder(rawType.toString());
+			if (actualTypeArguments.length > 0) {
+				sb.append(Stream.of(actualTypeArguments).map(Object::toString).collect(joining(",", "<", ">")));
+			}
+			return sb.toString();
+		}
+	}
+	
 	@Override
-	public Class<? extends T> visitBean(BeanModel<T> bean) {
+	public Type visitBean(BeanModel<T> bean) {
 		return bean.getType();
 	}
 
 	@Override
-	public <E> Class<? extends T> visitList(ListModel<T, E> list) {
-		throw new UnsupportedOperationException();
+	public <E> Type visitList(ListModel<T, E> list) {
+		return new ParameterizedTypeImpl(List.class, list.accept(new TypeModelVisitor<>()));
 	}
 
 	@Override
-	public <K, V> Class<? extends T> visitMap(MapModel<T, K, V> map) {
-		throw new UnsupportedOperationException();
+	public <K, V> Type visitMap(MapModel<T, K, V> map) {
+		return new ParameterizedTypeImpl(Map.class, map.acceptKey(new TypeModelVisitor<>()), map.acceptValue(new TypeModelVisitor<>()));
 	}
 
 	@Override
-	public <E> Class<? extends T> visitSet(SetModel<T, E> set) {
-		throw new UnsupportedOperationException();
+	public <E> Type visitSet(SetModel<T, E> set) {
+		return new ParameterizedTypeImpl(Set.class, set.accept(new TypeModelVisitor<>()));
 	}
 
 	@Override
-	public Class<? extends T> visitValue(ValueModel<T> value) {
+	public Type visitValue(ValueModel<T> value) {
 		return value.getType();
 	}
 }

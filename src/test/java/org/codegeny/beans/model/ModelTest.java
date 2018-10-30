@@ -22,15 +22,14 @@ package org.codegeny.beans.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Arrays;
 
 import org.codegeny.beans.Person;
 import org.codegeny.beans.model.visitor.TraversingModelVisitor;
+import org.codegeny.beans.model.visitor.TypeModelVisitor;
 import org.codegeny.beans.model.visitor.Typer;
-import org.codegeny.beans.model.visitor.json.FromStringJsonDeserializer;
-import org.codegeny.beans.model.visitor.json.JsonTyper;
-import org.codegeny.beans.model.visitor.json.ToStringJsonSerializer;
 import org.codegeny.beans.path.Path;
 import org.junit.jupiter.api.Test;
 
@@ -63,7 +62,17 @@ public class ModelTest {
         testModule.addDeserializer(LocalDate.class, new FromStringJsonDeserializer<>(LocalDate::parse));
         mapper.registerModule(testModule);
 
-		Typer<String> typer = new JsonTyper(mapper);
+		Typer<String> typer = new Typer<String>() {
+			
+			@Override
+			public <T> T retype(Model<T> model, String value) {
+				try {
+					return mapper.readerFor(mapper.getTypeFactory().constructType(model.accept(new TypeModelVisitor<>()))).readValue(value);
+				} catch (IOException ioException) {
+					throw new RuntimeException(ioException);
+				}
+			}
+		};
 		
 		Person person = Person.createDefaultPerson();
 		

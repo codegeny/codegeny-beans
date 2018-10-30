@@ -25,7 +25,7 @@ import static java.util.Objects.requireNonNull;
 import java.util.List;
 import java.util.function.Function;
 
-public final class ListModel<L, E> implements Model<L>, Function<L, List<E>> {
+public final class ListModel<L, E> implements Model<L> {
 
 	private final Model<E> elementModel;
 	private final Function<? super L, ? extends List<E>> extractor;
@@ -47,11 +47,7 @@ public final class ListModel<L, E> implements Model<L>, Function<L, List<E>> {
 		return this.elementModel.accept(visitor);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public List<E> apply(L values) {
+	public List<E> toList(L values) {
 		return values == null ? emptyList() : this.extractor.apply(values);
 	}
 

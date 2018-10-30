@@ -1,4 +1,4 @@
-package org.codegeny.beans.model.visitor.json;
+package org.codegeny.beans.model;
 
 /*-
  * #%L
@@ -20,23 +20,25 @@ package org.codegeny.beans.model.visitor.json;
  * #L%
  */
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.SerializerProvider;
 
 import java.io.IOException;
 import java.util.function.Function;
 
-public class FromStringJsonDeserializer<T> extends JsonDeserializer<T> {
+public class ToStringJsonSerializer<T> extends JsonSerializer<T> {
 
-    private final Function<String, ? extends T> parser;
+    public static final JsonSerializer<Object> DEFAULT = new ToStringJsonSerializer<>(Object::toString);
 
-    public FromStringJsonDeserializer(Function<String, ? extends T> parser) {
-        this.parser = parser;
+    private final Function<? super T, String> printer;
+
+    public ToStringJsonSerializer(Function<? super T, String> printer) {
+        this.printer = printer;
     }
 
     @Override
-    public T deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
-        return parser.apply(jsonParser.readValueAs(String.class));
+    public void serialize(T object, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
+        jsonGenerator.writeString(printer.apply(object));
     }
 }

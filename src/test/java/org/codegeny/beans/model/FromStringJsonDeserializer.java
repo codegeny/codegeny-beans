@@ -1,4 +1,4 @@
-package org.codegeny.beans.model.visitor.json;
+package org.codegeny.beans.model;
 
 /*-
  * #%L
@@ -20,27 +20,23 @@ package org.codegeny.beans.model.visitor.json;
  * #L%
  */
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
+
 import java.io.IOException;
+import java.util.function.Function;
 
-import org.codegeny.beans.model.Model;
-import org.codegeny.beans.model.visitor.Typer;
+public class FromStringJsonDeserializer<T> extends JsonDeserializer<T> {
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+    private final Function<String, ? extends T> parser;
 
-public class JsonTyper implements Typer<String> {
-	
-	private final ObjectMapper mapper;
+    public FromStringJsonDeserializer(Function<String, ? extends T> parser) {
+        this.parser = parser;
+    }
 
-	public JsonTyper(ObjectMapper mapper) {
-		this.mapper = mapper;
-	}
-	
-	@Override
-	public <T> T retype(Model<T> model, String value) {
-		try {
-			return mapper.readerFor(model.accept(new JavaTypeModelVisitor<>(mapper.getTypeFactory()))).readValue(value);
-		} catch (IOException ioException) {
-			throw new RuntimeException(ioException);
-		}
-	}
+    @Override
+    public T deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
+        return parser.apply(jsonParser.readValueAs(String.class));
+    }
 }

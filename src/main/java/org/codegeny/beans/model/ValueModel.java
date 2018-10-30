@@ -24,7 +24,7 @@ import static java.util.Objects.requireNonNull;
 
 import java.util.Comparator;
 
-public final class ValueModel<V> implements Model<V>, Comparator<V> {
+public final class ValueModel<V> implements Model<V> {
 	
 	private final Comparator<? super V> comparator;
 	private final Class<? extends V> type;
@@ -47,9 +47,14 @@ public final class ValueModel<V> implements Model<V>, Comparator<V> {
 	 */
 	@Override
 	public int compare(V left, V right) {
-		return this.comparator.compare(left, right);
+		return comparator.compare(left, right);
 	}
 	
+	/**
+	 * Return the value class.
+	 * 
+	 * @return The value class.
+	 */
 	public Class<? extends V> getType() {
 		return type;
 	}

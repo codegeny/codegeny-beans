@@ -73,28 +73,28 @@ public final class SetModelVisitor<S, T> implements ModelVisitor<T, Void> {
 	
 	@Override
 	public <K, V> Void visitMap(MapModel<T, K, V> map) {
-		Map<K, V> m = map.apply(current);
+		Map<K, V> m = map.toMap(current);
 		return process(map, map.getValueModel(), map.getKeyModel(), m::get, m::put, t -> {
 			m.clear();
-			m.putAll(map.apply(t));
+			m.putAll(map.toMap(t));
 		});
 	}
 	
 	@Override
 	public <E> Void visitSet(SetModel<T, E> set) {
-		Set<E> s = set.apply(current);
+		Set<E> s = set.toSet(current);
 		return process(set, set.getElementModel(), set.getElementModel(), v -> s.stream().filter(isEqual(v)).findAny().orElse(null), (a, b) -> s.add(a), t -> {
 			s.clear();
-			s.addAll(set.apply(t));
+			s.addAll(set.toSet(t));
 		});
 	}
 	
 	@Override
 	public <E> Void visitList(ListModel<T, E> list) {
-		List<E> l = list.apply(current);
+		List<E> l = list.toList(current);
 		return process(list, list.getElementModel(), Model.INTEGER, l::get, l::set, t -> {
 			l.clear();
-			l.addAll(list.apply(t));
+			l.addAll(list.toList(t));
 		});
 	}
 	

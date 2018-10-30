@@ -25,10 +25,10 @@ import static org.codegeny.beans.model.Model.bean;
 import static org.codegeny.beans.model.Model.list;
 import static org.codegeny.beans.model.Model.set;
 import static org.codegeny.beans.model.Model.value;
+import static org.codegeny.beans.model.Model.property;
 import static org.codegeny.beans.model.Properties.list;
 import static org.codegeny.beans.model.Properties.set;
-import static org.codegeny.beans.model.Property.immutable;
-import static org.codegeny.beans.model.Property.mutable;
+
 
 import java.time.LocalDate;
 import java.util.LinkedHashSet;
@@ -42,12 +42,12 @@ import org.codegeny.beans.model.Model;
 public class Person {
 
 	public static final Model<Person> MODEL = bean(Person.class, //
-			mutable("firstName", Person::getFirstName, Person::setFirstName, STRING), //
-			immutable("middleNames", list(Person::getMiddleNames, p -> i -> e -> p.setMiddleName(i, e)), list(STRING)), //
-			immutable("lastName", Person::getLastName, STRING), //
-			mutable("birthDate", Person::getBirthDate, Person::setBirthDate, value(LocalDate.class)), //
-			immutable("currentAddress", Person::getCurrentAddress, Address.MODEL), //
-			immutable("formerAddresses", set(Person::getFormerAddresses, Person::addFormerAddress), set(Address.MODEL)) //
+			property("firstName", Person::getFirstName, Person::setFirstName, STRING), //
+			property("middleNames", list(Person::getMiddleNames, p -> i -> e -> p.setMiddleName(i, e)), list(STRING)), //
+			property("lastName", Person::getLastName, STRING), //
+			property("birthDate", Person::getBirthDate, Person::setBirthDate, value(LocalDate.class)), //
+			property("currentAddress", Person::getCurrentAddress, Address.MODEL), //
+			property("formerAddresses", set(Person::getFormerAddresses, Person::addFormerAddress), set(Address.MODEL)) //
 	);
 
 	public static Person createDefaultPerson() {

@@ -26,7 +26,7 @@ import static java.util.Objects.requireNonNull;
 import java.util.Map;
 import java.util.function.Function;
 
-public final class MapModel<M, K, V> implements Model<M>, Function<M, Map<K, V>> {
+public final class MapModel<M, K, V> implements Model<M> {
 	
 	private final Function<? super M, ? extends Map<K, V>> extractor;
 	private final Model<K> keyModel;
@@ -54,11 +54,7 @@ public final class MapModel<M, K, V> implements Model<M>, Function<M, Map<K, V>>
 		return this.valueModel.accept(visitor);
 	}
 	
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Map<K, V> apply(M values) {
+	public Map<K, V> toMap(M values) {
 		return values == null ? emptyMap() : this.extractor.apply(values);
 	}
 

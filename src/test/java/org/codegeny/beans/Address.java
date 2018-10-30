@@ -22,16 +22,16 @@ package org.codegeny.beans;
 
 import static org.codegeny.beans.model.Model.STRING;
 import static org.codegeny.beans.model.Model.bean;
-import static org.codegeny.beans.model.Property.immutable;
+import static org.codegeny.beans.model.Model.property;
 
 import org.codegeny.beans.model.Model;
 
 public class Address {
 
 	public static final Model<Address> MODEL = bean(Address.class, //
-			immutable("street", Address::getStreet, STRING), //
-			immutable("zipCode", Address::getZipCode, STRING), //
-			immutable("country", Address::getCountry, STRING) //
+			property("street", Address::getStreet, Address::setStreet, STRING), //
+			property("zipCode", Address::getZipCode, Address::setZipCode, STRING), //
+			property("country", Address::getCountry, Address::setCountry, STRING) //
 	);
 
 	private String country;

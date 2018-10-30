@@ -21,10 +21,12 @@ package org.codegeny.beans.model;
  */
 import static java.util.Collections.unmodifiableCollection;
 import static java.util.Objects.requireNonNull;
+import static java.util.function.Function.identity;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * An implementation of {@link Model} for a bean.
@@ -32,14 +34,15 @@ import java.util.Map;
  * @author Xavier DURY
  * @param <B> The type of the bean.
  */
-public final class BeanModel<B> implements Model<B>, Iterable<Property<? super B, ?>> {
+public final class BeanModel<B> implements Model<B> {
 	
 	private final Class<? extends B> type;
 	private final Map<String, Property<? super B, ?>> properties;
 	
-	BeanModel(Class<? extends B> type, Map<String, Property<? super B, ?>> properties) {
+	@SafeVarargs
+	BeanModel(Class<? extends B> type, Property<? super B, ?>... properties) {
 		this.type = requireNonNull(type);
-		this.properties = requireNonNull(properties);
+		this.properties = Stream.of(requireNonNull(properties)).collect(Collectors.toMap(Property::getName, identity()));
 	}
 
 	/**
@@ -76,15 +79,5 @@ public final class BeanModel<B> implements Model<B>, Iterable<Property<? super B
 	 */
 	public Class<? extends B> getType() {
 		return type;
-	}
-	
-	/**
-	 * Iterate over all properties.
-	 * 
-	 * @return An iterator of all properties.
-	 */
-	@Override
-	public Iterator<Property<? super B, ?>> iterator() {
-		return getProperties().iterator();
-	}
+	}	
 }

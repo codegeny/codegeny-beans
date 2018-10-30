@@ -48,23 +48,23 @@ public class BeanCollector<T> implements ModelVisitor<T, Set<?>> {
 	public Set<?> visitBean(BeanModel<T> bean) {
 		if (this.target != null) {
 			this.beans.add(this.target);
-			bean.forEach(this::visitProperty);
+			bean.getProperties().forEach(this::visitProperty);
 		}
 		return beans;
 	}
 	
 	public <E> Set<?> visitSet(SetModel<T, E> collection) {
-		collection.apply(this.target).forEach(e -> collection.acceptElement(new BeanCollector<>(e, this.beans)));
+		collection.toSet(this.target).forEach(e -> collection.acceptElement(new BeanCollector<>(e, this.beans)));
 		return beans;
 	}
 	
 	public <E> Set<?> visitList(ListModel<T, E> collection) {
-		collection.apply(this.target).forEach(e -> collection.acceptElement(new BeanCollector<>(e, this.beans)));
+		collection.toList(this.target).forEach(e -> collection.acceptElement(new BeanCollector<>(e, this.beans)));
 		return beans;
 	}
 
 	public <K, V> Set<?> visitMap(MapModel<T, K, V> map) {
-		map.apply(this.target).values().forEach(e -> map.acceptValue(new BeanCollector<>(e, this.beans)));
+		map.toMap(this.target).values().forEach(e -> map.acceptValue(new BeanCollector<>(e, this.beans)));
 		return beans;
 	}
 

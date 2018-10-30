@@ -72,7 +72,7 @@ public class ToStringModelVisitor<T> implements ModelVisitor<T, StringBuilder> {
 	public <K, V> StringBuilder visitMap(MapModel<T, K, V> map) {
 		this.builder.append("[");
 		Comparator<? super K> comparator = new ModelComparator<>(map.getKeyModel());
-		Map<? extends K, ? extends V> entries = map.apply(this.target);
+		Map<? extends K, ? extends V> entries = map.toMap(this.target);
 		Collection<K> sorted = entries.keySet().stream().sorted(comparator).collect(toList());
 		int count = forEachIndexed(sorted, (i, v) -> {
 			this.builder.append(i > 0 ? "," : "").append("\n").append(this.indent).append("  ").append(v).append(": ");
@@ -84,7 +84,7 @@ public class ToStringModelVisitor<T> implements ModelVisitor<T, StringBuilder> {
 	public <E> StringBuilder visitSet(SetModel<T, E> values) {
 		this.builder.append("[");
 		Comparator<? super E> comparator = new ModelComparator<>(values.getElementModel());
-		Set<? extends E> collection = values.apply(this.target);
+		Set<? extends E> collection = values.toSet(this.target);
 		Collection<E> sorted = collection.stream().sorted(comparator).collect(toList());
 		int count = forEachIndexed(sorted, (i, v) -> {
 			this.builder.append(i > 0 ? "," : "").append("\n").append(this.indent).append("  ");
@@ -95,7 +95,7 @@ public class ToStringModelVisitor<T> implements ModelVisitor<T, StringBuilder> {
 	
 	public <E> StringBuilder visitList(ListModel<T, E> values) {
 		this.builder.append("[");
-		List<? extends E> list = values.apply(this.target);
+		List<? extends E> list = values.toList(this.target);
 		int count = forEachIndexed(list, (i, v) -> {
 			this.builder.append(i > 0 ? "," : "").append("\n").append(this.indent).append("  ");
 			values.acceptElement(new ToStringModelVisitor<>(v, this.builder, this.indent.concat("  ")));
