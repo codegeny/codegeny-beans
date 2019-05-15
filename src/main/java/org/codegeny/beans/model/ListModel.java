@@ -1,5 +1,3 @@
-package org.codegeny.beans.model;
-
 /*-
  * #%L
  * codegeny-beans
@@ -19,6 +17,8 @@ package org.codegeny.beans.model;
  * limitations under the License.
  * #L%
  */
+package org.codegeny.beans.model;
+
 import java.util.List;
 import java.util.function.Function;
 

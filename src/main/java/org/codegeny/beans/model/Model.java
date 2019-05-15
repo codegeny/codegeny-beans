@@ -1,5 +1,3 @@
-package org.codegeny.beans.model;
-
 /*-
  * #%L
  * codegeny-beans
@@ -9,9 +7,9 @@ package org.codegeny.beans.model;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,6 +17,8 @@ package org.codegeny.beans.model;
  * limitations under the License.
  * #L%
  */
+package org.codegeny.beans.model;
+
 import static java.util.Comparator.naturalOrder;
 import static java.util.function.Function.identity;
 
@@ -37,7 +37,7 @@ import org.codegeny.beans.model.visitor.SetModelVisitor;
 import org.codegeny.beans.model.visitor.ToStringModelVisitor;
 import org.codegeny.beans.model.visitor.Typer;
 import org.codegeny.beans.path.Path;
-import org.codegeny.beans.util.Hasher;
+import org.codegeny.beans.hash.Hasher;
 
 /**
  * Base interface for modeling an object structure as a tree.

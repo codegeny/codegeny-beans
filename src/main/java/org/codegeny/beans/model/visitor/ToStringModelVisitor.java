@@ -1,5 +1,3 @@
-package org.codegeny.beans.model.visitor;
-
 /*-
  * #%L
  * codegeny-beans
@@ -9,9 +7,9 @@ package org.codegeny.beans.model.visitor;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,8 +17,10 @@ package org.codegeny.beans.model.visitor;
  * limitations under the License.
  * #L%
  */
+package org.codegeny.beans.model.visitor;
+
 import static java.util.stream.Collectors.toList;
-import static org.codegeny.beans.util.IndexedConsumer.forEachIndexed;
+import static org.codegeny.beans.util.Utils.forEachIndexed;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -36,7 +36,7 @@ import org.codegeny.beans.model.Property;
 import org.codegeny.beans.model.SetModel;
 import org.codegeny.beans.model.ValueModel;
 
-public class ToStringModelVisitor<T> implements ModelVisitor<T, StringBuilder> {
+public final class ToStringModelVisitor<T> implements ModelVisitor<T, StringBuilder> {
 	
 	private final StringBuilder builder;
 	private final String indent;
@@ -54,7 +54,7 @@ public class ToStringModelVisitor<T> implements ModelVisitor<T, StringBuilder> {
 	
 	public StringBuilder visitBean(BeanModel<T> bean) {
 		this.builder.append("{");
-		int count = forEachIndexed(bean.getProperties(), (i, p) -> {
+		int count = forEachIndexed(bean.getProperties(), (p, i) -> {
 			this.builder.append(i > 0 ? "," : "").append("\n").append(this.indent).append("  ").append(p.getName()).append(": ");
 			visitProperty(p);
 		});
@@ -74,7 +74,7 @@ public class ToStringModelVisitor<T> implements ModelVisitor<T, StringBuilder> {
 		Comparator<? super K> comparator = new ModelComparator<>(map.getKeyModel());
 		Map<? extends K, ? extends V> entries = map.toMap(this.target);
 		Collection<K> sorted = entries.keySet().stream().sorted(comparator).collect(toList());
-		int count = forEachIndexed(sorted, (i, v) -> map.acceptValue(new ToStringModelVisitor<>(entries.get(v), this.builder.append(i > 0 ? "," : "").append("\n").append(this.indent).append("  ").append(v).append(": "), this.indent.concat("  "))));
+		int count = forEachIndexed(sorted, (v, i) -> map.acceptValue(new ToStringModelVisitor<>(entries.get(v), this.builder.append(i > 0 ? "," : "").append("\n").append(this.indent).append("  ").append(v).append(": "), this.indent.concat("  "))));
 		return this.builder.append(count > 0 ? "\n".concat(this.indent) : "").append("]");
 	}
 
@@ -83,14 +83,14 @@ public class ToStringModelVisitor<T> implements ModelVisitor<T, StringBuilder> {
 		Comparator<? super E> comparator = new ModelComparator<>(values.getElementModel());
 		Set<? extends E> collection = values.toSet(this.target);
 		Collection<E> sorted = collection.stream().sorted(comparator).collect(toList());
-		int count = forEachIndexed(sorted, (i, v) -> values.acceptElement(new ToStringModelVisitor<>(v, this.builder.append(i > 0 ? "," : "").append("\n").append(this.indent).append("  "), this.indent.concat("  "))));
+		int count = forEachIndexed(sorted, (v, i) -> values.acceptElement(new ToStringModelVisitor<>(v, this.builder.append(i > 0 ? "," : "").append("\n").append(this.indent).append("  "), this.indent.concat("  "))));
 		return this.builder.append(count > 0 ? "\n".concat(this.indent) : "").append("]");
 	}
 	
 	public <E> StringBuilder visitList(ListModel<T, E> values) {
 		this.builder.append("[");
 		List<? extends E> list = values.toList(this.target);
-		int count = forEachIndexed(list, (i, v) -> values.acceptElement(new ToStringModelVisitor<>(v, this.builder.append(i > 0 ? "," : "").append("\n").append(this.indent).append("  "), this.indent.concat("  "))));
+		int count = forEachIndexed(list, (v, i) -> values.acceptElement(new ToStringModelVisitor<>(v, this.builder.append(i > 0 ? "," : "").append("\n").append(this.indent).append("  "), this.indent.concat("  "))));
 		return this.builder.append(count > 0 ? "\n".concat(this.indent) : "").append("]");
 	}
 }

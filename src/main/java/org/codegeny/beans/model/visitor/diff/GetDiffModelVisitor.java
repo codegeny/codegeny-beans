@@ -1,5 +1,3 @@
-package org.codegeny.beans.model.visitor.diff;
-
 /*-
  * #%L
  * codegeny-beans
@@ -9,9 +7,9 @@ package org.codegeny.beans.model.visitor.diff;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,12 +17,13 @@ package org.codegeny.beans.model.visitor.diff;
  * limitations under the License.
  * #L%
  */
+package org.codegeny.beans.model.visitor.diff;
 
 import org.codegeny.beans.diff.Diff;
 import org.codegeny.beans.model.ListModel;
 import org.codegeny.beans.model.SetModel;
 import org.codegeny.beans.model.visitor.ModelComparator;
-import org.codegeny.beans.util.AddAndXorHasher;
+import org.codegeny.beans.hash.AddAndXorHasher;
 
 import java.util.ArrayList;
 import java.util.LinkedList;

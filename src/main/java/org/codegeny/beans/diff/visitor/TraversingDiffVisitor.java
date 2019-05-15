@@ -1,5 +1,3 @@
-package org.codegeny.beans.diff.visitor;
-
 /*-
  * #%L
  * codegeny-beans
@@ -9,9 +7,9 @@ package org.codegeny.beans.diff.visitor;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,8 +17,9 @@ package org.codegeny.beans.diff.visitor;
  * limitations under the License.
  * #L%
  */
+package org.codegeny.beans.diff.visitor;
 
-import static org.codegeny.beans.util.IndexedConsumer.forEachIndexed;
+import static org.codegeny.beans.util.Utils.forEachIndexed;
 
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
@@ -85,7 +84,7 @@ public final class TraversingDiffVisitor<T> implements DiffVisitor<T, Void> {
 	@Override
 	public <E> Void visitList(ListDiff<T, E> listDiff) {
 		if (processor.test(path, listDiff)) {
-			forEachIndexed(listDiff.getList(), (i, n) -> n.accept(childVisitor(path.append(i))));
+			forEachIndexed(listDiff.getList(), (n, i) -> n.accept(childVisitor(path.append(i))));
 		}
 		return null;
 	}

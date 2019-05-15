@@ -1,5 +1,3 @@
-package org.codegeny.beans.util;
-
 /*-
  * #%L
  * codegeny-beans
@@ -9,9 +7,9 @@ package org.codegeny.beans.util;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,15 +17,26 @@ package org.codegeny.beans.util;
  * limitations under the License.
  * #L%
  */
-public interface IndexedConsumer<T> {
+package org.codegeny.beans.hash;
 
-	void accept(int index, T target);
+/**
+ * This implementation of hasher is not affected by the order of elements which are hashed.
+ * 
+ * @author Xavier DURY
+ */
+public class AddAndXorHasher implements Hasher {
+	
+	private static final int MASK = 0xaaaaaaaa;
 
-	static <T> int forEachIndexed(Iterable<? extends T> collection, IndexedConsumer<? super T> consumer) {
-		int index = 0;
-		for (T element : collection) {
-			consumer.accept(index++, element);
-		}
-		return index;
+	private int add, xor;
+	
+	public Hasher hash(int value) {
+		add += value;
+		xor ^= value;
+		return this;
+	}
+	
+	public int toHash() {
+		return (MASK & add) | (~MASK & xor); 
 	}
 }

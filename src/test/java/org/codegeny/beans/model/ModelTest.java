@@ -101,4 +101,9 @@ public class ModelTest {
 	public void testToPath() {
 		Person.MODEL.accept(new TraversingModelVisitor<>(Person.createDefaultPerson(), (p, v) -> System.out.printf("%s = %s%n", p, v)));
 	}
+
+	@Test
+	public void describe() {
+		System.out.println(Person.MODEL.describe());
+	}
 }
