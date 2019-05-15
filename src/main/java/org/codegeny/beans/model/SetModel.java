@@ -25,6 +25,13 @@ import static java.util.Objects.requireNonNull;
 import java.util.Set;
 import java.util.function.Function;
 
+/**
+ * An implementation of {@link Model} for a set.
+ *
+ * @param <S> The type of the set.
+ * @param <E> The type of the element.
+ * @author Xavier DURY
+ */
 public final class SetModel<S, E> implements Model<S> {
 
 	private final Model<E> elementModel;
@@ -43,14 +50,32 @@ public final class SetModel<S, E> implements Model<S> {
 		return requireNonNull(visitor).visitSet(this);
 	}
 
+	/**
+	 * Visit the element model.
+	 *
+	 * @param visitor The visitor.
+	 * @param <R> The result type.
+	 * @return A result of type &lt;R&gt;.
+	 */
 	public <R> R acceptElement(ModelVisitor<E, ? extends R> visitor) {
 		return elementModel.accept(visitor);
 	}
 
+	/**
+	 * Transform a set of type &lt;S&gt; to Set&lt;E&gt;
+	 *
+	 * @param values The values.
+	 * @return A set of elements.
+	 */
 	public Set<E> toSet(S values) {
 		return values == null ? emptySet() : extractor.apply(values);
 	}
 
+	/**
+	 * Get the element model.
+	 *
+	 * @return The element model.
+	 */
 	public Model<E> getElementModel() {
 		return elementModel;
 	}

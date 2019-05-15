@@ -92,10 +92,7 @@ public final class GetModelVisitor<S, T> implements ModelVisitor<T, Object> {
 	}
 	
 	private <I, E> Object process(Model<E> e, Model<? extends I> i, Function<? super I, ? extends E> f) {
-		return process(k -> {
-			I value = typer.retype(i, k);
-			return e.accept(visitor(f.apply(value)));
-		});
+		return process(k -> e.accept(visitor(f.apply( typer.retype(i, k)))));
 	}
 	
 	private <Z> GetModelVisitor<S, Z> visitor(Z current) {

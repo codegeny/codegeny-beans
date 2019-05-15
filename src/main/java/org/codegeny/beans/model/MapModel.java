@@ -19,13 +19,19 @@ package org.codegeny.beans.model;
  * limitations under the License.
  * #L%
  */
-
 import static java.util.Collections.emptyMap;
 import static java.util.Objects.requireNonNull;
 
 import java.util.Map;
 import java.util.function.Function;
 
+/**
+ * An implementation of {@link Model} for a map.
+ *
+ * @param <M> The type of the map.
+ * @param <K> The type of the key.
+ * @param <V> The type of the value.
+ */
 public final class MapModel<M, K, V> implements Model<M> {
 	
 	private final Function<? super M, ? extends Map<K, V>> extractor;
@@ -45,23 +51,53 @@ public final class MapModel<M, K, V> implements Model<M> {
 	public <R> R accept(ModelVisitor<M, ? extends R> visitor) {
 		return requireNonNull(visitor).visitMap(this);
 	}
-	
+
+	/**
+	 * Visit the key model.
+	 *
+	 * @param visitor The visitor.
+	 * @param <R> The result type.
+	 * @return A result of type &lt;R&gt;.
+	 */
 	public <R> R acceptKey(ModelVisitor<K, ? extends R> visitor) {
 		return this.keyModel.accept(visitor);
 	}
-	
+
+	/**
+	 * Visit the value model.
+	 *
+	 * @param visitor The visitor.
+	 * @param <R> The result type.
+	 * @return A result of type &lt;R&gt;.
+	 */
 	public <R> R acceptValue(ModelVisitor<V, ? extends R> visitor) {
 		return this.valueModel.accept(visitor);
 	}
-	
+
+	/**
+	 * Transform a map of type &lt;M&gt; to Map&lt;K, V&gt;
+	 *
+	 * @param values The values.
+	 * @return A map of (key, value).
+	 */
 	public Map<K, V> toMap(M values) {
 		return values == null ? emptyMap() : this.extractor.apply(values);
 	}
 
+	/**
+	 * Get the key model.
+	 *
+	 * @return The key model.
+	 */
 	public Model<K> getKeyModel() {
 		return this.keyModel;
 	}
 
+	/**
+	 * Get the value model.
+	 *
+	 * @return The value model.
+	 */
 	public Model<V> getValueModel() {
 		return this.valueModel;
 	}

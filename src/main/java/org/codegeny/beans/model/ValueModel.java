@@ -24,6 +24,12 @@ import static java.util.Objects.requireNonNull;
 
 import java.util.Comparator;
 
+/**
+ * An implementation of {@link Model} for a simple/atomic value.
+ *
+ * @param <V> The value type.
+ * @author Xavier DURY
+ */
 public final class ValueModel<V> implements Model<V> {
 	
 	private final Comparator<? super V> comparator;

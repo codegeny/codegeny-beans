@@ -197,7 +197,6 @@ public interface Diff<T> extends Serializable {
 	/**
 	 * Transform this diff to a map [path &rarr; <code>{@link Diff}</code>].
 	 * 
-	 * @param root The name of the root element.
 	 * @return A map.
 	 */
 	default Map<String, Diff<?>> toMap() {
@@ -209,7 +208,6 @@ public interface Diff<T> extends Serializable {
 	/**
 	 * Transform this diff to a string.
 	 * 
-	 * @param root The name of the root element.
 	 * @return A string.
 	 */
 	default String describe() {

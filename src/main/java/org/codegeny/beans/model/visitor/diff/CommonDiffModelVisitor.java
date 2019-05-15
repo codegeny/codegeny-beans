@@ -52,7 +52,7 @@ public abstract class CommonDiffModelVisitor<T> implements ModelVisitor<T, Diff<
 		private final T left, right, target;
 		private final Status type;
 
-		protected AbstractDiffModelVisitor(T left, T right, T target, Status type) {
+		AbstractDiffModelVisitor(T left, T right, T target, Status type) {
 			this.left = left;
 			this.right = right;
 			this.target = target;
@@ -74,7 +74,7 @@ public abstract class CommonDiffModelVisitor<T> implements ModelVisitor<T, Diff<
 		}
 
 		public <K, V> Diff<T> visitMap(MapModel<T, K, V> map) {
-			return Diff.map(type, left, right, map.toMap(target).entrySet().stream().collect(toMap(e -> e.getKey(), e -> map.acceptValue(create(e.getValue())))));
+			return Diff.map(type, left, right, map.toMap(target).entrySet().stream().collect(toMap(Map.Entry::getKey, e -> map.acceptValue(create(e.getValue())))));
 		}
 		
 		private <P> Diff<P> visitProperty(Property<? super T, P> property) {
@@ -88,7 +88,7 @@ public abstract class CommonDiffModelVisitor<T> implements ModelVisitor<T, Diff<
 		
 	protected static class AddedDiffModelVisitor<T> extends AbstractDiffModelVisitor<T> {
 		
-		public AddedDiffModelVisitor(T right) {
+		AddedDiffModelVisitor(T right) {
 			super(null, right, right, ADDED);
 		}
 		
@@ -122,7 +122,7 @@ public abstract class CommonDiffModelVisitor<T> implements ModelVisitor<T, Diff<
 	
 	protected static class RemovedDiffModelVisitor<T> extends AbstractDiffModelVisitor<T> {
 		
-		public RemovedDiffModelVisitor(T left) {
+		RemovedDiffModelVisitor(T left) {
 			super(left, null, left, REMOVED);
 		}
 		
@@ -135,13 +135,13 @@ public abstract class CommonDiffModelVisitor<T> implements ModelVisitor<T, Diff<
 		throw new IllegalStateException(String.format("Duplicate key %s", left));
 	}
 	
-	protected static Status toStatus(Collection<? extends Diff<?>> diffs) {
+	static Status toStatus(Collection<? extends Diff<?>> diffs) {
 		return diffs.stream().map(Diff::getStatus).reduce(Status::combine).orElse(UNCHANGED);
 	}
 	
 	protected final T left, right;
 	
-	public CommonDiffModelVisitor(T left, T right) {
+	CommonDiffModelVisitor(T left, T right) {
 		this.left = left;
 		this.right = right;
 	}

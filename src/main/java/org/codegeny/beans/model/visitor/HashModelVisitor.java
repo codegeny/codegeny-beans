@@ -52,7 +52,7 @@ public class HashModelVisitor<T> implements ModelVisitor<T, Hasher> {
 	}
 	
 	public <K, V> Hasher visitMap(MapModel<T, K, V> map) {
-		map.toMap(this.target).entrySet().forEach(e -> map.acceptKey(new HashModelVisitor<>(e.getKey(), map.acceptValue(new HashModelVisitor<>(e.getValue(), hasher)))));
+		map.toMap(this.target).forEach((k, v) -> map.acceptKey(new HashModelVisitor<>(k, map.acceptValue(new HashModelVisitor<>(v, hasher)))));
 		return this.hasher;
 	}
 

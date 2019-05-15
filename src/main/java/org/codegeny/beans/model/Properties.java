@@ -19,7 +19,6 @@ package org.codegeny.beans.model;
  * limitations under the License.
  * #L%
  */
-
 import java.util.AbstractList;
 import java.util.AbstractMap;
 import java.util.AbstractSet;

@@ -19,7 +19,6 @@ package org.codegeny.beans.model;
  * limitations under the License.
  * #L%
  */
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
@@ -43,7 +42,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 public class ModelTest {
 		
 	@Test
-	public void extractPath() throws Exception {
+	public void extractPath() {
 		
 		ObjectMapper mapper = new ObjectMapper();
 		mapper
@@ -62,7 +61,7 @@ public class ModelTest {
         testModule.addDeserializer(LocalDate.class, new FromStringJsonDeserializer<>(LocalDate::parse));
         mapper.registerModule(testModule);
 
-		Typer<String> typer = new Typer<String>() {
+		Typer<String> jsonTyper = new Typer<String>() {
 			
 			@Override
 			public <T> T retype(Model<T> model, String value) {
@@ -80,10 +79,10 @@ public class ModelTest {
 		Person.MODEL.set(person, Path.of("middleNames", 0), "Fridrick");
 		assertEquals(Arrays.asList("Fridrick", "Fitzgerald"), person.getMiddleNames());
 		
-		Person.MODEL.set(person, Path.of("\"middleNames\"", "0"), "\"Yannick\"", typer);
+		Person.MODEL.set(person, Path.of("\"middleNames\"", "0"), "\"Yannick\"", jsonTyper);
 		assertEquals(Arrays.asList("Yannick", "Fitzgerald"), person.getMiddleNames());
 		
-		Person.MODEL.set(person, Path.of("\"birthDate\""), "\"2018-01-01\"", typer);
+		Person.MODEL.set(person, Path.of("\"birthDate\""), "\"2018-01-01\"", jsonTyper);
 		assertEquals(LocalDate.of(2018, 1, 1), person.getBirthDate());
 		
 		assertEquals("John", person.getFirstName());

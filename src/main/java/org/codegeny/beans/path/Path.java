@@ -76,7 +76,7 @@ public final class Path<P> implements Iterable<P> {
 		return new Path<>(result);
 	}
 	
-	public int size() {
+	int size() {
 		return elements.size();
 	}
 
@@ -85,7 +85,7 @@ public final class Path<P> implements Iterable<P> {
 		return elements.iterator();
 	}
 	
-	public String toString(String separator, String prefix, String suffix) {
+	String toString(String separator, String prefix, String suffix) {
 		return elements.stream().map(Object::toString).collect(Collectors.joining(separator, prefix, suffix));
 	}
 	

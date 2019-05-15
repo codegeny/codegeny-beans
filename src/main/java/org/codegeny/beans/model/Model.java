@@ -47,7 +47,8 @@ import org.codegeny.beans.util.Hasher;
  * <ul>
  * <li>{@link BeanModel} which represents a bean.</li>
  * <li>{@link ValueModel} which represents a terminal value (leaf). Generally atomic types like Numbers, Strings or simple value objects.</li>
- * <li>{@link SetModel} which represents a collection of objects.</li>
+ * <li>{@link SetModel} which represents a set of objects.</li>
+ * <li>{@link ListModel} which represents a list of objects.</li>
  * <li>{@link MapModel} which represents a map.</li>
  * </ul>
  * All implementations are required to be thread-safe.

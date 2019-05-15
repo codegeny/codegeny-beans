@@ -44,10 +44,7 @@ public class DescribeModelVisitor<T> implements ModelVisitor<T, StringBuilder> {
 	
 	public StringBuilder visitBean(BeanModel<T> bean) {
 		this.builder.append("BeanModel {");
-		int count = forEachIndexed(bean.getProperties(), (i, p) -> {
-			this.builder.append(i > 0 ? "," : "").append("\n").append(this.indent).append("  ").append(p.getName()).append(": ");
-			p.accept(new DescribeModelVisitor<>(this.builder, this.indent.concat("  ")));
-		});
+		int count = forEachIndexed(bean.getProperties(), (i, p) -> p.accept(new DescribeModelVisitor<>(this.builder.append(i > 0 ? "," : "").append("\n").append(this.indent).append("  ").append(p.getName()).append(": "), this.indent.concat("  "))));
 		return this.builder.append(count > 0 ? "\n" : "").append(this.indent).append("}"); 
 	}
 	

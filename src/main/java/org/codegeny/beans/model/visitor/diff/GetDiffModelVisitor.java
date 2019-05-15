@@ -19,24 +19,24 @@ package org.codegeny.beans.model.visitor.diff;
  * limitations under the License.
  * #L%
  */
-import static java.lang.Math.max;
-import static java.lang.Math.min;
-import static java.util.Comparator.comparing;
-import static java.util.Comparator.nullsLast;
-import static java.util.stream.IntStream.range;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.function.BiFunction;
-import java.util.function.IntConsumer;
 
 import org.codegeny.beans.diff.Diff;
 import org.codegeny.beans.model.ListModel;
 import org.codegeny.beans.model.SetModel;
 import org.codegeny.beans.model.visitor.ModelComparator;
 import org.codegeny.beans.util.AddAndXorHasher;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.function.BiFunction;
+import java.util.function.IntConsumer;
+
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+import static java.util.Comparator.comparing;
+import static java.util.Comparator.nullsLast;
+import static java.util.stream.IntStream.range;
 
 // TODO optimize this shit
 public class GetDiffModelVisitor<T> extends CommonDiffModelVisitor<T> {
@@ -46,8 +46,8 @@ public class GetDiffModelVisitor<T> extends CommonDiffModelVisitor<T> {
 		void accept(int x, int y, Diff<T> diff);
 	}
 	
-	protected final ScoreOptimizer optimizer;
-	protected final double threshold;
+	private final ScoreOptimizer optimizer;
+	private final double threshold;
 	
 	public GetDiffModelVisitor(T left, T right, double threshold, ScoreOptimizer optimizer) {
 		super(left, right);
@@ -244,8 +244,8 @@ public class GetDiffModelVisitor<T> extends CommonDiffModelVisitor<T> {
 		range(0, rightSize).filter(j -> !rightUsed[j]).forEach(addRight);
 
 		// sort the result
-		
-		Collections.sort(list, comparing(e -> e.getLeft() == null ? e.getRight() : e.getLeft(), nullsLast(new ModelComparator<>(values.getElementModel()))));
+
+		list.sort(comparing(e -> e.getLeft() == null ? e.getRight() : e.getLeft(), nullsLast(new ModelComparator<>(values.getElementModel()))));
 		return Diff.list(toStatus(list), left, right, list);
 	}
 }
