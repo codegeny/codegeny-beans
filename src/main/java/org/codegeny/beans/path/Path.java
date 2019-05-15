@@ -19,7 +19,6 @@ package org.codegeny.beans.path;
  * limitations under the License.
  * #L%
  */
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;

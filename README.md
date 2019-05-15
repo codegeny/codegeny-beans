@@ -18,8 +18,8 @@ In turn, once you have your model defined, you can use it to generate a toString
 The `Model<T>` interface represents a node in the hierarchical structure for an object of type `T` and can be of one of the following concrete classes:
 
 - `ValueModel<T>` which represents an atomic value of type `T`. Atomic values must be comparable or a comparator must be given to the `ValueModel`.
-- `ListModel<C, E>` represents a list-like value (of type `C`) of other models (of type `E`). Note that `C` is not required to be of type `List<E>` but then a transformation function (`Function<C, List<E>>`) must be given to the `ListModel`.
-- `SetModel<C, E>` represents a set-like value (of type `C`) of other models (of type `E`). Note that `C` is not required to be of type `Set<E>` but then a transformation function (`Function<C, Set<E>>`) must be given to the `SetModel`.
+- `ListModel<L, E>` represents a list-like value (of type `L`) of other models (of type `E`). Note that `L` is not required to be of type `List<E>` but then a transformation function (`Function<L, List<E>>`) must be given to the `ListModel`.
+- `SetModel<S, E>` represents a set-like value (of type `S`) of other models (of type `E`). Note that `S` is not required to be of type `Set<E>` but then a transformation function (`Function<S, Set<E>>`) must be given to the `SetModel`.
 - `MapModel<M, K, V>` represents a map-like value (of type `M`) of keys (`K`) and values (`V`). As with lists and sets, `M` is not required to be of type `Map<K, V>` but a `Function<M, Map<K, V>>` must be given to the `MapModel`.
 - `BeanModel<B>` represents a bean of type `B`. A `BeanModel` contains a map of properties (`Map<String, Property<B, ?>>`).
 
@@ -62,16 +62,16 @@ The structure of the class Person can be defined as follows:
 
 ```java
 Model<Address> addressModel = Model.bean(Address.class,
-	Model.property("street", Address::getStreet, Model.value(String.class)),
-	Model.property("houseNumber", Address::getHouseNumber, Model.value(String.class)),
-	Model.property("city", Address::getZipCode, Model.value(String.class)),
-	Model.property("country", Address::getCity, Model.value(String.class)),
+	Model.property("street", Address::getStreet, Model.STRING),
+	Model.property("houseNumber", Address::getHouseNumber, Model.STRING),
+	Model.property("city", Address::getZipCode, Model.STRING),
+	Model.property("country", Address::getCity, Model.STRING),
 	Model.property("street", Address::getCountry, Model.value(Country.class))
 );
 
 Model<Person> personModel = Model.bean(Person.class,
-	Model.property("firstName", Person::getFirstName, Model.value(String.class)),
-	Model.property("lastName", Person::getLastName, Model.value(String.class)),
+	Model.property("firstName", Person::getFirstName, Model.STRING),
+	Model.property("lastName", Person::getLastName, Model.STRING),
 	Model.property("birthDate", Person::getBirthDate, Model.value(LocalDate.class)),
 	Model.property("mainAddress", Person::getMainAddress, addressModel),
 	Model.property("formerAddresses", Person::getFormerAddresses, Model.set(addressModel)

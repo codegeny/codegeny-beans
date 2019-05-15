@@ -19,7 +19,6 @@ package org.codegeny.beans;
  * limitations under the License.
  * #L%
  */
-
 import static org.codegeny.beans.model.Model.STRING;
 import static org.codegeny.beans.model.Model.bean;
 import static org.codegeny.beans.model.Model.property;

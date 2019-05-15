@@ -19,7 +19,6 @@ package org.codegeny.beans.model;
  * limitations under the License.
  * #L%
  */
-
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;

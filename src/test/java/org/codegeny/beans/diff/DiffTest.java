@@ -19,7 +19,6 @@ package org.codegeny.beans.diff;
  * limitations under the License.
  * #L%
  */
-
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.codegeny.beans.Person.MODEL;
 import static org.codegeny.beans.Person.createDefaultPerson;
