@@ -19,10 +19,10 @@
  */
 package org.codegeny.beans.model;
 
+import java.util.Comparator;
+
 import static java.util.Comparator.nullsLast;
 import static java.util.Objects.requireNonNull;
-
-import java.util.Comparator;
 
 /**
  * An implementation of {@link Model} for a simple/atomic value.
@@ -31,37 +31,37 @@ import java.util.Comparator;
  * @author Xavier DURY
  */
 public final class ValueModel<V> implements Model<V> {
-	
-	private final Comparator<? super V> comparator;
-	private final Class<? extends V> type;
-	
-	ValueModel(Class<? extends V> type, Comparator<? super V> comparator) {
-		this.type = requireNonNull(type);
-		this.comparator = nullsLast(requireNonNull(comparator));
-	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public <R> R accept(ModelVisitor<V, ? extends R> visitor) {
-		return requireNonNull(visitor).visitValue(this);
-	}
-	
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public int compare(V left, V right) {
-		return comparator.compare(left, right);
-	}
-	
-	/**
-	 * Return the value class.
-	 * 
-	 * @return The value class.
-	 */
-	public Class<? extends V> getType() {
-		return type;
-	}
+    private final Comparator<? super V> comparator;
+    private final Class<? extends V> type;
+
+    ValueModel(Class<? extends V> type, Comparator<? super V> comparator) {
+        this.type = requireNonNull(type);
+        this.comparator = nullsLast(requireNonNull(comparator));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public <R> R accept(ModelVisitor<V, ? extends R> visitor) {
+        return requireNonNull(visitor).visitValue(this);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int compare(V left, V right) {
+        return comparator.compare(left, right);
+    }
+
+    /**
+     * Return the value class.
+     *
+     * @return The value class.
+     */
+    public Class<? extends V> getType() {
+        return type;
+    }
 }

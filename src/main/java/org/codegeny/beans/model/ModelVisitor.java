@@ -19,15 +19,56 @@
  */
 package org.codegeny.beans.model;
 
+/**
+ * Visitor for a {@link Model} which can return a result of type &gt;R&lt;
+ *
+ * @param <T> The type of the model.
+ * @param <R> The result type.
+ * @author Xavier DURY
+ */
 public interface ModelVisitor<T, R> {
-	
-	R visitBean(BeanModel<T> bean);
-	
-	<E> R visitList(ListModel<T, E> list);
-	
-	<K, V> R visitMap(MapModel<T, K, V> map);
-	
-	<E> R visitSet(SetModel<T, E> set);
-	
-	R visitValue(ValueModel<T> value);
+
+    /**
+     * Visit a {@link BeanModel}.
+     *
+     * @param bean The bean model.
+     * @return The result.
+     */
+    R visitBean(BeanModel<T> bean);
+
+    /**
+     * Visit a {@link ListModel}.
+     *
+     * @param list The list model.
+     * @param <E>  The element type of the list model.
+     * @return The result.
+     */
+    <E> R visitList(ListModel<T, E> list);
+
+    /**
+     * Visit a {@link MapModel}.
+     *
+     * @param map the map model.
+     * @param <K> The key type of the map model.
+     * @param <V> The value type of the map model.
+     * @return the result.
+     */
+    <K, V> R visitMap(MapModel<T, K, V> map);
+
+    /**
+     * Visit a {@link SetModel}.
+     *
+     * @param set The set model.
+     * @param <E> The element type of the set model.
+     * @return The result.
+     */
+    <E> R visitSet(SetModel<T, E> set);
+
+    /**
+     * Visit a {@link ValueModel}.
+     *
+     * @param value The value model.
+     * @return The result.
+     */
+    R visitValue(ValueModel<T> value);
 }

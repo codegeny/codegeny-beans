@@ -54,7 +54,7 @@ public final class ListModel<L, E> implements Model<L> {
      * Visit the element model.
      *
      * @param visitor The visitor.
-     * @param <R> The result type.
+     * @param <R>     The result type.
      * @return A result of type &lt;R&gt;.
      */
     public <R> R acceptElement(ModelVisitor<E, ? extends R> visitor) {

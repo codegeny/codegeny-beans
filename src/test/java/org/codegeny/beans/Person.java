@@ -1,5 +1,3 @@
-package org.codegeny.beans;
-
 /*-
  * #%L
  * codegeny-beans
@@ -19,6 +17,7 @@ package org.codegeny.beans;
  * limitations under the License.
  * #L%
  */
+package org.codegeny.beans;
 
 import org.codegeny.beans.model.Model;
 
@@ -33,8 +32,8 @@ import static org.codegeny.beans.model.Model.map;
 import static org.codegeny.beans.model.Model.property;
 import static org.codegeny.beans.model.Model.set;
 import static org.codegeny.beans.model.Model.value;
-import static org.codegeny.beans.model.Properties.list;
-import static org.codegeny.beans.model.Properties.set;
+import static org.codegeny.beans.model.Property.list;
+import static org.codegeny.beans.model.Property.set;
 
 public class Person {
 

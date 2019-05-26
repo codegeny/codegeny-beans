@@ -19,11 +19,11 @@
  */
 package org.codegeny.beans.model;
 
-import static java.util.Collections.emptySet;
-import static java.util.Objects.requireNonNull;
-
 import java.util.Set;
 import java.util.function.Function;
+
+import static java.util.Collections.emptySet;
+import static java.util.Objects.requireNonNull;
 
 /**
  * An implementation of {@link Model} for a set.
@@ -34,49 +34,49 @@ import java.util.function.Function;
  */
 public final class SetModel<S, E> implements Model<S> {
 
-	private final Model<E> elementModel;
-	private final Function<? super S, ? extends Set<E>> extractor;
+    private final Model<E> elementModel;
+    private final Function<? super S, ? extends Set<E>> extractor;
 
-	SetModel(Function<? super S, ? extends Set<E>> extractor, Model<E> elementModel) {
-		this.extractor = requireNonNull(extractor);
-		this.elementModel = requireNonNull(elementModel);
-	}
+    SetModel(Function<? super S, ? extends Set<E>> extractor, Model<E> elementModel) {
+        this.extractor = requireNonNull(extractor);
+        this.elementModel = requireNonNull(elementModel);
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public <R> R accept(ModelVisitor<S, ? extends R> visitor) {
-		return requireNonNull(visitor).visitSet(this);
-	}
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public <R> R accept(ModelVisitor<S, ? extends R> visitor) {
+        return requireNonNull(visitor).visitSet(this);
+    }
 
-	/**
-	 * Visit the element model.
-	 *
-	 * @param visitor The visitor.
-	 * @param <R> The result type.
-	 * @return A result of type &lt;R&gt;.
-	 */
-	public <R> R acceptElement(ModelVisitor<E, ? extends R> visitor) {
-		return elementModel.accept(visitor);
-	}
+    /**
+     * Visit the element model.
+     *
+     * @param visitor The visitor.
+     * @param <R>     The result type.
+     * @return A result of type &lt;R&gt;.
+     */
+    public <R> R acceptElement(ModelVisitor<E, ? extends R> visitor) {
+        return elementModel.accept(visitor);
+    }
 
-	/**
-	 * Transform a set of type &lt;S&gt; to Set&lt;E&gt;
-	 *
-	 * @param values The values.
-	 * @return A set of elements.
-	 */
-	public Set<E> toSet(S values) {
-		return values == null ? emptySet() : extractor.apply(values);
-	}
+    /**
+     * Transform a set of type &lt;S&gt; to Set&lt;E&gt;
+     *
+     * @param values The values.
+     * @return A set of elements.
+     */
+    public Set<E> toSet(S values) {
+        return values == null ? emptySet() : extractor.apply(values);
+    }
 
-	/**
-	 * Get the element model.
-	 *
-	 * @return The element model.
-	 */
-	public Model<E> getElementModel() {
-		return elementModel;
-	}
+    /**
+     * Get the element model.
+     *
+     * @return The element model.
+     */
+    public Model<E> getElementModel() {
+        return elementModel;
+    }
 }

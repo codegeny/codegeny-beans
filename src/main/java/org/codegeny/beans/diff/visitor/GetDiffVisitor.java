@@ -26,40 +26,40 @@ import java.util.Iterator;
 import java.util.function.Function;
 
 public final class GetDiffVisitor<T> implements DiffVisitor<T, Diff<?>> {
-	
-	private final Iterator<?> path;
 
-	public GetDiffVisitor(Path<?> path) {
-		this(path.iterator());
-	}
-	
-	private GetDiffVisitor(Iterator<?> path) {
-		this.path = path;
-	}
+    private final Iterator<?> path;
 
-	@Override
-	public Diff<?> visitBean(BeanDiff<T> bean) {
-		return process(bean, n -> bean.getProperty((String) n));
-	}
-	
-	@Override
-	public <E> Diff<?> visitList(ListDiff<T, E> list) {
-		return process(list, n -> list.getList().get((Integer) n));
-	}
+    public GetDiffVisitor(Path<?> path) {
+        this(path.iterator());
+    }
 
-	@Override
-	public <K, V> Diff<?> visitMap(MapDiff<T, K, V> map) {
-		return process(map, n -> map.getMap().get((K) n));
-	}
+    private GetDiffVisitor(Iterator<?> path) {
+        this.path = path;
+    }
 
-	@Override
-	public Diff<?> visitSimple(SimpleDiff<T> simple) {
-		return process(simple, n -> {
-			throw new IllegalArgumentException("SimpleDiff must be terminal");
-		});
-	}
-	
-	private <N> Diff<?> process(Diff<T> diff, Function<Object, Diff<N>> next) {
-		return path.hasNext() ? next.apply(path.next()).accept(new GetDiffVisitor<>(path)) : diff;
-	}
+    @Override
+    public Diff<?> visitBean(BeanDiff<T> bean) {
+        return process(bean, n -> bean.getProperty((String) n));
+    }
+
+    @Override
+    public <E> Diff<?> visitList(ListDiff<T, E> list) {
+        return process(list, n -> list.getList().get((Integer) n));
+    }
+
+    @Override
+    public <K, V> Diff<?> visitMap(MapDiff<T, K, V> map) {
+        return process(map, n -> map.getMap().get((K) n));
+    }
+
+    @Override
+    public Diff<?> visitSimple(SimpleDiff<T> simple) {
+        return process(simple, n -> {
+            throw new IllegalArgumentException("SimpleDiff must be terminal");
+        });
+    }
+
+    private <N> Diff<?> process(Diff<T> diff, Function<Object, Diff<N>> next) {
+        return path.hasNext() ? next.apply(path.next()).accept(new GetDiffVisitor<>(path)) : diff;
+    }
 }

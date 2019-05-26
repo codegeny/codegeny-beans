@@ -23,36 +23,36 @@ import org.codegeny.beans.hash.Hasher;
 import org.codegeny.beans.model.*;
 
 public class HashModelVisitor<T> implements ModelVisitor<T, Hasher> {
-	
-	private final Hasher hasher;
-	private final T target;
 
-	public HashModelVisitor(T target, Hasher hasher) {
-		this.target = target;
-		this.hasher = hasher;
-	}
+    private final Hasher hasher;
+    private final T target;
 
-	public Hasher visitBean(BeanModel<T> bean) {
-		return bean.getProperties().stream().reduce(this.hasher, this::visitProperty, (x, y) -> null);
-	}
+    public HashModelVisitor(T target, Hasher hasher) {
+        this.target = target;
+        this.hasher = hasher;
+    }
 
-	public Hasher visitValue(ValueModel<T> value) {
-		return this.hasher.hash(this.target);
-	}
+    public Hasher visitBean(BeanModel<T> bean) {
+        return bean.getProperties().stream().reduce(this.hasher, this::visitProperty, (x, y) -> null);
+    }
 
-	private <P> Hasher visitProperty(Hasher hasher, Property<? super T, P> property) {
-		return property.accept(new HashModelVisitor<>(property.get(target), hasher));
-	}
-	
-	public <K, V> Hasher visitMap(MapModel<T, K, V> map) {
-		return map.toMap(this.target).entrySet().stream().reduce(this.hasher, (h, e) -> map.acceptKey(new HashModelVisitor<>(e.getKey(), map.acceptValue(new HashModelVisitor<>(e.getValue(), h)))), (x, y) -> null);
-	}
+    public Hasher visitValue(ValueModel<T> value) {
+        return this.hasher.hash(this.target);
+    }
 
-	public <E> Hasher visitSet(SetModel<T, E> values) {
-		return values.toSet(this.target).stream().reduce(this.hasher, (h, e) -> values.acceptElement(new HashModelVisitor<>(e, h)), (x, y) -> null);
-	}
-	
-	public <E> Hasher visitList(ListModel<T, E> values) {
-		return values.toList(this.target).stream().reduce(this.hasher, (h, e) -> values.acceptElement(new HashModelVisitor<>(e, h)), (x, y) -> null);
-	}
+    private <P> Hasher visitProperty(Hasher hasher, Property<? super T, P> property) {
+        return property.accept(new HashModelVisitor<>(property.get(target), hasher));
+    }
+
+    public <K, V> Hasher visitMap(MapModel<T, K, V> map) {
+        return map.toMap(this.target).entrySet().stream().reduce(this.hasher, (h, e) -> map.acceptKey(new HashModelVisitor<>(e.getKey(), map.acceptValue(new HashModelVisitor<>(e.getValue(), h)))), (x, y) -> null);
+    }
+
+    public <E> Hasher visitSet(SetModel<T, E> values) {
+        return values.toSet(this.target).stream().reduce(this.hasher, (h, e) -> values.acceptElement(new HashModelVisitor<>(e, h)), (x, y) -> null);
+    }
+
+    public <E> Hasher visitList(ListModel<T, E> values) {
+        return values.toList(this.target).stream().reduce(this.hasher, (h, e) -> values.acceptElement(new HashModelVisitor<>(e, h)), (x, y) -> null);
+    }
 }

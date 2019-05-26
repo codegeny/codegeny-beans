@@ -21,41 +21,103 @@ package org.codegeny.beans.hash;
 
 import java.util.Objects;
 
+/**
+ * Hasher interface.
+ */
 public interface Hasher {
-	
-	default Hasher hash(boolean value) {
-		return hash(Boolean.hashCode(value));
-	}
-	
-	default Hasher hash(byte value) {
-		return hash(Byte.hashCode(value));
-	}
-	
-	default Hasher hash(char value) {
-		return hash(Character.hashCode(value));
-	}
-	
-	default Hasher hash(double value) {
-		return hash(Double.hashCode(value));
-	}
-	
-	default Hasher hash(float value) {
-		return hash(Float.hashCode(value));
-	}
-	
-	Hasher hash(int value);
-	
-	default Hasher hash(long value) {
-		return hash(Long.hashCode(value));
-	}
-	
-	default Hasher hash(Object... values) {
-		return hash(Objects.hashCode(values));
-	}
-	
-	default Hasher hash(short value) {
-		return hash(Short.hashCode(value));
-	}
-	
-	int toHash();
+
+    /**
+     * Hash a boolean.
+     *
+     * @param value The value to hash.
+     * @return The current hasher.
+     */
+    default Hasher hash(boolean value) {
+        return hash(Boolean.hashCode(value));
+    }
+
+    /**
+     * Hash a byte.
+     *
+     * @param value The value to hash.
+     * @return The current hasher.
+     */
+    default Hasher hash(byte value) {
+        return hash(Byte.hashCode(value));
+    }
+
+    /**
+     * Hash a char.
+     *
+     * @param value The value to hash.
+     * @return The current hasher.
+     */
+    default Hasher hash(char value) {
+        return hash(Character.hashCode(value));
+    }
+
+    /**
+     * Hash a double.
+     *
+     * @param value The value to hash.
+     * @return The current hasher.
+     */
+    default Hasher hash(double value) {
+        return hash(Double.hashCode(value));
+    }
+
+    /**
+     * Hash a float.
+     *
+     * @param value The value to hash.
+     * @return The current hasher.
+     */
+    default Hasher hash(float value) {
+        return hash(Float.hashCode(value));
+    }
+
+    /**
+     * Hash an int.
+     *
+     * @param value The value to hash.
+     * @return The current hasher.
+     */
+    Hasher hash(int value);
+
+    /**
+     * Hash a long.
+     *
+     * @param value The value to hash.
+     * @return The current hasher.
+     */
+    default Hasher hash(long value) {
+        return hash(Long.hashCode(value));
+    }
+
+    /**
+     * Hash an object.
+     *
+     * @param value The value to hash.
+     * @return The current hasher.
+     */
+    default Hasher hash(Object value) {
+        return hash(Objects.hashCode(value));
+    }
+
+    /**
+     * Hash a short.
+     *
+     * @param value The value to hash.
+     * @return The current hasher.
+     */
+    default Hasher hash(short value) {
+        return hash(Short.hashCode(value));
+    }
+
+    /**
+     * Get the resulting hash value.
+     *
+     * @return The hash value.
+     */
+    int toHash();
 }

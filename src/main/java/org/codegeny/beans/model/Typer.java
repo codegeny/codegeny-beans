@@ -17,21 +17,18 @@
  * limitations under the License.
  * #L%
  */
-package org.codegeny.beans.util;
+package org.codegeny.beans.model;
 
-import java.util.function.ObjIntConsumer;
+public interface Typer<S> {
 
-public final class Utils {
+    Typer<Object> IDENTITY = new Typer<Object>() {
 
-    public static <T> int forEachIndexed(Iterable<? extends T> collection, ObjIntConsumer<? super T> consumer) {
-        int index = 0;
-        for (T element : collection) {
-            consumer.accept(element, index++);
+        @Override
+        @SuppressWarnings("unchecked")
+        public <T> T retype(Model<T> model, Object value) {
+            return (T) value;
         }
-        return index;
-    }
+    };
 
-    private Utils() {
-        throw new InternalError("Cannot instantiate utility class");
-    }
+    <T> T retype(Model<T> model, S value);
 }

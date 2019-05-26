@@ -19,65 +19,65 @@
  */
 package org.codegeny.beans.model;
 
-import static java.util.Collections.unmodifiableCollection;
-import static java.util.Objects.requireNonNull;
-import static java.util.function.Function.identity;
-
 import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.Collections.unmodifiableCollection;
+import static java.util.Objects.requireNonNull;
+import static java.util.function.Function.identity;
+
 /**
  * An implementation of {@link Model} for a bean.
- *  
- * @author Xavier DURY
+ *
  * @param <B> The type of the bean.
+ * @author Xavier DURY
  */
 public final class BeanModel<B> implements Model<B> {
-	
-	private final Class<? extends B> type;
-	private final Map<String, Property<? super B, ?>> properties;
-	
-	@SafeVarargs
-	BeanModel(Class<? extends B> type, Property<? super B, ?>... properties) {
-		this.type = requireNonNull(type);
-		this.properties = Stream.of(requireNonNull(properties)).collect(Collectors.toMap(Property::getName, identity()));
-	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public <R> R accept(ModelVisitor<B, ? extends R> visitor) {
-		return requireNonNull(visitor).visitBean(this);
-	}
+    private final Class<? extends B> type;
+    private final Map<String, Property<? super B, ?>> properties;
 
-	/**
-	 * Get the properties which are registered for this <code>BeanModel</code>.
-	 * 
-	 * @return The properties.
-	 */
-	public Collection<Property<? super B, ?>> getProperties() {
-		return unmodifiableCollection(this.properties.values());
-	}
+    @SafeVarargs
+    BeanModel(Class<? extends B> type, Property<? super B, ?>... properties) {
+        this.type = requireNonNull(type);
+        this.properties = Stream.of(requireNonNull(properties)).collect(Collectors.toMap(Property::getName, identity()));
+    }
 
-	/**
-	 * Get a property by its name.
-	 * 
-	 * @param name The name of the property.
-	 * @return The corresponding property or null.
-	 */
-	public Property<? super B, ?> getProperty(String name) {
-		return properties.get(requireNonNull(name));
-	}
-	
-	/**
-	 * Return the bean class.
-	 * 
-	 * @return The bean class.
-	 */
-	public Class<? extends B> getType() {
-		return type;
-	}	
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public <R> R accept(ModelVisitor<B, ? extends R> visitor) {
+        return requireNonNull(visitor).visitBean(this);
+    }
+
+    /**
+     * Get the properties which are registered for this <code>BeanModel</code>.
+     *
+     * @return The properties.
+     */
+    public Collection<Property<? super B, ?>> getProperties() {
+        return unmodifiableCollection(this.properties.values());
+    }
+
+    /**
+     * Get a property by its name.
+     *
+     * @param name The name of the property.
+     * @return The corresponding property or null.
+     */
+    public Property<? super B, ?> getProperty(String name) {
+        return properties.get(requireNonNull(name));
+    }
+
+    /**
+     * Return the bean class.
+     *
+     * @return The bean class.
+     */
+    public Class<? extends B> getType() {
+        return type;
+    }
 }
