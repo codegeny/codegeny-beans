@@ -27,8 +27,10 @@
     <artifactId>codegeny-beans</artifactId>
     <version>0.0.1</version>
     <url>http://codegeny.org/codegeny-beans</url>
-
+    <name>Codegeny Beans</name>
+    <description>Library which provides meta-model, diffs, paths... for java beans</description>
     <inceptionYear>2016</inceptionYear>
+
     <organization>
         <name>Codegeny</name>
         <url>http://codegeny.org</url>
