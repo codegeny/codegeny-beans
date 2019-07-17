@@ -19,19 +19,14 @@
  */
 package org.codegeny.beans.model;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.Version;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.codegeny.beans.Person;
 import org.codegeny.beans.model.visitor.TraversingModelVisitor;
 import org.codegeny.beans.model.visitor.TypeModelVisitor;
 import org.codegeny.beans.path.Path;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
+import javax.json.bind.Jsonb;
+import javax.json.bind.JsonbBuilder;
 import java.time.LocalDate;
 import java.util.Arrays;
 
@@ -42,32 +37,13 @@ public class ModelTest {
     @Test
     public void extractPath() {
 
-        ObjectMapper mapper = new ObjectMapper();
-        mapper
-                .setSerializationInclusion(JsonInclude.Include.NON_NULL)
-                .enable(SerializationFeature.INDENT_OUTPUT)
-                .setVisibility(mapper.getSerializationConfig().getDefaultVisibilityChecker()
-                        .withFieldVisibility(JsonAutoDetect.Visibility.ANY)
-                        .withGetterVisibility(JsonAutoDetect.Visibility.NONE)
-                        .withSetterVisibility(JsonAutoDetect.Visibility.NONE)
-                        .withCreatorVisibility(JsonAutoDetect.Visibility.NONE)
-                )
-        ;
-
-        SimpleModule testModule = new SimpleModule("MyModule", Version.unknownVersion());
-        testModule.addSerializer(LocalDate.class, new ToStringJsonSerializer<>(LocalDate::toString));
-        testModule.addDeserializer(LocalDate.class, new FromStringJsonDeserializer<>(LocalDate::parse));
-        mapper.registerModule(testModule);
+        Jsonb jsonb = JsonbBuilder.create();
 
         Typer<String> jsonTyper = new Typer<String>() {
 
             @Override
             public <T> T retype(Model<T> model, String value) {
-                try {
-                    return mapper.readerFor(mapper.getTypeFactory().constructType(model.accept(new TypeModelVisitor<>()))).readValue(value);
-                } catch (IOException ioException) {
-                    throw new RuntimeException(ioException);
-                }
+                return jsonb.fromJson(value, model.accept(new TypeModelVisitor<>()));
             }
         };
 
