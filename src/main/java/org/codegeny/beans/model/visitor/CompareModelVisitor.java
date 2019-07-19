@@ -19,9 +19,19 @@
  */
 package org.codegeny.beans.model.visitor;
 
-import org.codegeny.beans.model.*;
+import org.codegeny.beans.model.BeanModel;
+import org.codegeny.beans.model.ListModel;
+import org.codegeny.beans.model.MapModel;
+import org.codegeny.beans.model.ModelVisitor;
+import org.codegeny.beans.model.Property;
+import org.codegeny.beans.model.SetModel;
+import org.codegeny.beans.model.ValueModel;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import static java.util.Comparator.nullsLast;
 
@@ -47,8 +57,8 @@ public final class CompareModelVisitor<T> implements ModelVisitor<T, Integer> {
     }
 
     public <K, V> Integer visitMap(MapModel<T, K, V> map) {
-        Map<? extends K, ? extends V> leftMap = map.toMap(this.left);
-        Map<? extends K, ? extends V> rightMap = map.toMap(this.right);
+        Map<K, V> leftMap = map.toMap(this.left);
+        Map<K, V> rightMap = map.toMap(this.right);
         Set<K> keys = new TreeSet<>(new ModelComparator<>(map.getKeyModel()));
         keys.addAll(leftMap.keySet());
         keys.addAll(rightMap.keySet());
@@ -57,22 +67,20 @@ public final class CompareModelVisitor<T> implements ModelVisitor<T, Integer> {
     }
 
     public <E> Integer visitSet(SetModel<T, E> values) {
-        Comparator<? super E> comparator = new ModelComparator<>(values.getElementModel());
-        Iterator<? extends E> leftIterator = values.toSet(this.left).stream().sorted(comparator).iterator();
-        Iterator<? extends E> rightIterator = values.toSet(this.right).stream().sorted(comparator).iterator();
-        while (leftIterator.hasNext() && rightIterator.hasNext()) {
-            int comparison = comparator.compare(leftIterator.next(), rightIterator.next());
-            if (comparison != 0) {
-                return comparison;
-            }
-        }
-        return leftIterator.hasNext() ? -1 : rightIterator.hasNext() ? +1 : 0;
+        Comparator<E> comparator = new ModelComparator<>(values.getElementModel());
+        Iterator<E> leftIterator = values.toSet(this.left).stream().sorted(comparator).iterator();
+        Iterator<E> rightIterator = values.toSet(this.right).stream().sorted(comparator).iterator();
+        return compareCollections(comparator, leftIterator, rightIterator);
     }
 
     public <E> Integer visitList(ListModel<T, E> values) {
-        Comparator<? super E> comparator = new ModelComparator<>(values.getElementModel());
-        Iterator<? extends E> leftIterator = values.toList(this.left).stream().iterator();
-        Iterator<? extends E> rightIterator = values.toList(this.right).stream().iterator();
+        Comparator<E> comparator = new ModelComparator<>(values.getElementModel());
+        Iterator<E> leftIterator = values.toList(this.left).stream().iterator();
+        Iterator<E> rightIterator = values.toList(this.right).stream().iterator();
+        return compareCollections(comparator, leftIterator, rightIterator);
+    }
+
+    private <E> Integer compareCollections(Comparator<E> comparator, Iterator<E> leftIterator, Iterator<E> rightIterator) {
         while (leftIterator.hasNext() && rightIterator.hasNext()) {
             int comparison = comparator.compare(leftIterator.next(), rightIterator.next());
             if (comparison != 0) {

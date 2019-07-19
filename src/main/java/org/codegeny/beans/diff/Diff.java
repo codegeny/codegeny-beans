@@ -24,6 +24,7 @@ import org.codegeny.beans.diff.visitor.TraversingDiffVisitor;
 import org.codegeny.beans.path.Path;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,43 +40,6 @@ import static java.util.Objects.requireNonNull;
  * @author Xavier DURY
  */
 public interface Diff<T> extends Serializable {
-
-    /**
-     * The status of the <code>{@link Diff}</code>. Can be:
-     * <ul>
-     * <li><code>ADDED</code> (left value does not exist while right does)</li>
-     * <li><code>REMOVED</code> (right value does not exist while left does)</li>
-     * <li><code>MODIFIED</code> (both values exist but are different)</li>
-     * <li><code>UNCHANGED</code> (both values exist and are the same or both values do not exist)</li>
-     * </ul>
-     */
-    enum Status {
-
-        ADDED, MODIFIED, REMOVED, UNCHANGED;
-
-        /**
-         * Combine 2 statuses given the following rules:
-         * <ol>
-         * <li>2 identical statuses must give the same status</li>
-         * <li><code>MODIFIED</code> + any status must give <code>MODIFIED</code></li>
-         * </ol>
-         *
-         * @param that The other status.
-         * @return The combined status.
-         */
-        public Status combine(Status that) {
-            return equals(requireNonNull(that, "Status cannot be null")) ? this : MODIFIED;
-        }
-
-        /**
-         * Is this status representing any change?
-         *
-         * @return True only if this status is <code>UNCHANGED</code>.
-         */
-        public boolean isChanged() {
-            return !equals(UNCHANGED);
-        }
-    }
 
     /**
      * Static method factory for <code>{@link BeanDiff}</code>.
@@ -219,5 +183,52 @@ public interface Diff<T> extends Serializable {
      */
     default void traverse(BiConsumer<? super Path<?>, ? super Diff<?>> consumer) {
         accept(new TraversingDiffVisitor<>(consumer));
+    }
+
+    /**
+     * The status of the <code>{@link Diff}</code>. Can be:
+     * <ul>
+     * <li><code>ADDED</code> (left value does not exist while right does)</li>
+     * <li><code>REMOVED</code> (right value does not exist while left does)</li>
+     * <li><code>MODIFIED</code> (both values exist but are different)</li>
+     * <li><code>UNCHANGED</code> (both values exist and are the same or both values do not exist)</li>
+     * </ul>
+     */
+    enum Status {
+
+        ADDED, MODIFIED, REMOVED, UNCHANGED;
+
+        /**
+         * Combine 2 statuses given the following rules:
+         * <ol>
+         * <li>2 identical statuses must give the same status</li>
+         * <li><code>MODIFIED</code> + any status must give <code>MODIFIED</code></li>
+         * </ol>
+         *
+         * @param that The other status.
+         * @return The combined status.
+         */
+        public Status combineWith(Status that) {
+            return equals(requireNonNull(that, "Status cannot be null")) ? this : MODIFIED;
+        }
+
+        /**
+         * Is this status representing any change?
+         *
+         * @return True only if this status is <code>UNCHANGED</code>.
+         */
+        public boolean isChanged() {
+            return !equals(UNCHANGED);
+        }
+
+        /**
+         * Reduce a status from a list of diffs.
+         *
+         * @param diffs The diffs.
+         * @return The combined status.
+         */
+        public static Status combineAll(Collection<? extends Diff<?>> diffs) {
+            return diffs.stream().map(Diff::getStatus).reduce(Status::combineWith).orElse(UNCHANGED);
+        }
     }
 }

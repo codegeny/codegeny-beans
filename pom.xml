@@ -25,7 +25,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.codegeny</groupId>
     <artifactId>codegeny-beans</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
     <url>http://codegeny.org/codegeny-beans</url>
     <name>Codegeny Beans</name>
     <description>Library which provides meta-model, diffs, paths... for java beans</description>
@@ -72,6 +72,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <license.licenseName>apache_v2</license.licenseName>
+        <skipTests>false</skipTests>
     </properties>
 
     <dependencies>
@@ -210,7 +211,7 @@
                     <plugin>
                         <groupId>org.sonatype.plugins</groupId>
                         <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.6.7</version>
+                        <version>1.6.8</version>
                         <extensions>true</extensions>
                         <configuration>
                             <serverId>ossrh</serverId>

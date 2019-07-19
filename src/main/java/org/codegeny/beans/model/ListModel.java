@@ -34,9 +34,22 @@ import static java.util.Objects.requireNonNull;
  */
 public final class ListModel<L, E> implements Model<L> {
 
+    /**
+     * The element model.
+     */
     private final Model<E> elementModel;
+
+    /**
+     * A function to convert the type &gt;L&gt; to List&gt;E&lt;.
+     */
     private final Function<? super L, ? extends List<E>> extractor;
 
+    /**
+     * Constructor.
+     *
+     * @param extractor    A function to convert the type &gt;L&gt; to List&gt;E&lt;.
+     * @param elementModel The element model.
+     */
     ListModel(Function<? super L, ? extends List<E>> extractor, Model<E> elementModel) {
         this.extractor = requireNonNull(extractor);
         this.elementModel = requireNonNull(elementModel);

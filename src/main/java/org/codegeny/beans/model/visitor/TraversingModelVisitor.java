@@ -19,7 +19,13 @@
  */
 package org.codegeny.beans.model.visitor;
 
-import org.codegeny.beans.model.*;
+import org.codegeny.beans.model.BeanModel;
+import org.codegeny.beans.model.ListModel;
+import org.codegeny.beans.model.MapModel;
+import org.codegeny.beans.model.ModelVisitor;
+import org.codegeny.beans.model.Property;
+import org.codegeny.beans.model.SetModel;
+import org.codegeny.beans.model.ValueModel;
 import org.codegeny.beans.path.Path;
 
 import java.util.function.BiConsumer;
@@ -48,14 +54,6 @@ public final class TraversingModelVisitor<T> implements ModelVisitor<T, Void> {
         this.processor = processor;
     }
 
-    private <R> TraversingModelVisitor<R> childVisitor(R target, Path<Object> path) {
-        return new TraversingModelVisitor<>(target, path, processor);
-    }
-
-    private void process() {
-        this.processor.accept(path, target);
-    }
-
     @Override
     public Void visitBean(BeanModel<T> bean) {
         process();
@@ -77,10 +75,6 @@ public final class TraversingModelVisitor<T> implements ModelVisitor<T, Void> {
         return null;
     }
 
-    private <P> void visitProperty(Property<? super T, P> property) {
-        property.accept(childVisitor(property.get(target), path.append(property.getName())));
-    }
-
     @Override
     public <E> Void visitSet(SetModel<T, E> set) {
         process();
@@ -92,5 +86,17 @@ public final class TraversingModelVisitor<T> implements ModelVisitor<T, Void> {
     public Void visitValue(ValueModel<T> value) {
         process();
         return null;
+    }
+
+    private <P> void visitProperty(Property<? super T, P> property) {
+        property.accept(childVisitor(property.get(target), path.append(property.getName())));
+    }
+
+    private <R> TraversingModelVisitor<R> childVisitor(R target, Path<Object> path) {
+        return new TraversingModelVisitor<>(target, path, processor);
+    }
+
+    private void process() {
+        this.processor.accept(path, target);
     }
 }

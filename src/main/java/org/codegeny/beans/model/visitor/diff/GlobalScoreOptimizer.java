@@ -19,21 +19,28 @@
  */
 package org.codegeny.beans.model.visitor.diff;
 
-import org.codegeny.beans.util.TimeOut;
-
+import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
 /**
  * This implementation of score optimizer will find THE best solution, the one that globally optimizes the score.
+ * This implementation is not reusable.
  *
  * @author Xavier DURY
  */
 public class GlobalScoreOptimizer implements ScoreOptimizer {
 
-    private final TimeOut timeOut;
+    private static final long COUNTER = 1000000;
 
-    public GlobalScoreOptimizer(TimeOut timeOut) {
-        this.timeOut = timeOut;
+    private final long limit;
+    private volatile long counter = COUNTER;
+
+    public GlobalScoreOptimizer() {
+        this(10, TimeUnit.SECONDS);
+    }
+
+    public GlobalScoreOptimizer(long duration, TimeUnit unit) {
+        this.limit = System.currentTimeMillis() + unit.toMillis(duration);
     }
 
     public int[] solve(int k, int n, double[][] matrix) {
@@ -52,7 +59,7 @@ public class GlobalScoreOptimizer implements ScoreOptimizer {
                 System.arraycopy(currentSolution, 0, bestSolution, 0, currentSolution.length);
                 bestScore = currentScore;
             } else {
-                this.timeOut.check();
+                check();
                 for (int i = 0; i < n; i++) {
                     if (!used[i]) {
                         used[i] = true;
@@ -63,5 +70,14 @@ public class GlobalScoreOptimizer implements ScoreOptimizer {
             }
         }
         return bestScore;
+    }
+
+    private void check() {
+        if (--counter == 0) {
+            counter = COUNTER;
+            if (this.limit < System.currentTimeMillis()) {
+                throw new RuntimeException("TIMEOUT!");
+            }
+        }
     }
 }

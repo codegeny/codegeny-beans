@@ -35,10 +35,28 @@ import static java.util.Objects.requireNonNull;
  */
 public final class MapModel<M, K, V> implements Model<M> {
 
-    private final Function<? super M, ? extends Map<K, V>> extractor;
+    /**
+     * The key model.
+     */
     private final Model<K> keyModel;
+
+    /**
+     * The value model.
+     */
     private final Model<V> valueModel;
 
+    /**
+     * A function to convert the type &gt;M&gt; to Map&gt;K, V&lt;.
+     */
+    private final Function<? super M, ? extends Map<K, V>> extractor;
+
+    /**
+     * Constructor.
+     *
+     * @param extractor  A function to convert the type &gt;M&gt; to Map&gt;K, V&lt;.
+     * @param keyModel   The key model.
+     * @param valueModel The value model.
+     */
     MapModel(Function<? super M, ? extends Map<K, V>> extractor, Model<K> keyModel, Model<V> valueModel) {
         this.extractor = requireNonNull(extractor);
         this.keyModel = requireNonNull(keyModel);

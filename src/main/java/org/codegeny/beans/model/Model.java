@@ -20,7 +20,12 @@
 package org.codegeny.beans.model;
 
 import org.codegeny.beans.hash.Hasher;
-import org.codegeny.beans.model.visitor.*;
+import org.codegeny.beans.model.visitor.CompareModelVisitor;
+import org.codegeny.beans.model.visitor.DescribeModelVisitor;
+import org.codegeny.beans.model.visitor.GetModelVisitor;
+import org.codegeny.beans.model.visitor.HashModelVisitor;
+import org.codegeny.beans.model.visitor.SetModelVisitor;
+import org.codegeny.beans.model.visitor.ToStringModelVisitor;
 import org.codegeny.beans.path.Path;
 
 import java.util.Comparator;
@@ -273,11 +278,11 @@ public interface Model<T> extends Comparator<T> {
     }
 
     default void set(T target, Path<Object> path, Object value) {
-        set(target, path, value, Typer.IDENTITY);
+        set(target, path, value, Typer.Identity.INSTANCE);
     }
 
     default Object get(T target, Path<Object> path) {
-        return get(target, path, Typer.IDENTITY);
+        return get(target, path, Typer.Identity.INSTANCE);
     }
 
     /**

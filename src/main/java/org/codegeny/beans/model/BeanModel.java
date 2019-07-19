@@ -21,12 +21,12 @@ package org.codegeny.beans.model;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.Collections.unmodifiableCollection;
 import static java.util.Objects.requireNonNull;
 import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toMap;
 
 /**
  * An implementation of {@link Model} for a bean.
@@ -36,13 +36,36 @@ import static java.util.function.Function.identity;
  */
 public final class BeanModel<B> implements Model<B> {
 
-    private final Class<? extends B> type;
+    /**
+     * The properties mapped by name.
+     */
     private final Map<String, Property<? super B, ?>> properties;
 
+    /**
+     * The bean type.
+     */
+    private final Class<? extends B> type;
+
+    /**
+     * Constructor.
+     *
+     * @param type       The bean type.
+     * @param properties The properties.
+     */
     @SafeVarargs
     BeanModel(Class<? extends B> type, Property<? super B, ?>... properties) {
+        this(type, Stream.of(requireNonNull(properties)).collect(toMap(Property::getName, identity())));
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param type       The bean type.
+     * @param properties The properties mapped by name.
+     */
+    private BeanModel(Class<? extends B> type, Map<String, Property<? super B, ?>> properties) {
         this.type = requireNonNull(type);
-        this.properties = Stream.of(requireNonNull(properties)).collect(Collectors.toMap(Property::getName, identity()));
+        this.properties = properties;
     }
 
     /**
@@ -79,5 +102,18 @@ public final class BeanModel<B> implements Model<B> {
      */
     public Class<? extends B> getType() {
         return type;
+    }
+
+    /**
+     * Extend this bean model.
+     *
+     * @param subType    The bean sub-type.
+     * @param properties The new properties
+     * @param <C>        The type of the sub-type bean.
+     * @return A new bean model.
+     */
+    @SafeVarargs
+    public final <C extends B> BeanModel<C> extend(Class<? extends C> subType, Property<? super C, ?>... properties) {
+        return new BeanModel<>(subType, Stream.concat(getProperties().stream(), Stream.of(requireNonNull(properties))).collect(toMap(Property::getName, identity())));
     }
 }

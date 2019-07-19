@@ -19,7 +19,19 @@
  */
 package org.codegeny.beans.model.visitor.diff;
 
+/**
+ * A score optimizer takes a matrix of scores and tries to pair row elements with
+ * column elements based on their matching scores.
+ */
 public interface ScoreOptimizer {
 
+    /**
+     * Solve the score.
+     *
+     * @param k      The number of rows.
+     * @param n      The number of columns which must be greater or equals to k.
+     * @param matrix A matrix (n:k) of normalized scores in [0; 1]
+     * @return An array of size k which gives for each row (k), the index of the paired column (n).
+     */
     int[] solve(int k, int n, double[][] matrix);
 }

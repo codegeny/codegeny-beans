@@ -21,7 +21,9 @@ package org.codegeny.beans;
 
 import org.codegeny.beans.model.Model;
 
-import static org.codegeny.beans.model.Model.*;
+import static org.codegeny.beans.model.Model.STRING;
+import static org.codegeny.beans.model.Model.bean;
+import static org.codegeny.beans.model.Model.property;
 
 public class Address {
 
@@ -39,22 +41,22 @@ public class Address {
         return country;
     }
 
-    public String getStreet() {
-        return street;
-    }
-
-    public String getZipCode() {
-        return zipCode;
-    }
-
     public Address setCountry(String country) {
         this.country = country;
         return this;
     }
 
+    public String getStreet() {
+        return street;
+    }
+
     public Address setStreet(String street) {
         this.street = street;
         return this;
+    }
+
+    public String getZipCode() {
+        return zipCode;
     }
 
     public Address setZipCode(String zipCode) {

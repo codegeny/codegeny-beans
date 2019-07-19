@@ -33,6 +33,9 @@ import static java.util.Collections.unmodifiableMap;
  */
 public final class MapDiff<M, K, V> extends AbstractDiff<M> {
 
+    /**
+     * @see java.io.Serializable
+     */
     private static final long serialVersionUID = 1L;
 
     private final Map<K, Diff<V>> map;

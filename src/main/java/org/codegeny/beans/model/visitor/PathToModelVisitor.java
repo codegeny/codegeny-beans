@@ -19,7 +19,15 @@
  */
 package org.codegeny.beans.model.visitor;
 
-import org.codegeny.beans.model.*;
+import org.codegeny.beans.model.BeanModel;
+import org.codegeny.beans.model.ListModel;
+import org.codegeny.beans.model.MapModel;
+import org.codegeny.beans.model.Model;
+import org.codegeny.beans.model.ModelVisitor;
+import org.codegeny.beans.model.Property;
+import org.codegeny.beans.model.SetModel;
+import org.codegeny.beans.model.Typer;
+import org.codegeny.beans.model.ValueModel;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -45,10 +53,6 @@ public final class PathToModelVisitor<S, T> implements ModelVisitor<T, Model<?>>
         return process(bean, k -> visitProperty(bean.getProperty(typer.retype(Model.STRING, k))));
     }
 
-    private <P> Model<?> visitProperty(Property<? super T, P> property) {
-        return property.accept(visitor());
-    }
-
     @Override
     public <K, V> Model<?> visitMap(MapModel<T, K, V> map) {
         return process2(map, map.getValueModel());
@@ -69,6 +73,10 @@ public final class PathToModelVisitor<S, T> implements ModelVisitor<T, Model<?>>
         return process(value, p -> {
             throw new UnsupportedOperationException("Value object must be terminal");
         });
+    }
+
+    private <P> Model<?> visitProperty(Property<? super T, P> property) {
+        return property.accept(visitor());
     }
 
     private Model<?> process(Model<?> model, Function<? super S, Model<?>> p) {

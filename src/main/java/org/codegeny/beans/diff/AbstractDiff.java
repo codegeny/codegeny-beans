@@ -31,6 +31,9 @@ import static java.util.Objects.requireNonNull;
  */
 abstract class AbstractDiff<T> implements Diff<T> {
 
+    /**
+     * @see java.io.Serializable
+     */
     private static final long serialVersionUID = 1L;
 
     private final T left, right;

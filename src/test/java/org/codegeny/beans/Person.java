@@ -22,7 +22,12 @@ package org.codegeny.beans;
 import org.codegeny.beans.model.Model;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
 
 import static org.codegeny.beans.model.Model.STRING;
@@ -46,6 +51,13 @@ public class Person {
             property("formerAddresses", set(Person::getFormerAddresses, Person::addFormerAddress), set(Address.MODEL)), //
             property("hints", Person::getHints, map(STRING, STRING)) //
     );
+    private LocalDate birthDate;
+    private Address currentAddress;
+    private String firstName;
+    private Set<Address> formerAddresses = new LinkedHashSet<>();
+    private String lastName;
+    private List<String> middleNames = new LinkedList<>();
+    private Map<String, String> hints = new LinkedHashMap<>();
 
     public static Person createDefaultPerson() {
         return new Person() //
@@ -58,14 +70,6 @@ public class Person {
                 .addFormerAddress(new Address().setStreet("Champs Elysées").setZipCode("1000").setCountry("France")) //
                 .addFormerAddress(new Address().setStreet("Grand Place").setZipCode("1000").setCountry("Belgium"));
     }
-
-    private LocalDate birthDate;
-    private Address currentAddress;
-    private String firstName;
-    private Set<Address> formerAddresses = new LinkedHashSet<>();
-    private String lastName;
-    private List<String> middleNames = new LinkedList<>();
-    private Map<String, String> hints = new LinkedHashMap<>();
 
     public Person addFormerAddress(Address formerAddress) {
         formerAddresses.add(formerAddress);
@@ -86,12 +90,27 @@ public class Person {
         return birthDate;
     }
 
+    public Person setBirthDate(LocalDate birthDate) {
+        this.birthDate = birthDate;
+        return this;
+    }
+
     public Address getCurrentAddress() {
         return currentAddress;
     }
 
+    public Person setCurrentAddress(Address currentAddress) {
+        this.currentAddress = currentAddress;
+        return this;
+    }
+
     public String getFirstName() {
         return firstName;
+    }
+
+    public Person setFirstName(String firstName) {
+        this.firstName = firstName;
+        return this;
     }
 
     public Set<Address> getFormerAddresses() {
@@ -100,6 +119,11 @@ public class Person {
 
     public String getLastName() {
         return lastName;
+    }
+
+    public Person setLastName(String lastName) {
+        this.lastName = lastName;
+        return this;
     }
 
     public List<String> getMiddleNames() {
@@ -113,26 +137,6 @@ public class Person {
 
     public Person removeMiddleName(Predicate<? super String> predicate) {
         middleNames.removeIf(predicate);
-        return this;
-    }
-
-    public Person setBirthDate(LocalDate birthDate) {
-        this.birthDate = birthDate;
-        return this;
-    }
-
-    public Person setCurrentAddress(Address currentAddress) {
-        this.currentAddress = currentAddress;
-        return this;
-    }
-
-    public Person setFirstName(String firstName) {
-        this.firstName = firstName;
-        return this;
-    }
-
-    public Person setLastName(String lastName) {
-        this.lastName = lastName;
         return this;
     }
 

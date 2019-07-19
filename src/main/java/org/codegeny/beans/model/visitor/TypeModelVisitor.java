@@ -19,25 +19,59 @@
  */
 package org.codegeny.beans.model.visitor;
 
-import org.codegeny.beans.model.*;
+import org.codegeny.beans.model.BeanModel;
+import org.codegeny.beans.model.ListModel;
+import org.codegeny.beans.model.MapModel;
+import org.codegeny.beans.model.ModelVisitor;
+import org.codegeny.beans.model.SetModel;
+import org.codegeny.beans.model.ValueModel;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.joining;
 
 public final class TypeModelVisitor<T> implements ModelVisitor<T, Type> {
+
+    @Override
+    public Type visitBean(BeanModel<T> bean) {
+        return bean.getType();
+    }
+
+    @Override
+    public <E> Type visitList(ListModel<T, E> list) {
+        return new ParameterizedTypeImpl(List.class, list.accept(new TypeModelVisitor<>()));
+    }
+
+    @Override
+    public <K, V> Type visitMap(MapModel<T, K, V> map) {
+        return new ParameterizedTypeImpl(Map.class, map.acceptKey(new TypeModelVisitor<>()), map.acceptValue(new TypeModelVisitor<>()));
+    }
+
+    @Override
+    public <E> Type visitSet(SetModel<T, E> set) {
+        return new ParameterizedTypeImpl(Set.class, set.accept(new TypeModelVisitor<>()));
+    }
+
+    @Override
+    public Type visitValue(ValueModel<T> value) {
+        return value.getType();
+    }
 
     private static final class ParameterizedTypeImpl implements ParameterizedType {
 
         private final Type[] actualTypeArguments;
         private final Type rawType;
 
-        private ParameterizedTypeImpl(Type rawType, Type... actualTypeArguments) {
-            this.actualTypeArguments = Objects.requireNonNull(actualTypeArguments);
-            this.rawType = Objects.requireNonNull(rawType);
+        ParameterizedTypeImpl(Type rawType, Type... actualTypeArguments) {
+            this.actualTypeArguments = requireNonNull(actualTypeArguments);
+            this.rawType = requireNonNull(rawType);
         }
 
         public Type[] getActualTypeArguments() {
@@ -74,30 +108,5 @@ public final class TypeModelVisitor<T> implements ModelVisitor<T, Type> {
             }
             return sb.toString();
         }
-    }
-
-    @Override
-    public Type visitBean(BeanModel<T> bean) {
-        return bean.getType();
-    }
-
-    @Override
-    public <E> Type visitList(ListModel<T, E> list) {
-        return new ParameterizedTypeImpl(List.class, list.accept(new TypeModelVisitor<>()));
-    }
-
-    @Override
-    public <K, V> Type visitMap(MapModel<T, K, V> map) {
-        return new ParameterizedTypeImpl(Map.class, map.acceptKey(new TypeModelVisitor<>()), map.acceptValue(new TypeModelVisitor<>()));
-    }
-
-    @Override
-    public <E> Type visitSet(SetModel<T, E> set) {
-        return new ParameterizedTypeImpl(Set.class, set.accept(new TypeModelVisitor<>()));
-    }
-
-    @Override
-    public Type visitValue(ValueModel<T> value) {
-        return value.getType();
     }
 }

@@ -26,7 +26,9 @@ package org.codegeny.beans.model.visitor.diff;
  *
  * @author Xavier DURY
  */
-public class LocalScoreOptimizer implements ScoreOptimizer {
+public enum LocalScoreOptimizer implements ScoreOptimizer {
+
+    INSTANCE;
 
     // TODO prettify
     public int[] solve(int k, int n, double[][] matrix) {

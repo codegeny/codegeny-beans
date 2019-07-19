@@ -27,7 +27,7 @@ package org.codegeny.beans.hash;
 public final class AddAndXorHasher implements Hasher {
 
     /**
-     * The mask to use to combine xor and add values.
+     * The mask to use to combineWith xor and add values.
      */
     private static final int MASK = 0xaaaaaaaa;
 

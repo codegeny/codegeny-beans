@@ -34,9 +34,22 @@ import static java.util.Objects.requireNonNull;
  */
 public final class SetModel<S, E> implements Model<S> {
 
+    /**
+     * The element model.
+     */
     private final Model<E> elementModel;
+
+    /**
+     * A function to convert the type &gt;L&gt; to Set&gt;E&lt;.
+     */
     private final Function<? super S, ? extends Set<E>> extractor;
 
+    /**
+     * Constructor.
+     *
+     * @param extractor    A function to convert the type &gt;L&gt; to Set&gt;E&lt;.
+     * @param elementModel The element model.
+     */
     SetModel(Function<? super S, ? extends Set<E>> extractor, Model<E> elementModel) {
         this.extractor = requireNonNull(extractor);
         this.elementModel = requireNonNull(elementModel);

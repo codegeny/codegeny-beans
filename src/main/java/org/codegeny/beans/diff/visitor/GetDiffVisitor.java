@@ -19,12 +19,23 @@
  */
 package org.codegeny.beans.diff.visitor;
 
-import org.codegeny.beans.diff.*;
+import org.codegeny.beans.diff.BeanDiff;
+import org.codegeny.beans.diff.Diff;
+import org.codegeny.beans.diff.DiffVisitor;
+import org.codegeny.beans.diff.ListDiff;
+import org.codegeny.beans.diff.MapDiff;
+import org.codegeny.beans.diff.SimpleDiff;
 import org.codegeny.beans.path.Path;
 
 import java.util.Iterator;
 import java.util.function.Function;
 
+/**
+ * Extract a path from a diff.
+ *
+ * @param <T> The diff'ed type.
+ * @author Xavier DURY
+ */
 public final class GetDiffVisitor<T> implements DiffVisitor<T, Diff<?>> {
 
     private final Iterator<?> path;

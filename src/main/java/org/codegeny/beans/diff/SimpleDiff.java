@@ -27,6 +27,9 @@ package org.codegeny.beans.diff;
  */
 public final class SimpleDiff<T> extends AbstractDiff<T> {
 
+    /**
+     * @see java.io.Serializable
+     */
     private static final long serialVersionUID = 1L;
 
     SimpleDiff(Status status, T left, T right) {

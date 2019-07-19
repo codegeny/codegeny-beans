@@ -32,9 +32,22 @@ import static java.util.Objects.requireNonNull;
  */
 public final class ValueModel<V> implements Model<V> {
 
+    /**
+     * A comparator for &gt;V&lt;.
+     */
     private final Comparator<? super V> comparator;
+
+    /**
+     * The value type.
+     */
     private final Class<? extends V> type;
 
+    /**
+     * Constructor.
+     *
+     * @param type       The value type.
+     * @param comparator A comparator for &gt;V&lt;.
+     */
     ValueModel(Class<? extends V> type, Comparator<? super V> comparator) {
         this.type = requireNonNull(type);
         this.comparator = nullsLast(requireNonNull(comparator));

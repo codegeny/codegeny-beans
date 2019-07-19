@@ -23,6 +23,8 @@ import java.util.Objects;
 
 /**
  * Hasher interface.
+ *
+ * @author Xavier DURY
  */
 public interface Hasher {
 

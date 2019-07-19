@@ -23,11 +23,17 @@ import org.codegeny.beans.model.Model;
 
 import java.util.Comparator;
 
+/**
+ * Comparator which uses the structure defined in a {@link Model}.
+ *
+ * @param <T> The type of the model and of the compared objects.
+ * @author Xavier DURY
+ */
 public final class ModelComparator<T> implements Comparator<T> {
 
-    private final Model<T> model;
+    private final Model<? super T> model;
 
-    public ModelComparator(Model<T> model) {
+    public ModelComparator(Model<? super T> model) {
         this.model = model;
     }
 

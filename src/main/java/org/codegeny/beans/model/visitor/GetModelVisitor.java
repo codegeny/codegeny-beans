@@ -19,7 +19,15 @@
  */
 package org.codegeny.beans.model.visitor;
 
-import org.codegeny.beans.model.*;
+import org.codegeny.beans.model.BeanModel;
+import org.codegeny.beans.model.ListModel;
+import org.codegeny.beans.model.MapModel;
+import org.codegeny.beans.model.Model;
+import org.codegeny.beans.model.ModelVisitor;
+import org.codegeny.beans.model.Property;
+import org.codegeny.beans.model.SetModel;
+import org.codegeny.beans.model.Typer;
+import org.codegeny.beans.model.ValueModel;
 import org.codegeny.beans.path.Path;
 
 import java.util.Iterator;
@@ -56,10 +64,6 @@ public final class GetModelVisitor<S, T> implements ModelVisitor<T, Object> {
         return process(k -> visitProperty(bean.getProperty(typer.retype(Model.STRING, k))));
     }
 
-    private <P> Object visitProperty(Property<? super T, P> property) {
-        return property.accept(visitor(property.get(current)));
-    }
-
     @Override
     public <K, V> Object visitMap(MapModel<T, K, V> map) {
         Map<K, V> m = map.toMap(current);
@@ -86,11 +90,15 @@ public final class GetModelVisitor<S, T> implements ModelVisitor<T, Object> {
         });
     }
 
+    private <P> Object visitProperty(Property<? super T, P> property) {
+        return property.accept(visitor(property.get(current)));
+    }
+
     private Object process(Function<? super S, ?> p) {
         return path.hasNext() ? p.apply(path.next()) : current;
     }
 
-    private <I, E> Object process(Model<E> e, Model<? extends I> i, Function<? super I, ? extends E> f) {
+    private <I, E> Object process(Model<E> e, Model<I> i, Function<I, E> f) {
         return process(k -> e.accept(visitor(f.apply(typer.retype(i, k)))));
     }
 

@@ -32,6 +32,9 @@ import static java.util.Collections.unmodifiableList;
  */
 public final class ListDiff<L, E> extends AbstractDiff<L> {
 
+    /**
+     * @see java.io.Serializable
+     */
     private static final long serialVersionUID = 1L;
 
     private final List<Diff<E>> list;

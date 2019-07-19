@@ -32,6 +32,9 @@ import static java.util.Objects.requireNonNull;
  */
 public final class BeanDiff<B> extends AbstractDiff<B> {
 
+    /**
+     * @see java.io.Serializable
+     */
     private static final long serialVersionUID = 1L;
 
     private final Map<String, Diff<?>> properties;

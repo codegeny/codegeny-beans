@@ -23,15 +23,15 @@ import java.util.function.ObjIntConsumer;
 
 public final class Utils {
 
+    private Utils() {
+        throw new InternalError("Cannot instantiate utility class");
+    }
+
     public static <T> int forEachIndexed(Iterable<? extends T> collection, ObjIntConsumer<? super T> consumer) {
         int index = 0;
         for (T element : collection) {
             consumer.accept(element, index++);
         }
         return index;
-    }
-
-    private Utils() {
-        throw new InternalError("Cannot instantiate utility class");
     }
 }

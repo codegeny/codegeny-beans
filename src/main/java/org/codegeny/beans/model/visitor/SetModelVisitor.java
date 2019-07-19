@@ -19,7 +19,15 @@
  */
 package org.codegeny.beans.model.visitor;
 
-import org.codegeny.beans.model.*;
+import org.codegeny.beans.model.BeanModel;
+import org.codegeny.beans.model.ListModel;
+import org.codegeny.beans.model.MapModel;
+import org.codegeny.beans.model.Model;
+import org.codegeny.beans.model.ModelVisitor;
+import org.codegeny.beans.model.Property;
+import org.codegeny.beans.model.SetModel;
+import org.codegeny.beans.model.Typer;
+import org.codegeny.beans.model.ValueModel;
 import org.codegeny.beans.path.Path;
 
 import java.util.Iterator;
@@ -59,10 +67,6 @@ public final class SetModelVisitor<S, T> implements ModelVisitor<T, Void> {
         return process(k -> visitProperty(bean.getProperty(typer.retype(Model.STRING, k))), setter, bean);
     }
 
-    private <P> void visitProperty(Property<? super T, P> property) {
-        property.accept(visitor(property.get(current), a -> property.set(current, a)));
-    }
-
     @Override
     public <K, V> Void visitMap(MapModel<T, K, V> map) {
         Map<K, V> m = map.toMap(current);
@@ -95,6 +99,10 @@ public final class SetModelVisitor<S, T> implements ModelVisitor<T, Void> {
         return process(p -> {
             throw new UnsupportedOperationException("Value object must be terminal");
         }, setter, value);
+    }
+
+    private <P> void visitProperty(Property<? super T, P> property) {
+        property.accept(visitor(property.get(current), a -> property.set(current, a)));
     }
 
     private Void process(Consumer<? super S> p, Consumer<? super T> c, Model<? extends T> t) {

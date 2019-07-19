@@ -40,40 +40,7 @@ public interface DiffVisitor<T, R> {
      * @return A visitor.
      */
     static <T, R> DiffVisitor<T, R> adapter(Function<? super Diff<T>, ? extends R> function) {
-        return new DiffVisitor<T, R>() {
-
-            /**
-             * {@inheritDoc}
-             */
-            @Override
-            public R visitBean(BeanDiff<T> bean) {
-                return function.apply(bean);
-            }
-
-            /**
-             * {@inheritDoc}
-             */
-            @Override
-            public <E> R visitList(ListDiff<T, E> list) {
-                return function.apply(list);
-            }
-
-            /**
-             * {@inheritDoc}
-             */
-            @Override
-            public <K, V> R visitMap(MapDiff<T, K, V> map) {
-                return function.apply(map);
-            }
-
-            /**
-             * {@inheritDoc}
-             */
-            @Override
-            public R visitSimple(SimpleDiff<T> simple) {
-                return function.apply(simple);
-            }
-        };
+        return new Adapter<>(function);
     }
 
     /**
@@ -87,7 +54,7 @@ public interface DiffVisitor<T, R> {
     }
 
     /**
-     * Visitor which combine the result of the current visitor and the result of the given visitor.
+     * Visitor which combineWith the result of the current visitor and the result of the given visitor.
      *
      * @param that     The other visitor.
      * @param combiner The combining function.
@@ -133,4 +100,51 @@ public interface DiffVisitor<T, R> {
      * @return The computed result.
      */
     R visitSimple(SimpleDiff<T> simple);
+
+    /**
+     * Visitor adapter which converts diffs.
+     *
+     * @param <T> The diff type.
+     * @param <R> The result type.
+     */
+    class Adapter<T, R> implements DiffVisitor<T, R> {
+
+        private final Function<? super Diff<T>, ? extends R> function;
+
+        Adapter(Function<? super Diff<T>, ? extends R> function) {
+            this.function = function;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public R visitBean(BeanDiff<T> bean) {
+            return function.apply(bean);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public <E> R visitList(ListDiff<T, E> list) {
+            return function.apply(list);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public <K, V> R visitMap(MapDiff<T, K, V> map) {
+            return function.apply(map);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public R visitSimple(SimpleDiff<T> simple) {
+            return function.apply(simple);
+        }
+    }
 }

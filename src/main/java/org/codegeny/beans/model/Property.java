@@ -19,7 +19,14 @@
  */
 package org.codegeny.beans.model;
 
-import java.util.*;
+import java.util.AbstractList;
+import java.util.AbstractMap;
+import java.util.AbstractSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -37,89 +44,38 @@ import static java.util.Objects.requireNonNull;
 public final class Property<B, P> {
 
     /**
-     * {@link Set} wrapper which will delegate {@link Set#add(Object)} to the given adder method.
-     *
-     * @param <E> The element type.
+     * The property name.
      */
-    private static class WrappedSet<E> extends AbstractSet<E> {
-
-        private final Set<E> set;
-        private final Consumer<E> adder;
-
-        WrappedSet(Set<E> set, Consumer<E> adder) {
-            this.set = set;
-            this.adder = adder;
-        }
-
-        @Override
-        public Iterator<E> iterator() {
-            return set.iterator();
-        }
-
-        @Override
-        public int size() {
-            return set.size();
-        }
-
-        @Override
-        public boolean add(E element) {
-            adder.accept(element);
-            return true;
-        }
-    }
+    private final String name;
 
     /**
-     * {@link List} wrapper which will delegate {@link List#set(int, Object)} to the given adder method.
-     *
-     * @param <E> The element type.
+     * The property getter method.
      */
-    private static class WrappedList<E> extends AbstractList<E> {
+    private final Function<? super B, ? extends P> getter;
 
-        private final List<E> list;
-        private final IntFunction<Consumer<E>> adder;
+    /**
+     * The property setter method.
+     */
+    private final BiConsumer<? super B, ? super P> setter;
 
-        WrappedList(List<E> list, IntFunction<Consumer<E>> adder) {
-            this.list = list;
-            this.adder = adder;
-        }
+    /**
+     * The property {@link Model}.
+     */
+    private final Model<P> model;
 
-        @Override
-        public E get(int index) {
-            return list.get(index);
-        }
-
-        @Override
-        public int size() {
-            return list.size();
-        }
-
-        @Override
-        public E set(int index, E element) { // or add ?
-            adder.apply(index).accept(element);
-            return element;
-        }
-    }
-
-    private static class WrappedMap<K, V> extends AbstractMap<K, V> {
-
-        private final Map<K, V> map;
-        private final Function<K, Consumer<V>> putter;
-
-        WrappedMap(Map<K, V> map, Function<K, Consumer<V>> putter) {
-            this.map = map;
-            this.putter = putter;
-        }
-
-        @Override
-        public Set<Entry<K, V>> entrySet() {
-            return map.entrySet();
-        }
-
-        @Override
-        public V put(K key, V value) {
-            putter.apply(key).accept(value);
-            return value;
-        }
+    /**
+     * Constructor.
+     *
+     * @param name   he property name.
+     * @param getter The property getter method.
+     * @param setter The property setter method.
+     * @param model  The property model.
+     */
+    Property(String name, Function<? super B, ? extends P> getter, BiConsumer<? super B, ? super P> setter, Model<P> model) {
+        this.name = requireNonNull(name);
+        this.getter = requireNonNull(getter);
+        this.setter = requireNonNull(setter);
+        this.model = requireNonNull(model);
     }
 
     /**
@@ -166,33 +122,6 @@ public final class Property<B, P> {
      */
     public static <B, K, V> Function<B, Map<K, V>> map(Function<B, Map<K, V>> getter, Function<B, Function<K, Consumer<V>>> putter) {
         return bean -> new WrappedMap<>(getter.apply(bean), key -> value -> putter.apply(bean).apply(key).accept(value));
-    }
-
-    /**
-     * The property name.
-     */
-    private final String name;
-
-    /**
-     * The property getter method.
-     */
-    private final Function<? super B, ? extends P> getter;
-
-    /**
-     * The property setter method.
-     */
-    private final BiConsumer<? super B, ? super P> setter;
-
-    /**
-     * The property {@link Model}.
-     */
-    private final Model<P> model;
-
-    Property(String name, Function<? super B, ? extends P> getter, BiConsumer<? super B, ? super P> setter, Model<P> model) {
-        this.name = requireNonNull(name);
-        this.getter = requireNonNull(getter);
-        this.setter = requireNonNull(setter);
-        this.model = requireNonNull(model);
     }
 
     /**
@@ -260,5 +189,160 @@ public final class Property<B, P> {
     @Override
     public int hashCode() {
         return name.hashCode();
+    }
+
+    /**
+     * {@link Set} wrapper which will delegate {@link Set#add(Object)} to the given adder method.
+     *
+     * @param <E> The element type.
+     */
+    private static class WrappedSet<E> extends AbstractSet<E> {
+
+        /**
+         * The wrapped set.
+         */
+        private final Set<E> set;
+
+        /**
+         * The delegate function to add an element to the set.
+         */
+        private final Consumer<E> adder;
+
+        /**
+         * Constructor.
+         *
+         * @param set   The wrapped set.
+         * @param adder The delegate function to add an element to the set.
+         */
+        WrappedSet(Set<E> set, Consumer<E> adder) {
+            this.set = set;
+            this.adder = adder;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Iterator<E> iterator() {
+            return set.iterator();
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public int size() {
+            return set.size();
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public boolean add(E element) {
+            adder.accept(element);
+            return true;
+        }
+    }
+
+    /**
+     * {@link List} wrapper which will delegate {@link List#set(int, Object)} to the given adder method.
+     *
+     * @param <E> The element type.
+     */
+    private static class WrappedList<E> extends AbstractList<E> {
+
+        /**
+         * The wrapped list.
+         */
+        private final List<E> list;
+
+        /**
+         * The delegate function to add an element to the list.
+         */
+        private final IntFunction<Consumer<E>> adder;
+
+        /**
+         * Constructor.
+         *
+         * @param list  The wrapped list.
+         * @param adder The delegate function to add an element to the list.
+         */
+        WrappedList(List<E> list, IntFunction<Consumer<E>> adder) {
+            this.list = list;
+            this.adder = adder;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public E get(int index) {
+            return list.get(index);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public int size() {
+            return list.size();
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public E set(int index, E element) { // or add ?
+            adder.apply(index).accept(element);
+            return element;
+        }
+    }
+
+    /**
+     * {@link Map} wrapper which will delegate {@link Map#put(Object, Object)} to the given putter method.
+     *
+     * @param <K> The key type.
+     * @param <V> The value type.
+     */
+    private static class WrappedMap<K, V> extends AbstractMap<K, V> {
+
+        /**
+         * The wrapped map.
+         */
+        private final Map<K, V> map;
+
+        /**
+         * The delegate function to put an element in the map.
+         */
+        private final Function<K, Consumer<V>> putter;
+
+        /**
+         * Constructor.
+         *
+         * @param map    The wrapped map.
+         * @param putter The delegate function to put an element in the map.
+         */
+        WrappedMap(Map<K, V> map, Function<K, Consumer<V>> putter) {
+            this.map = map;
+            this.putter = putter;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public Set<Entry<K, V>> entrySet() {
+            return map.entrySet();
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public V put(K key, V value) {
+            putter.apply(key).accept(value);
+            return value;
+        }
     }
 }

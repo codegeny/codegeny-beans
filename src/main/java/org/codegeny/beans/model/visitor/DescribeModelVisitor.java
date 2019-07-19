@@ -19,7 +19,12 @@
  */
 package org.codegeny.beans.model.visitor;
 
-import org.codegeny.beans.model.*;
+import org.codegeny.beans.model.BeanModel;
+import org.codegeny.beans.model.ListModel;
+import org.codegeny.beans.model.MapModel;
+import org.codegeny.beans.model.ModelVisitor;
+import org.codegeny.beans.model.SetModel;
+import org.codegeny.beans.model.ValueModel;
 
 public final class DescribeModelVisitor<T> implements ModelVisitor<T, StringBuilder> {
 
