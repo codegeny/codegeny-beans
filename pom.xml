@@ -25,7 +25,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.codegeny</groupId>
     <artifactId>codegeny-beans</artifactId>
-    <version>0.0.2</version>
+    <version>0.0.3-SNAPSHOT</version>
     <url>http://codegeny.org/codegeny-beans</url>
     <name>Codegeny Beans</name>
     <description>Library which provides meta-model, diffs, paths... for java beans</description>
