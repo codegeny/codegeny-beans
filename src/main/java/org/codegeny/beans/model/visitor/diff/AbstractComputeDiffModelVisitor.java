@@ -33,11 +33,10 @@ import org.codegeny.beans.model.Property;
 import org.codegeny.beans.model.SetModel;
 import org.codegeny.beans.model.ValueModel;
 
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
+import java.util.TreeSet;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -62,7 +61,7 @@ public abstract class AbstractComputeDiffModelVisitor<T> implements ModelVisitor
         }
         Map<K, V> leftMap = map.toMap(left);
         Map<K, V> rightMap = map.toMap(right);
-        Set<K> keys = new HashSet<>();
+        Set<K> keys = new TreeSet<>(map.getKeyModel());
         keys.addAll(leftMap.keySet());
         keys.addAll(rightMap.keySet());
         Map<K, Diff<V>> result = keys.stream().collect(toMap(k -> k, k -> map.acceptValue(newVisitor(leftMap.get(k), rightMap.get(k)))));
@@ -71,7 +70,7 @@ public abstract class AbstractComputeDiffModelVisitor<T> implements ModelVisitor
 
     @Override
     public SimpleDiff<T> visitValue(ValueModel<T> value) {
-        return Diff.simple(left == null ^ right == null ? left == null ? ADDED : REMOVED : Objects.equals(left, right) ? UNCHANGED : MODIFIED, left, right);
+        return Diff.simple(left == null ^ right == null ? left == null ? ADDED : REMOVED : value.compare(left, right) == 0 ? UNCHANGED : MODIFIED, left, right);
     }
 
     @Override

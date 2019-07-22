@@ -24,7 +24,6 @@ import org.codegeny.beans.diff.ListDiff;
 import org.codegeny.beans.hash.AddAndXorHasher;
 import org.codegeny.beans.model.ListModel;
 import org.codegeny.beans.model.SetModel;
-import org.codegeny.beans.model.visitor.ModelComparator;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -236,7 +235,7 @@ public class DefaultComputeDiffModelVisitor<T> extends AbstractComputeDiffModelV
 
         // sort the result
 
-        list.sort(comparing(e -> e.getLeft() == null ? e.getRight() : e.getLeft(), nullsLast(new ModelComparator<>(values.getElementModel()))));
+        list.sort(comparing(e -> e.getLeft() == null ? e.getRight() : e.getLeft(), nullsLast(values.getElementModel())));
         return Diff.list(Diff.Status.combineAll(list), left, right, list);
     }
 

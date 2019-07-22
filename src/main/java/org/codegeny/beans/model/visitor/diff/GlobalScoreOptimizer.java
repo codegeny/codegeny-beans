@@ -33,7 +33,7 @@ public class GlobalScoreOptimizer implements ScoreOptimizer {
     private static final long COUNTER = 1000000;
 
     private final long limit;
-    private volatile long counter = COUNTER;
+    private long counter = COUNTER;
 
     public GlobalScoreOptimizer() {
         this(10, TimeUnit.SECONDS);

@@ -49,7 +49,7 @@ public final class CompareModelVisitor<T> implements ModelVisitor<T, Integer> {
     }
 
     private <P> Integer visitProperty(Property<? super T, P> property) {
-        return new ModelComparator<>(property.getModel()).compare(property.get(left), property.get(right));
+        return property.getModel().compare(property.get(left), property.get(right));
     }
 
     public Integer visitValue(ValueModel<T> value) {
@@ -59,22 +59,22 @@ public final class CompareModelVisitor<T> implements ModelVisitor<T, Integer> {
     public <K, V> Integer visitMap(MapModel<T, K, V> map) {
         Map<K, V> leftMap = map.toMap(this.left);
         Map<K, V> rightMap = map.toMap(this.right);
-        Set<K> keys = new TreeSet<>(new ModelComparator<>(map.getKeyModel()));
+        Set<K> keys = new TreeSet<>(map.getKeyModel());
         keys.addAll(leftMap.keySet());
         keys.addAll(rightMap.keySet());
-        Comparator<? super V> valueComparator = new ModelComparator<>(map.getValueModel());
+        Comparator<? super V> valueComparator = map.getValueModel();
         return keys.stream().mapToInt(k -> valueComparator.compare(leftMap.get(k), rightMap.get(k))).filter(i -> i != 0).findFirst().orElse(0);
     }
 
     public <E> Integer visitSet(SetModel<T, E> values) {
-        Comparator<E> comparator = new ModelComparator<>(values.getElementModel());
+        Comparator<E> comparator = values.getElementModel();
         Iterator<E> leftIterator = values.toSet(this.left).stream().sorted(comparator).iterator();
         Iterator<E> rightIterator = values.toSet(this.right).stream().sorted(comparator).iterator();
         return compareCollections(comparator, leftIterator, rightIterator);
     }
 
     public <E> Integer visitList(ListModel<T, E> values) {
-        Comparator<E> comparator = new ModelComparator<>(values.getElementModel());
+        Comparator<E> comparator = values.getElementModel();
         Iterator<E> leftIterator = values.toList(this.left).stream().iterator();
         Iterator<E> rightIterator = values.toList(this.right).stream().iterator();
         return compareCollections(comparator, leftIterator, rightIterator);

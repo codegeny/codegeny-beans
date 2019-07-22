@@ -75,7 +75,7 @@ public final class ToStringModelVisitor<T> implements ModelVisitor<T, StringBuil
     @Override
     public <K, V> StringBuilder visitMap(MapModel<T, K, V> map) {
         this.builder.append("[");
-        Comparator<? super K> comparator = new ModelComparator<>(map.getKeyModel());
+        Comparator<? super K> comparator = map.getKeyModel();
         Map<? extends K, ? extends V> entries = map.toMap(this.target);
         Collection<K> sorted = entries.keySet().stream().sorted(comparator).collect(toList());
         int count = forEachIndexed(sorted, (v, i) -> map.acceptValue(new ToStringModelVisitor<>(entries.get(v), this.builder.append(i > 0 ? "," : "").append("\n").append(this.indent).append("  ").append(v).append(": "), this.indent.concat("  "))));
@@ -84,7 +84,7 @@ public final class ToStringModelVisitor<T> implements ModelVisitor<T, StringBuil
 
     @Override
     public <E> StringBuilder visitSet(SetModel<T, E> values) {
-        return visitCollection(values.getElementModel(), values.toSet(this.target).stream().sorted(new ModelComparator<>(values.getElementModel())).collect(toList()));
+        return visitCollection(values.getElementModel(), values.toSet(this.target).stream().sorted(values.getElementModel()).collect(toList()));
     }
 
     @Override

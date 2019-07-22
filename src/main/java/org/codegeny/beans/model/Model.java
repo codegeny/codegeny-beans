@@ -269,18 +269,57 @@ public interface Model<T> extends Comparator<T> {
         return accept(new DescribeModelVisitor<>()).toString();
     }
 
+    /**
+     * Set the value at the specified path in the target.
+     * A typer is needed if, for example, you express your path as a sequence of <code>String</code>s but you need
+     * <code>Integer</code>s for lists indexes or any other types for maps keys. The value to set could also be given
+     * as a <code>String</code> and converted at the last moment (when it is actually set on the target object).
+     *
+     * @param target The &gt;T&lt; instance to modify.
+     * @param path   The path of the property to set.
+     * @param value  The value to set.
+     * @param typer  The typer which allows conversion of path elements and value along the way.
+     * @param <S>    The bottom type for path elements and value.
+     */
     default <S> void set(T target, Path<S> path, S value, Typer<S> typer) {
         accept(new SetModelVisitor<>(target, value, typer, path));
     }
 
+    /**
+     * Get the value from the specified path in the target.
+     * A typer is needed for the same reasons as for {@link Model#set(Object, Path, Object, Typer)}.
+     *
+     * @param target The &gt;T&lt; instance.
+     * @param path   The path of the property to retrieve.
+     * @param typer  The typer which allows conversion of path elements along the way.
+     * @param <S>    The bottom type for path elements.
+     * @return The retrieved property value.
+     */
     default <S> Object get(T target, Path<S> path, Typer<S> typer) {
         return accept(new GetModelVisitor<>(target, typer, path));
     }
 
+    /**
+     * Set the value at the specified path in the target.
+     * No typer is needed here as path elements and value are expected to be already of the correct type
+     * (no conversion needed).
+     *
+     * @param target The &gt;T&lt; instance to modify.
+     * @param path   The path of the property to set.
+     * @param value  The value to set.
+     */
     default void set(T target, Path<Object> path, Object value) {
         set(target, path, value, Typer.Identity.INSTANCE);
     }
 
+    /**
+     * Get the value from the specified path in the target.
+     * No typer is needed here as path elements are expected to be already of the correct type (no conversion needed).
+     *
+     * @param target The &gt;T&lt; instance.
+     * @param path   The path of the property to retrieve.
+     * @return The retrieved property value.
+     */
     default Object get(T target, Path<Object> path) {
         return get(target, path, Typer.Identity.INSTANCE);
     }
