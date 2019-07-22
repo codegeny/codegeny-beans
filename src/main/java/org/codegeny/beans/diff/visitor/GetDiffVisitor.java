@@ -48,21 +48,33 @@ public final class GetDiffVisitor<T> implements DiffVisitor<T, Diff<?>> {
         this.path = path;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Diff<?> visitBean(BeanDiff<T> bean) {
         return process(bean, n -> bean.getProperty((String) n));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <E> Diff<?> visitList(ListDiff<T, E> list) {
         return process(list, n -> list.getList().get((Integer) n));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <K, V> Diff<?> visitMap(MapDiff<T, K, V> map) {
         return process(map, n -> map.getMap().get((K) n));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Diff<?> visitSimple(SimpleDiff<T> simple) {
         return process(simple, n -> {

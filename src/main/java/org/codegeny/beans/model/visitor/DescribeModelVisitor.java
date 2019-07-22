@@ -40,6 +40,10 @@ public final class DescribeModelVisitor<T> implements ModelVisitor<T, StringBuil
         this.indent = indent;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public StringBuilder visitBean(BeanModel<T> bean) {
         return bean.getProperties().stream()
                 .reduce(
@@ -50,18 +54,34 @@ public final class DescribeModelVisitor<T> implements ModelVisitor<T, StringBuil
                 .append(bean.getProperties().isEmpty() ? "" : "\n").append(this.indent).append("}");
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public <K, V> StringBuilder visitMap(MapModel<T, K, V> map) {
         return map.acceptValue(indented(map.acceptKey(indented(this.builder.append("Map<"))).append(", "))).append(">");
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public StringBuilder visitValue(ValueModel<T> value) {
         return this.builder.append("Value[").append(value.getType().getName()).append("]");
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public <E> StringBuilder visitSet(SetModel<T, E> values) {
         return values.acceptElement(same(this.builder.append("Set<"))).append(">");
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public <E> StringBuilder visitList(ListModel<T, E> values) {
         return values.acceptElement(same(this.builder.append("List<"))).append(">");
     }

@@ -57,6 +57,9 @@ public final class ToStringModelVisitor<T> implements ModelVisitor<T, StringBuil
         this.indent = indent;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public StringBuilder visitBean(BeanModel<T> bean) {
         this.builder.append("{");
@@ -67,26 +70,38 @@ public final class ToStringModelVisitor<T> implements ModelVisitor<T, StringBuil
         return this.builder.append(count > 0 ? "\n" : "").append(this.indent).append("}");
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public StringBuilder visitValue(ValueModel<T> value) {
         return this.builder.append(this.target);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <K, V> StringBuilder visitMap(MapModel<T, K, V> map) {
         this.builder.append("[");
-        Comparator<? super K> comparator = map.getKeyModel();
-        Map<? extends K, ? extends V> entries = map.toMap(this.target);
+        Comparator<K> comparator = map.getKeyModel();
+        Map<K, V> entries = map.toMap(this.target);
         Collection<K> sorted = entries.keySet().stream().sorted(comparator).collect(toList());
         int count = forEachIndexed(sorted, (v, i) -> map.acceptValue(new ToStringModelVisitor<>(entries.get(v), this.builder.append(i > 0 ? "," : "").append("\n").append(this.indent).append("  ").append(v).append(": "), this.indent.concat("  "))));
         return this.builder.append(count > 0 ? "\n".concat(this.indent) : "").append("]");
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <E> StringBuilder visitSet(SetModel<T, E> values) {
         return visitCollection(values.getElementModel(), values.toSet(this.target).stream().sorted(values.getElementModel()).collect(toList()));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <E> StringBuilder visitList(ListModel<T, E> values) {
         return visitCollection(values.getElementModel(), values.toList(this.target));

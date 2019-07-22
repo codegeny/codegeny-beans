@@ -22,6 +22,8 @@ package org.codegeny.beans.model.visitor.diff;
 /**
  * A score optimizer takes a matrix of scores and tries to pair row elements with
  * column elements based on their matching scores.
+ *
+ * @author Xavier DURY
  */
 public interface ScoreOptimizer {
 

@@ -79,7 +79,7 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.4.1</version>
+            <version>5.5.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -97,7 +97,7 @@
         <dependency>
             <groupId>org.eclipse</groupId>
             <artifactId>yasson</artifactId>
-            <version>1.0.3</version>
+            <version>1.0.4</version>
             <scope>test</scope>
         </dependency>
         <dependency>

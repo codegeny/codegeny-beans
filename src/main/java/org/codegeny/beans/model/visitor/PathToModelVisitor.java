@@ -48,26 +48,41 @@ public final class PathToModelVisitor<S, T> implements ModelVisitor<T, Model<?>>
         this.typer = typer;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Model<?> visitBean(BeanModel<T> bean) {
         return process(bean, k -> visitProperty(bean.getProperty(typer.retype(Model.STRING, k))));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <K, V> Model<?> visitMap(MapModel<T, K, V> map) {
         return process2(map, map.getValueModel());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <E> Model<?> visitSet(SetModel<T, E> set) {
         return process2(set, set.getElementModel());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <E> Model<?> visitList(ListModel<T, E> list) {
         return process2(list, list.getElementModel());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Model<?> visitValue(ValueModel<T> value) {
         return process(value, p -> {

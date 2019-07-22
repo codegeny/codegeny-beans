@@ -52,7 +52,7 @@ import static java.util.function.Function.identity;
  * </ul>
  * All implementations are required to be thread-safe.
  *
- * @param <T> The type of object this model represent.
+ * @param <T> The type of object this model represents.
  * @author Xavier DURY
  */
 public interface Model<T> extends Comparator<T> {

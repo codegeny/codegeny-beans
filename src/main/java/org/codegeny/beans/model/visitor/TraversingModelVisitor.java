@@ -54,6 +54,9 @@ public final class TraversingModelVisitor<T> implements ModelVisitor<T, Void> {
         this.processor = processor;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Void visitBean(BeanModel<T> bean) {
         process();
@@ -61,6 +64,9 @@ public final class TraversingModelVisitor<T> implements ModelVisitor<T, Void> {
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <E> Void visitList(ListModel<T, E> list) {
         process();
@@ -68,6 +74,9 @@ public final class TraversingModelVisitor<T> implements ModelVisitor<T, Void> {
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <K, V> Void visitMap(MapModel<T, K, V> map) {
         process();
@@ -75,6 +84,9 @@ public final class TraversingModelVisitor<T> implements ModelVisitor<T, Void> {
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <E> Void visitSet(SetModel<T, E> set) {
         process();
@@ -82,6 +94,9 @@ public final class TraversingModelVisitor<T> implements ModelVisitor<T, Void> {
         return null;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Void visitValue(ValueModel<T> value) {
         process();

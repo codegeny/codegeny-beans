@@ -37,33 +37,57 @@ import java.util.stream.Stream;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.joining;
 
+/**
+ * Visitor which returns a {@link Type} (either a {@link Class} or & {@link ParameterizedType}) representing the model
+ * type.
+ *
+ * @param <T> The model type.
+ */
 public final class TypeModelVisitor<T> implements ModelVisitor<T, Type> {
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Type visitBean(BeanModel<T> bean) {
         return bean.getType();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <E> Type visitList(ListModel<T, E> list) {
         return new ParameterizedTypeImpl(List.class, list.accept(new TypeModelVisitor<>()));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <K, V> Type visitMap(MapModel<T, K, V> map) {
         return new ParameterizedTypeImpl(Map.class, map.acceptKey(new TypeModelVisitor<>()), map.acceptValue(new TypeModelVisitor<>()));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <E> Type visitSet(SetModel<T, E> set) {
         return new ParameterizedTypeImpl(Set.class, set.accept(new TypeModelVisitor<>()));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Type visitValue(ValueModel<T> value) {
         return value.getType();
     }
 
+    /**
+     * Implementation of {@link ParameterizedType} as java does not provide one by default.
+     */
     private static final class ParameterizedTypeImpl implements ParameterizedType {
 
         private final Type[] actualTypeArguments;

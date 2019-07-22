@@ -62,11 +62,17 @@ public final class SetModelVisitor<S, T> implements ModelVisitor<T, Void> {
         this.setter = setter;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Void visitBean(BeanModel<T> bean) {
         return process(k -> visitProperty(bean.getProperty(typer.retype(Model.STRING, k))), setter, bean);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <K, V> Void visitMap(MapModel<T, K, V> map) {
         Map<K, V> m = map.toMap(current);
@@ -76,6 +82,9 @@ public final class SetModelVisitor<S, T> implements ModelVisitor<T, Void> {
         });
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <E> Void visitSet(SetModel<T, E> set) {
         Set<E> s = set.toSet(current);
@@ -85,6 +94,9 @@ public final class SetModelVisitor<S, T> implements ModelVisitor<T, Void> {
         });
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <E> Void visitList(ListModel<T, E> list) {
         List<E> l = list.toList(current);
@@ -94,6 +106,9 @@ public final class SetModelVisitor<S, T> implements ModelVisitor<T, Void> {
         });
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Void visitValue(ValueModel<T> value) {
         return process(p -> {

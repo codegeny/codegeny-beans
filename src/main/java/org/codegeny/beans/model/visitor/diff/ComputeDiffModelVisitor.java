@@ -19,15 +19,28 @@
  */
 package org.codegeny.beans.model.visitor.diff;
 
+import org.codegeny.beans.diff.BeanDiff;
 import org.codegeny.beans.diff.Diff;
+import org.codegeny.beans.diff.Diff.Status;
 import org.codegeny.beans.diff.ListDiff;
+import org.codegeny.beans.diff.MapDiff;
+import org.codegeny.beans.diff.SimpleDiff;
 import org.codegeny.beans.hash.AddAndXorHasher;
+import org.codegeny.beans.model.BeanModel;
 import org.codegeny.beans.model.ListModel;
+import org.codegeny.beans.model.MapModel;
+import org.codegeny.beans.model.ModelVisitor;
+import org.codegeny.beans.model.Property;
 import org.codegeny.beans.model.SetModel;
+import org.codegeny.beans.model.ValueModel;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.BiFunction;
 import java.util.function.IntConsumer;
 
@@ -35,24 +48,78 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.util.Comparator.comparing;
 import static java.util.Comparator.nullsLast;
+import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 import static java.util.stream.IntStream.range;
+import static org.codegeny.beans.diff.Diff.Status.ADDED;
+import static org.codegeny.beans.diff.Diff.Status.MODIFIED;
+import static org.codegeny.beans.diff.Diff.Status.REMOVED;
+import static org.codegeny.beans.diff.Diff.Status.UNCHANGED;
 
-// TODO optimize this shit
-public class DefaultComputeDiffModelVisitor<T> extends AbstractComputeDiffModelVisitor<T> {
+/**
+ * {@link ModelVisitor} which implements {@link Diff} computation for {@link org.codegeny.beans.model.Model}s.
+ * This visitor needs the 2 instances to be diff'ed. This visitor can also be parameterized with a threshold
+ * representing the limit (which must be in ]0;1]) of when 2 objects are considered the same (for example, at 0.8, any
+ * 2 objects which have a matching score greater or equals to 0.8 could be considered the same instance with
+ * modifications).
+ *
+ * @param <T> The model type.
+ * @author Xavier DURY
+ */
+public final class ComputeDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>> {
 
-    private final ScoreOptimizer optimizer;
+    private final T left;
+    private final T right;
     private final double threshold;
+    private final ScoreOptimizer optimizer;
 
-    public DefaultComputeDiffModelVisitor(T left, T right, double threshold, ScoreOptimizer optimizer) {
-        super(left, right);
+    public ComputeDiffModelVisitor(T left, T right, double threshold) {
+        this(left, right, threshold, LocalScoreOptimizer.INSTANCE);
+    }
+
+    public ComputeDiffModelVisitor(T left, T right, double threshold, ScoreOptimizer optimizer) {
+        if (threshold <= 0 || threshold > 1) {
+            throw new IllegalArgumentException("Threshold must be (strictly greater-than 0) and (lower-than or equal-to 1)");
+        }
+        this.left = left;
+        this.right = right;
         this.threshold = threshold;
-        this.optimizer = optimizer;
+        this.optimizer = requireNonNull(optimizer);
+    }
+
+    @Override
+    public <K, V> MapDiff<T, K, V> visitMap(MapModel<T, K, V> map) {
+        if (left == null ^ right == null) {
+            return (left == null ? new AddedDiffModelVisitor<>(right) : new RemovedDiffModelVisitor<>(left)).visitMap(map);
+        }
+        Map<K, V> leftMap = map.toMap(left);
+        Map<K, V> rightMap = map.toMap(right);
+        Set<K> keys = new TreeSet<>(map.getKeyModel());
+        keys.addAll(leftMap.keySet());
+        keys.addAll(rightMap.keySet());
+        Map<K, Diff<V>> result = keys.stream().collect(toMap(k -> k, k -> map.acceptValue(newVisitor(leftMap.get(k), rightMap.get(k)))));
+        return Diff.map(Status.combineAll(result.values()), this.left, this.right, result);
+    }
+
+    @Override
+    public SimpleDiff<T> visitValue(ValueModel<T> value) {
+        return Diff.simple(left == null ^ right == null ? left == null ? ADDED : REMOVED : value.compare(left, right) == 0 ? UNCHANGED : MODIFIED, left, right);
+    }
+
+    @Override
+    public BeanDiff<T> visitBean(BeanModel<T> bean) {
+        if (left == null ^ right == null) {
+            return (left == null ? new AddedDiffModelVisitor<>(right) : new RemovedDiffModelVisitor<>(left)).visitBean(bean);
+        }
+        Map<String, Diff<?>> properties = bean.getProperties().stream().collect(toMap(Property::getName, this::visitProperty, ComputeDiffModelVisitor::throwingBinaryOperator, LinkedHashMap::new));
+        return Diff.bean(Status.combineAll(properties.values()), this.left, this.right, properties);
     }
 
     @Override
     public <E> ListDiff<T, E> visitList(ListModel<T, E> values) {
-        List<E> left = values.toList(super.left);
-        List<E> right = values.toList(super.right);
+        List<E> left = values.toList(this.left);
+        List<E> right = values.toList(this.right);
         List<Diff<E>> result = new LinkedList<>();
         boolean removeFirst = true;
         int i = 0, j = 0;
@@ -112,14 +179,14 @@ public class DefaultComputeDiffModelVisitor<T> extends AbstractComputeDiffModelV
             range(j - n, right.size()).forEach(q -> result.add(values.acceptElement(new AddedDiffModelVisitor<>(right.get(q)))));
             range(i - m, left.size()).forEach(q -> result.add(values.acceptElement(new RemovedDiffModelVisitor<>(left.get(q)))));
         }
-        return Diff.list(Diff.Status.combineAll(result), super.left, super.right, result);
+        return Diff.list(Diff.Status.combineAll(result), this.left, this.right, result);
     }
 
     @Override
     public <E> ListDiff<T, E> visitSet(SetModel<T, E> values) {
 
-        List<E> leftValues = new ArrayList<>(values.toSet(super.left));
-        List<E> rightValues = new ArrayList<>(values.toSet(super.right));
+        List<E> leftValues = new ArrayList<>(values.toSet(this.left));
+        List<E> rightValues = new ArrayList<>(values.toSet(this.right));
 
         final int leftSize = leftValues.size();
         final int rightSize = rightValues.size();
@@ -239,13 +306,81 @@ public class DefaultComputeDiffModelVisitor<T> extends AbstractComputeDiffModelV
         return Diff.list(Diff.Status.combineAll(list), left, right, list);
     }
 
-    @Override
-    protected <S> AbstractComputeDiffModelVisitor<S> newVisitor(S left, S right) {
-        return new DefaultComputeDiffModelVisitor<>(left, right, threshold, optimizer);
+    private <S> ComputeDiffModelVisitor<S> newVisitor(S left, S right) {
+        return new ComputeDiffModelVisitor<>(left, right, threshold, optimizer);
+    }
+
+    private <P> Diff<P> visitProperty(Property<? super T, P> property) {
+        return property.getModel().accept(newVisitor(property.get(left), property.get(right)));
+    }
+
+    private static <X> X throwingBinaryOperator(X left, X right) {
+        throw new IllegalStateException(String.format("Duplicate key %s", left));
     }
 
     private interface Adder<T> {
 
         void accept(int x, int y, Diff<T> diff);
+    }
+
+    private static abstract class AbstractDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>> {
+
+        private final T left, right, target;
+        private final Status type;
+
+        AbstractDiffModelVisitor(T left, T right, T target, Status type) {
+            this.left = left;
+            this.right = right;
+            this.target = target;
+            this.type = type;
+        }
+
+        protected abstract <N> AbstractDiffModelVisitor<N> create(N value);
+
+        public BeanDiff<T> visitBean(BeanModel<T> bean) {
+            return Diff.bean(type, left, right, bean.getProperties().stream().collect(toMap(Property::getName, this::visitProperty)));
+        }
+
+        public <E> ListDiff<T, E> visitSet(SetModel<T, E> values) {
+            return Diff.list(type, left, right, values.toSet(target).stream().map(e -> values.acceptElement(create(e))).collect(toList()));
+        }
+
+        public <E> ListDiff<T, E> visitList(ListModel<T, E> values) {
+            return Diff.list(type, left, right, values.toList(target).stream().map(e -> values.acceptElement(create(e))).collect(toList()));
+        }
+
+        public <K, V> MapDiff<T, K, V> visitMap(MapModel<T, K, V> map) {
+            return Diff.map(type, left, right, map.toMap(target).entrySet().stream().collect(toMap(Map.Entry::getKey, e -> map.acceptValue(create(e.getValue())))));
+        }
+
+        private <P> Diff<P> visitProperty(Property<? super T, P> property) {
+            return property.accept(create(property.get(target)));
+        }
+
+        public SimpleDiff<T> visitValue(ValueModel<T> value) {
+            return Diff.simple(type, left, right);
+        }
+    }
+
+    protected static class AddedDiffModelVisitor<T> extends AbstractDiffModelVisitor<T> {
+
+        AddedDiffModelVisitor(T right) {
+            super(null, right, right, ADDED);
+        }
+
+        protected <N> AbstractDiffModelVisitor<N> create(N value) {
+            return new AddedDiffModelVisitor<>(value);
+        }
+    }
+
+    protected static class RemovedDiffModelVisitor<T> extends AbstractDiffModelVisitor<T> {
+
+        RemovedDiffModelVisitor(T left) {
+            super(left, null, left, REMOVED);
+        }
+
+        protected <N> AbstractDiffModelVisitor<N> create(N value) {
+            return new RemovedDiffModelVisitor<>(value);
+        }
     }
 }

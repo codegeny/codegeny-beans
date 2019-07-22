@@ -24,7 +24,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.joining;
 
 /**
  * A path made of separate elements.
@@ -90,8 +91,8 @@ public final class Path<P> implements Iterable<P> {
         return elements.iterator();
     }
 
-    String toString(String separator, String prefix, String suffix) {
-        return elements.stream().map(Object::toString).collect(Collectors.joining(separator, prefix, suffix));
+    public String toString(String separator, String prefix, String suffix) {
+        return elements.stream().map(Object::toString).collect(joining(separator, prefix, suffix));
     }
 
     @Override

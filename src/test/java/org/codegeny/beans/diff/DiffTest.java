@@ -20,7 +20,7 @@
 package org.codegeny.beans.diff;
 
 import org.codegeny.beans.Person;
-import org.codegeny.beans.model.visitor.diff.DefaultComputeDiffModelVisitor;
+import org.codegeny.beans.model.visitor.diff.ComputeDiffModelVisitor;
 import org.codegeny.beans.model.visitor.diff.GlobalScoreOptimizer;
 import org.codegeny.beans.path.Path;
 import org.junit.jupiter.api.Test;
@@ -38,7 +38,7 @@ public class DiffTest {
     @Test
     public void identicalObjectsShouldYieldNoDifferences() {
         Person person = createDefaultPerson();
-        Diff<Person> diff = MODEL.accept(new DefaultComputeDiffModelVisitor<>(person, person, 0.5, new GlobalScoreOptimizer()));
+        Diff<Person> diff = MODEL.accept(new ComputeDiffModelVisitor<>(person, person, 0.5));
         assertEquals(UNCHANGED, diff.getStatus());
     }
 
@@ -46,7 +46,7 @@ public class DiffTest {
     public void sameObjectsShouldYieldNoDifferences() {
         Person left = createDefaultPerson();
         Person right = createDefaultPerson();
-        Diff<Person> diff = MODEL.accept(new DefaultComputeDiffModelVisitor<>(left, right, 0.5, new GlobalScoreOptimizer()));
+        Diff<Person> diff = MODEL.accept(new ComputeDiffModelVisitor<>(left, right, 0.5, new GlobalScoreOptimizer()));
         assertEquals(UNCHANGED, diff.getStatus());
     }
 
@@ -54,7 +54,7 @@ public class DiffTest {
     public void objectsWithOneDifferentPropertyShouldYieldOneDiffrence() {
         Person left = createDefaultPerson();
         Person right = createDefaultPerson().setFirstName("Jack");
-        Diff<Person> diff = MODEL.accept(new DefaultComputeDiffModelVisitor<>(left, right, 0.5, new GlobalScoreOptimizer()));
+        Diff<Person> diff = MODEL.accept(new ComputeDiffModelVisitor<>(left, right, 0.5, new GlobalScoreOptimizer()));
         assertEquals(MODIFIED, diff.getStatus());
         assertEquals(UNCHANGED, diff.get(Path.of("birthDate")).getStatus());
         assertEquals(UNCHANGED, diff.get(Path.of("lastName")).getStatus());
@@ -68,7 +68,7 @@ public class DiffTest {
     public void objectsWithOnePropertySetToNullShouldYieldOneDifference() {
         Person left = createDefaultPerson();
         Person right = createDefaultPerson().setFirstName(null);
-        Diff<Person> diff = MODEL.accept(new DefaultComputeDiffModelVisitor<>(left, right, 0.5, new GlobalScoreOptimizer()));
+        Diff<Person> diff = MODEL.accept(new ComputeDiffModelVisitor<>(left, right, 0.5, new GlobalScoreOptimizer()));
         assertEquals(MODIFIED, diff.getStatus());
         assertEquals(UNCHANGED, diff.get(Path.of("birthDate")).getStatus());
         assertEquals(UNCHANGED, diff.get(Path.of("lastName")).getStatus());
@@ -82,7 +82,7 @@ public class DiffTest {
     public void objectsWithOnePropertyBeanSetToNullShouldYieldOneDifference() {
         Person left = createDefaultPerson();
         Person right = createDefaultPerson().setCurrentAddress(null);
-        Diff<Person> diff = MODEL.accept(new DefaultComputeDiffModelVisitor<>(left, right, 0.5, new GlobalScoreOptimizer()));
+        Diff<Person> diff = MODEL.accept(new ComputeDiffModelVisitor<>(left, right, 0.5, new GlobalScoreOptimizer()));
         assertEquals(MODIFIED, diff.getStatus());
         assertEquals(UNCHANGED, diff.get(Path.of("birthDate")).getStatus());
         assertEquals(UNCHANGED, diff.get(Path.of("lastName")).getStatus());
@@ -102,7 +102,7 @@ public class DiffTest {
                 .addMiddleName("Michael") //
                 .removeMiddleName(middleName -> middleName.startsWith("Fitz"));
 
-        Diff<Person> diff = MODEL.accept(new DefaultComputeDiffModelVisitor<>(left, right, 0.5, new GlobalScoreOptimizer()));
+        Diff<Person> diff = MODEL.accept(new ComputeDiffModelVisitor<>(left, right, 0.5, new GlobalScoreOptimizer()));
         assertEquals(MODIFIED, diff.getStatus());
         assertEquals(UNCHANGED, diff.get(Path.of("birthDate")).getStatus());
         assertEquals(UNCHANGED, diff.get(Path.of("lastName")).getStatus());

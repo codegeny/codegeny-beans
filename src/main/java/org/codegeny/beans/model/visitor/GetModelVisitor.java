@@ -59,17 +59,26 @@ public final class GetModelVisitor<S, T> implements ModelVisitor<T, Object> {
         this.typer = typer;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Object visitBean(BeanModel<T> bean) {
         return process(k -> visitProperty(bean.getProperty(typer.retype(Model.STRING, k))));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <K, V> Object visitMap(MapModel<T, K, V> map) {
         Map<K, V> m = map.toMap(current);
         return process(map.getValueModel(), map.getKeyModel(), m::get);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <E> Object visitSet(SetModel<T, E> set) {
         Set<E> s = set.toSet(current);
@@ -77,12 +86,18 @@ public final class GetModelVisitor<S, T> implements ModelVisitor<T, Object> {
 //		return process(set.getElementModel(), set.getElementModel(), v -> s.stream().filter(isEqual(v)).findAny().orElse(null));
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <E> Object visitList(ListModel<T, E> list) {
         List<E> l = list.toList(current);
         return process(list.getElementModel(), Model.INTEGER, l::get);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Object visitValue(ValueModel<T> value) {
         return process(p -> {

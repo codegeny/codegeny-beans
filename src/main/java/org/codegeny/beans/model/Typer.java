@@ -32,8 +32,14 @@ public interface Typer<S> {
      */
     enum Identity implements Typer<Object> {
 
+        /**
+         * Singleton.
+         */
         INSTANCE;
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         @SuppressWarnings("unchecked")
         public <T> T retype(Model<T> model, Object value) {
@@ -46,7 +52,7 @@ public interface Typer<S> {
      *
      * @param model The model.
      * @param value The value to convert.
-     * @param <T> The type of the model.
+     * @param <T>   The type of the model.
      * @return An object of type &gt;T&lt;
      */
     <T> T retype(Model<T> model, S value);

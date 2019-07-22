@@ -1,11 +1,12 @@
 ![Status experimental](https://img.shields.io/badge/status-experimental-red.svg)
 [![Build Status](https://img.shields.io/travis/codegeny/codegeny-beans.svg)](https://travis-ci.org/codegeny/codegeny-beans)
+[![Maven Central](https://img.shields.io/maven-central/v/org.codegeny/codegeny-beans.svg)](https://mvnrepository.com/artifact/org.codegeny/codegeny-beans)
 [![Code Coverage](https://img.shields.io/codecov/c/github/codegeny/codegeny-beans.svg)](https://codecov.io/gh/codegeny/codegeny-beans)
 [![Code Analysis](https://img.shields.io/codacy/grade/2a447b2e20e34b628cef941f7619e184.svg)](https://www.codacy.com/app/codegeny/codegeny-beans)
 
 # codegeny-beans
 
-Express your bean structure in a reflection-free and type-safe model; get generic diff/comparison/toString/toJson...
+Express your bean structure in a reflection-free, dependency-free and type-safe model; get generic diff/comparison/toString/toJson...
 
 This project makes heavy (maybe too much) use of the visitor pattern to avoid casting where possible.
 
@@ -148,26 +149,10 @@ diff(left, right) = BeanDiff<President>(score = 5/12, status = MODIFIED, left = 
 
 When comparing 2 collections (2 sets for example), at some point, the comparison algorithms will build a matrix like this:
 
-<table>
-    <tr>
-        <th>diff</th>
-        <th>left:0</th>
-        <th>left:1</th>
-        <th>left:2</th>
-    </tr>
-    <tr>
-        <th>right:0</th>
-        <th>90%</th>
-        <th>80%</th>
-        <th>0%</th>
-    </tr>
-    <tr>
-        <th>right:1</th>
-        <th>80%</th>
-        <th>20%</th>
-        <th>30%</th>
-    </tr>
-</table>
+| diff | left:0 | left:1 | left:2 |
+| :---: | :---: | :---: | :---: |
+| **right:0** | 90% | 80% | 0% |
+| **right:1** | 80% | 20% | 30% |
 
 which represents the diff score between each element in the left collection and each element in the right collection.
 
