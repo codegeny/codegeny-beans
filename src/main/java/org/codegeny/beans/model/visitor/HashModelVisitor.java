@@ -28,11 +28,30 @@ import org.codegeny.beans.model.Property;
 import org.codegeny.beans.model.SetModel;
 import org.codegeny.beans.model.ValueModel;
 
+/**
+ * Hash an object based on its model.
+ *
+ * @param <T> The object type.
+ * @author Xavier DURY
+ */
 public final class HashModelVisitor<T> implements ModelVisitor<T, Hasher> {
 
+    /**
+     * The hasher.
+     */
     private final Hasher hasher;
+
+    /**
+     * The object to hash.
+     */
     private final T target;
 
+    /**
+     * Constructor.
+     *
+     * @param target The hasher.
+     * @param hasher The object to hash.
+     */
     public HashModelVisitor(T target, Hasher hasher) {
         this.target = target;
         this.hasher = hasher;
@@ -78,6 +97,14 @@ public final class HashModelVisitor<T> implements ModelVisitor<T, Hasher> {
         return values.toList(this.target).stream().reduce(this.hasher, (h, e) -> values.acceptElement(new HashModelVisitor<>(e, h)), (x, y) -> null);
     }
 
+    /**
+     * Hash the property.
+     *
+     * @param hasher   The hasher.
+     * @param property The property.
+     * @param <P>      The property type.
+     * @return The hasher.
+     */
     private <P> Hasher visitProperty(Hasher hasher, Property<? super T, P> property) {
         return property.accept(new HashModelVisitor<>(property.get(target), hasher));
     }

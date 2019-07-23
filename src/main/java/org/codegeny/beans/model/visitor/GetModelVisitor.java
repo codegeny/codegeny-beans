@@ -45,14 +45,39 @@ import java.util.function.Function;
  */
 public final class GetModelVisitor<S, T> implements ModelVisitor<T, Object> {
 
+    /**
+     * The current object node.
+     */
     private final T current;
+
+    /**
+     * The path elements.
+     */
     private final Iterator<? extends S> path;
+
+    /**
+     * The typer.
+     */
     private final Typer<S> typer;
 
-    public GetModelVisitor(T current, Typer<S> typer, Path<S> path) {
+    /**
+     * Constructor.
+     *
+     * @param current The current object node.
+     * @param path    The path.
+     * @param typer   The typer.
+     */
+    public GetModelVisitor(T current, Path<S> path, Typer<S> typer) {
         this(current, path.iterator(), typer);
     }
 
+    /**
+     * Constructor.
+     *
+     * @param current The current object node.
+     * @param path    The path elements iterator.
+     * @param typer   The typer.
+     */
     private GetModelVisitor(T current, Iterator<? extends S> path, Typer<S> typer) {
         this.current = current;
         this.path = path;
@@ -63,61 +88,92 @@ public final class GetModelVisitor<S, T> implements ModelVisitor<T, Object> {
      * {@inheritDoc}
      */
     @Override
-    public Object visitBean(BeanModel<T> bean) {
-        return process(k -> visitProperty(bean.getProperty(typer.retype(Model.STRING, k))));
+    public Object visitBean(BeanModel<T> beanModel) {
+        return followNestedPathOrGetValue(propertyPath -> visitProperty(beanModel.getProperty(typer.retype(Model.STRING, propertyPath))));
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public <K, V> Object visitMap(MapModel<T, K, V> map) {
-        Map<K, V> m = map.toMap(current);
-        return process(map.getValueModel(), map.getKeyModel(), m::get);
+    public <K, V> Object visitMap(MapModel<T, K, V> mapModel) {
+        Map<K, V> map = mapModel.toMap(current);
+        return getNested(mapModel.getValueModel(), mapModel.getKeyModel(), map::get);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public <E> Object visitSet(SetModel<T, E> set) {
-        Set<E> s = set.toSet(current);
-        return process(set.getElementModel(), Model.INTEGER, v -> s.stream().skip(v).findAny().orElse(null));
-//		return process(set.getElementModel(), set.getElementModel(), v -> s.stream().filter(isEqual(v)).findAny().orElse(null));
+    public <E> Object visitSet(SetModel<T, E> setModel) {
+        Set<E> set = setModel.toSet(current);
+        return getNested(setModel.getElementModel(), Model.INTEGER, index -> set.stream().skip(index).findAny().orElse(null));
+//		return get(set.getElementModel(), set.getElementModel(), v -> s.stream().filter(isEqual(v)).findAny().orElse(null));
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public <E> Object visitList(ListModel<T, E> list) {
-        List<E> l = list.toList(current);
-        return process(list.getElementModel(), Model.INTEGER, l::get);
+    public <E> Object visitList(ListModel<T, E> listModel) {
+        List<E> list = listModel.toList(current);
+        return getNested(listModel.getElementModel(), Model.INTEGER, list::get);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Object visitValue(ValueModel<T> value) {
-        return process(p -> {
+    public Object visitValue(ValueModel<T> valueModel) {
+        return followNestedPathOrGetValue(pathElement -> {
             throw new UnsupportedOperationException("Value object must be terminal");
         });
     }
 
+    /**
+     * Extract from a property.
+     *
+     * @param property The property.
+     * @param <P>      The property type.
+     * @return The extracted value.
+     */
     private <P> Object visitProperty(Property<? super T, P> property) {
-        return property.accept(visitor(property.get(current)));
+        return property.accept(newVisitor(property.get(current)));
     }
 
-    private Object process(Function<? super S, ?> p) {
-        return path.hasNext() ? p.apply(path.next()) : current;
+    /**
+     * Either go deeper down the path if there are any path elements left or return the current value.
+     *
+     * @param pathElementCallback A callback to apply on the next path element to return the result (extracted value).
+     * @return The extracted value.
+     */
+    private Object followNestedPathOrGetValue(Function<? super S, ?> pathElementCallback) {
+        return path.hasNext() ? pathElementCallback.apply(path.next()) : current;
     }
 
-    private <I, E> Object process(Model<E> e, Model<I> i, Function<I, E> f) {
-        return process(k -> e.accept(visitor(f.apply(typer.retype(i, k)))));
+    /**
+     * Follow a path by converting the next path element to a key (property name, index, map key...) and extracting the
+     * corresponding value from the current object.
+     *
+     * @param nestedModel  The nested model.
+     * @param keyModel     The model of the key.
+     * @param nestedGetter A function which takes a key of type K and returns an element of type E.
+     * @param <K>          The key type.
+     * @param <E>          The nested type.
+     * @return The extracted value.
+     */
+    private <K, E> Object getNested(Model<E> nestedModel, Model<? extends K> keyModel, Function<? super K, ? extends E> nestedGetter) {
+        return followNestedPathOrGetValue(pathElement -> nestedModel.accept(newVisitor(nestedGetter.apply(typer.retype(keyModel, pathElement)))));
     }
 
-    private <Z> GetModelVisitor<S, Z> visitor(Z current) {
+    /**
+     * Create a new {@link GetModelVisitor} for the given value.
+     *
+     * @param current The new current.
+     * @param <Z>     The type of the new current value.
+     * @return A visitor.
+     */
+    private <Z> GetModelVisitor<S, Z> newVisitor(Z current) {
         return new GetModelVisitor<>(current, path, typer);
     }
 }

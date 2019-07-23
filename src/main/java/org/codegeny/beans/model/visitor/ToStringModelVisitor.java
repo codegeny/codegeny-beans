@@ -36,21 +36,44 @@ import static java.util.stream.Collectors.toList;
 import static org.codegeny.beans.util.Utils.forEachIndexed;
 
 /**
- * TODO
+ * Generic <code>toString()</code> visitor.
  *
- * @param <T> TODO
+ * @param <T> The element type.
  * @author Xavier DURY
  */
 public final class ToStringModelVisitor<T> implements ModelVisitor<T, StringBuilder> {
 
+    /**
+     * The string builder.
+     */
     private final StringBuilder builder;
+
+    /**
+     * The string indentation.
+     */
     private final String indent;
+
+    /**
+     * The object to be transformed to string.
+     */
     private final T target;
 
+    /**
+     * Constructor.
+     *
+     * @param target The object to be transformed to string.
+     */
     public ToStringModelVisitor(T target) {
         this(target, new StringBuilder(), "");
     }
 
+    /**
+     * Constructor.
+     *
+     * @param target  The object to be transformed to string.
+     * @param builder The string builder.
+     * @param indent  The string indentation.
+     */
     private ToStringModelVisitor(T target, StringBuilder builder, String indent) {
         this.target = target;
         this.builder = builder;
@@ -63,11 +86,11 @@ public final class ToStringModelVisitor<T> implements ModelVisitor<T, StringBuil
     @Override
     public StringBuilder visitBean(BeanModel<T> bean) {
         this.builder.append("{");
-        int count = forEachIndexed(bean.getProperties(), (p, i) -> {
-            this.builder.append(i > 0 ? "," : "").append("\n").append(this.indent).append("  ").append(p.getName()).append(": ");
-            visitProperty(p);
+        int count = forEachIndexed(bean.getProperties(), (property, index) -> {
+            this.builder.append(index > 0 ? "," : "").append("\n").append(indent).append("  ").append(property.getName()).append(": ");
+            visitProperty(property);
         });
-        return this.builder.append(count > 0 ? "\n" : "").append(this.indent).append("}");
+        return this.builder.append(count > 0 ? "\n" : "").append(indent).append("}");
     }
 
     /**
@@ -75,7 +98,7 @@ public final class ToStringModelVisitor<T> implements ModelVisitor<T, StringBuil
      */
     @Override
     public StringBuilder visitValue(ValueModel<T> value) {
-        return this.builder.append(this.target);
+        return builder.append(target);
     }
 
     /**
@@ -83,12 +106,12 @@ public final class ToStringModelVisitor<T> implements ModelVisitor<T, StringBuil
      */
     @Override
     public <K, V> StringBuilder visitMap(MapModel<T, K, V> map) {
-        this.builder.append("[");
+        builder.append("[");
         Comparator<K> comparator = map.getKeyModel();
-        Map<K, V> entries = map.toMap(this.target);
+        Map<K, V> entries = map.toMap(target);
         Collection<K> sorted = entries.keySet().stream().sorted(comparator).collect(toList());
-        int count = forEachIndexed(sorted, (v, i) -> map.acceptValue(new ToStringModelVisitor<>(entries.get(v), this.builder.append(i > 0 ? "," : "").append("\n").append(this.indent).append("  ").append(v).append(": "), this.indent.concat("  "))));
-        return this.builder.append(count > 0 ? "\n".concat(this.indent) : "").append("]");
+        int count = forEachIndexed(sorted, (value, index) -> map.acceptValue(new ToStringModelVisitor<>(entries.get(value), builder.append(index > 0 ? "," : "").append("\n").append(indent).append("  ").append(value).append(": "), indent.concat("  "))));
+        return builder.append(count > 0 ? "\n".concat(indent) : "").append("]");
     }
 
     /**
@@ -96,7 +119,7 @@ public final class ToStringModelVisitor<T> implements ModelVisitor<T, StringBuil
      */
     @Override
     public <E> StringBuilder visitSet(SetModel<T, E> values) {
-        return visitCollection(values.getElementModel(), values.toSet(this.target).stream().sorted(values.getElementModel()).collect(toList()));
+        return visitCollection(values.getElementModel(), values.toSet(target).stream().sorted(values.getElementModel()).collect(toList()));
     }
 
     /**
@@ -104,16 +127,30 @@ public final class ToStringModelVisitor<T> implements ModelVisitor<T, StringBuil
      */
     @Override
     public <E> StringBuilder visitList(ListModel<T, E> values) {
-        return visitCollection(values.getElementModel(), values.toList(this.target));
+        return visitCollection(values.getElementModel(), values.toList(target));
     }
 
-    private <E> StringBuilder visitCollection(Model<E> elementModel, Collection<? extends E> list) {
-        this.builder.append("[");
-        int count = forEachIndexed(list, (v, i) -> elementModel.accept(new ToStringModelVisitor<>(v, this.builder.append(i > 0 ? "," : "").append("\n").append(this.indent).append("  "), this.indent.concat("  "))));
-        return this.builder.append(count > 0 ? "\n".concat(this.indent) : "").append("]");
+    /**
+     * Visit a collection.
+     *
+     * @param elementModel The collection element model.
+     * @param collection   The collection.
+     * @param <E>          The collection element type.
+     * @return The string builder.
+     */
+    private <E> StringBuilder visitCollection(Model<E> elementModel, Collection<? extends E> collection) {
+        builder.append("[");
+        int count = forEachIndexed(collection, (value, index) -> elementModel.accept(new ToStringModelVisitor<>(value, builder.append(index > 0 ? "," : "").append("\n").append(indent).append("  "), indent.concat("  "))));
+        return builder.append(count > 0 ? "\n".concat(indent) : "").append("]");
     }
 
+    /**
+     * Visit a property.
+     *
+     * @param property The property.
+     * @param <P>      The property type.
+     */
     private <P> void visitProperty(Property<? super T, P> property) {
-        property.accept(new ToStringModelVisitor<>(property.get(this.target), this.builder, this.indent.concat("  ")));
+        property.accept(new ToStringModelVisitor<>(property.get(target), builder, indent.concat("  ")));
     }
 }

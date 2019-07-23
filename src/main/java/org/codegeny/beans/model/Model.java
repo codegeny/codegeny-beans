@@ -282,7 +282,7 @@ public interface Model<T> extends Comparator<T> {
      * @param <S>    The bottom type for path elements and value.
      */
     default <S> void set(T target, Path<S> path, S value, Typer<S> typer) {
-        accept(new SetModelVisitor<>(target, value, typer, path));
+        accept(new SetModelVisitor<>(target, value, path, typer));
     }
 
     /**
@@ -296,7 +296,7 @@ public interface Model<T> extends Comparator<T> {
      * @return The retrieved property value.
      */
     default <S> Object get(T target, Path<S> path, Typer<S> typer) {
-        return accept(new GetModelVisitor<>(target, typer, path));
+        return accept(new GetModelVisitor<>(target, path, typer));
     }
 
     /**

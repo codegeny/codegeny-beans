@@ -89,11 +89,11 @@ Person person = ... // create some person instance
 
 String string = personModel.toString(person); // create a generic string representation for person
 
-int comparison = personModel.compare(person, anotherPerson); // compare person with anotherPerson by comparing fields in the order they were defined (firstName, lastName, birthDate, mainAddress.street, mainAddress.houseNumber...
+int comparison = personModel.compare(person, anotherPerson); // compare person with anotherPerson by comparing fields in the order they were defined (firstName, lastName, birthDate, mainAddress.street, mainAddress.houseNumber...)
 
 personModel.get(person, Path.of("mainAddress", "city")); // extract person.mainAddress.city
 
-Diff<Person> diff = personModel.diff(person, anotherPerson, 0.8); // returns a Diff<Person>, see below for more explanation.
+Diff<Person> diff = personModel.accept(new ComputeDiffModelVisitor<>(person, anotherPerson, 0.8)); // returns a Diff<Person>, see below for more explanation.
 ```
 
 ## The Diff interface
@@ -151,7 +151,7 @@ When comparing 2 collections (2 sets for example), at some point, the comparison
 
 | diff | left:0 | left:1 | left:2 |
 | :---: | :---: | :---: | :---: |
-| **right:0** | 90% | 80% | 0% |
+| **right:0** | 90% | 70% | 0% |
 | **right:1** | 80% | 20% | 30% |
 
 which represents the diff score between each element in the left collection and each element in the right collection.
@@ -160,14 +160,14 @@ There are currently two available strategies for comparing collections:
 - Global score maximizer which will try to find the best permutation to achieve the greater score
 - Local score maximizer which will always take the greatest score in the matrix without maximizing the global result
 
-Global score will pair the result like this: (L0, R1), (L1, R0), (L2, null) = 80% + 80% + 0% giving an average of ~53.33%.
+Global score will pair the result like this: (L0, R1), (L1, R0), (L2, null) = 80% + 70% + 0% giving an average of 50%.
 
 Local score will pair the result like this: (L0, R0), (L1, null), (L2, R1) = 90% + 0% + 30% giving an average of 40%.
 
 The big difference here is the speed of execution:
 
-- Local score will find the best way to pair elements in O(m x n) (where m and n are the sizes of the left and right collections)
-- Global score will find the best way to pair elements in factorial time which could take very very long for big collections (especially if all elements are almost identical).
+- Local score will find the best way to pair elements in O(m&middot;n) (where m and n are the sizes of the left and right collections)
+- Global score will find the best way to pair elements by trying all permutations in O(m!/(m-n)!) which could take already a long time for collections of a dozen elements (especially if all elements are almost identical).
 
 For this reason, it is better to use the local strategy and only use global strategy if your object graph is very limited.
 

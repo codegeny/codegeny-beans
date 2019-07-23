@@ -40,20 +40,63 @@ import java.util.function.Function;
 
 import static java.util.function.Predicate.isEqual;
 
+/**
+ * Visitor which sets a value inside an object structure based on a given path.
+ *
+ * @param <S> The path-element and value bottom type.
+ * @param <T> The object structure type.
+ * @author Xavier DURY
+ */
 public final class SetModelVisitor<S, T> implements ModelVisitor<T, Void> {
 
+    /**
+     * The current node in the object structure.
+     */
     private final T current;
+
+    /**
+     * The value to set inside the object structure.
+     */
     private final S valueToSet;
+
+    /**
+     * An iterator of path elements to get to the place in the object structure where the given value must be set.
+     */
     private final Iterator<? extends S> path;
+
+    /**
+     * The setter.
+     */
     private final Consumer<? super T> setter;
+
+    /**
+     * The typer to convert path elements and value to set to the correct type.
+     */
     private final Typer<S> typer;
 
-    public SetModelVisitor(T current, S valueToSet, Typer<S> typer, Path<S> path) {
+    /**
+     * Constructor.
+     *
+     * @param current    The current node in the object structure.
+     * @param valueToSet The value to set inside the object structure.
+     * @param path       The path to get to the place in the object structure where the given value must be set.
+     * @param typer      The typer to convert path elements and value to set to the correct type.
+     */
+    public SetModelVisitor(T current, S valueToSet, Path<S> path, Typer<S> typer) {
         this(current, valueToSet, path.iterator(), typer, a -> {
             throw new UnsupportedOperationException("Cannot set root object");
         });
     }
 
+    /**
+     * Constructor.
+     *
+     * @param current    The current node in the object structure.
+     * @param valueToSet The value to set inside the object structure.
+     * @param path       The path elements iterator to get to the place in the object structure where the given value must be set.
+     * @param typer      The typer to convert path elements and value to set to the correct type.
+     * @param setter     The setter.
+     */
     private SetModelVisitor(T current, S valueToSet, Iterator<? extends S> path, Typer<S> typer, Consumer<? super T> setter) {
         this.current = current;
         this.valueToSet = valueToSet;
@@ -66,19 +109,19 @@ public final class SetModelVisitor<S, T> implements ModelVisitor<T, Void> {
      * {@inheritDoc}
      */
     @Override
-    public Void visitBean(BeanModel<T> bean) {
-        return process(k -> visitProperty(bean.getProperty(typer.retype(Model.STRING, k))), setter, bean);
+    public Void visitBean(BeanModel<T> beanModel) {
+        return followNestedPathOrSetValue(k -> visitProperty(beanModel.getProperty(typer.retype(Model.STRING, k))), setter, beanModel);
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public <K, V> Void visitMap(MapModel<T, K, V> map) {
-        Map<K, V> m = map.toMap(current);
-        return process(map, map.getValueModel(), map.getKeyModel(), m::get, m::put, t -> {
-            m.clear();
-            m.putAll(map.toMap(t));
+    public <K, V> Void visitMap(MapModel<T, K, V> mapModel) {
+        Map<K, V> map = mapModel.toMap(current);
+        return setNested(mapModel.getValueModel(), mapModel.getKeyModel(), map::get, map::put, mapModel, newMap -> {
+            map.clear();
+            map.putAll(mapModel.toMap(newMap));
         });
     }
 
@@ -86,11 +129,11 @@ public final class SetModelVisitor<S, T> implements ModelVisitor<T, Void> {
      * {@inheritDoc}
      */
     @Override
-    public <E> Void visitSet(SetModel<T, E> set) {
-        Set<E> s = set.toSet(current);
-        return process(set, set.getElementModel(), set.getElementModel(), v -> s.stream().filter(isEqual(v)).findAny().orElse(null), (a, b) -> s.add(a), t -> {
-            s.clear();
-            s.addAll(set.toSet(t));
+    public <E> Void visitSet(SetModel<T, E> setModel) {
+        Set<E> set = setModel.toSet(current);
+        return setNested(setModel.getElementModel(), setModel.getElementModel(), value -> set.stream().filter(isEqual(value)).findAny().orElse(null), (a, b) -> set.add(a), setModel, newSet -> {
+            set.clear();
+            set.addAll(setModel.toSet(newSet));
         });
     }
 
@@ -98,11 +141,11 @@ public final class SetModelVisitor<S, T> implements ModelVisitor<T, Void> {
      * {@inheritDoc}
      */
     @Override
-    public <E> Void visitList(ListModel<T, E> list) {
-        List<E> l = list.toList(current);
-        return process(list, list.getElementModel(), Model.INTEGER, l::get, l::set, t -> {
-            l.clear();
-            l.addAll(list.toList(t));
+    public <E> Void visitList(ListModel<T, E> listModel) {
+        List<E> list = listModel.toList(current);
+        return setNested(listModel.getElementModel(), Model.INTEGER, list::get, list::set, listModel, newList -> {
+            list.clear();
+            list.addAll(listModel.toList(newList));
         });
     }
 
@@ -110,33 +153,66 @@ public final class SetModelVisitor<S, T> implements ModelVisitor<T, Void> {
      * {@inheritDoc}
      */
     @Override
-    public Void visitValue(ValueModel<T> value) {
-        return process(p -> {
+    public Void visitValue(ValueModel<T> valueModel) {
+        return followNestedPathOrSetValue(pathElement -> {
             throw new UnsupportedOperationException("Value object must be terminal");
-        }, setter, value);
+        }, setter, valueModel);
     }
 
+    /**
+     * Visit a property.
+     *
+     * @param property The property.
+     * @param <P>      The property type.
+     */
     private <P> void visitProperty(Property<? super T, P> property) {
-        property.accept(visitor(property.get(current), a -> property.set(current, a)));
+        property.accept(newVisitor(property.get(current), value -> property.set(current, value)));
     }
 
-    private Void process(Consumer<? super S> p, Consumer<? super T> c, Model<? extends T> t) {
+    /**
+     * Either go deeper down the path if there are any path elements left or set the value.
+     *
+     * @param pathElementCallback A callback to apply on the next path element to set the value.
+     * @return Nothing.
+     */
+    private Void followNestedPathOrSetValue(Consumer<? super S> pathElementCallback, Consumer<? super T> setter, Model<? extends T> valueModel) {
         if (path.hasNext()) {
-            p.accept(path.next());
+            pathElementCallback.accept(path.next());
         } else {
-            c.accept(typer.retype(t, valueToSet));
+            setter.accept(typer.retype(valueModel, valueToSet));
         }
         return null;
     }
 
-    private <I, E> Void process(Model<? extends T> t, Model<E> e, Model<? extends I> i, Function<? super I, ? extends E> f, BiConsumer<? super I, ? super E> b, Consumer<? super T> s) {
-        return process(k -> {
-            I value = typer.retype(i, k);
-            e.accept(visitor(f.apply(value), z -> b.accept(value, z)));
-        }, s, t);
+    /**
+     * Follow a path by converting the next path element to a key (property name, index, map key...) then sets the value.
+     *
+     * @param nestedModel  The element model.
+     * @param keyModel     The model of the key.
+     * @param nestedGetter A function which takes a key of type K and returns an element of type E.
+     * @param nestedSetter A consumer which takes a key of type K and an element of type E and sets it on the current node.
+     * @param model        The current model.
+     * @param setter       The current setter.
+     * @param <K>          The key type.
+     * @param <E>          The nested type.
+     * @return Nothing.
+     */
+    private <K, E> Void setNested(Model<E> nestedModel, Model<? extends K> keyModel, Function<? super K, ? extends E> nestedGetter, BiConsumer<? super K, ? super E> nestedSetter, Model<? extends T> model, Consumer<? super T> setter) {
+        return followNestedPathOrSetValue(pathElement -> {
+            K key = typer.retype(keyModel, pathElement);
+            nestedModel.accept(newVisitor(nestedGetter.apply(key), value -> nestedSetter.accept(key, value)));
+        }, setter, model);
     }
 
-    private <Z> SetModelVisitor<S, Z> visitor(Z current, Consumer<? super Z> setter) {
+    /**
+     * Create a new {@link SetModelVisitor} for the given value.
+     *
+     * @param current The new current.
+     * @param setter  The setter.
+     * @param <Z>     The type of the new current value.
+     * @return A visitor.
+     */
+    private <Z> SetModelVisitor<S, Z> newVisitor(Z current, Consumer<? super Z> setter) {
         return new SetModelVisitor<>(current, valueToSet, path, typer, setter);
     }
 }

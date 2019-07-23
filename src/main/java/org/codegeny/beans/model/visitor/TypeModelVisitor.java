@@ -42,6 +42,7 @@ import static java.util.stream.Collectors.joining;
  * type.
  *
  * @param <T> The model type.
+ * @author Xavier DURY
  */
 public final class TypeModelVisitor<T> implements ModelVisitor<T, Type> {
 

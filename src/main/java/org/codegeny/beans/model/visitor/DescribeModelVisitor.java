@@ -26,15 +26,37 @@ import org.codegeny.beans.model.ModelVisitor;
 import org.codegeny.beans.model.SetModel;
 import org.codegeny.beans.model.ValueModel;
 
+/**
+ * Create a recursive string description of the given model.
+ *
+ * @param <T> The model type.
+ * @author Xavier DURY
+ */
 public final class DescribeModelVisitor<T> implements ModelVisitor<T, StringBuilder> {
 
+    /**
+     * The string builder.
+     */
     private final StringBuilder builder;
+
+    /**
+     * The string indentation.
+     */
     private final String indent;
 
+    /**
+     * Constructor.
+     */
     public DescribeModelVisitor() {
         this(new StringBuilder(), "");
     }
 
+    /**
+     * Constructor.
+     *
+     * @param builder The string builder.
+     * @param indent  The string indentation.
+     */
     private DescribeModelVisitor(StringBuilder builder, String indent) {
         this.builder = builder;
         this.indent = indent;
@@ -86,10 +108,24 @@ public final class DescribeModelVisitor<T> implements ModelVisitor<T, StringBuil
         return values.acceptElement(same(this.builder.append("List<"))).append(">");
     }
 
+    /**
+     * Create a new indented {@link DescribeModelVisitor} for <code>S</code>.
+     *
+     * @param builder The string builder.
+     * @param <S>     The target type of the new visitor.
+     * @return A new visitor.
+     */
     private <S> DescribeModelVisitor<S> indented(StringBuilder builder) {
         return new DescribeModelVisitor<>(builder, indent.concat("  "));
     }
 
+    /**
+     * Create a new non-indented {@link DescribeModelVisitor} for <code>S</code>.
+     *
+     * @param builder The string builder.
+     * @param <S>     The target type of the new visitor.
+     * @return A new visitor.
+     */
     private <S> DescribeModelVisitor<S> same(StringBuilder builder) {
         return new DescribeModelVisitor<>(builder, indent);
     }

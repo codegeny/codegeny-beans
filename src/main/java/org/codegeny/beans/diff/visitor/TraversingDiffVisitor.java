@@ -33,7 +33,7 @@ import java.util.function.BiPredicate;
 import static org.codegeny.beans.util.Utils.forEachIndexed;
 
 /**
- * Visitor which will traverse the whole tree.
+ * Visitor which will traverse the whole diff tree.
  *
  * @param <T> The diff'ed type.
  * @author Xavier DURY
