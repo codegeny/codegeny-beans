@@ -19,7 +19,6 @@
  */
 package org.codegeny.beans.diff.visitor;
 
-import org.codegeny.beans.diff.BeanDiff;
 import org.codegeny.beans.diff.Diff;
 import org.codegeny.beans.diff.DiffVisitor;
 import org.codegeny.beans.diff.ListDiff;
@@ -38,12 +37,25 @@ import java.util.function.Function;
  */
 public final class GetDiffVisitor<T> implements DiffVisitor<T, Diff<?>> {
 
+    /**
+     * The path elements iterator.
+     */
     private final Iterator<?> path;
 
+    /**
+     * Constructor.
+     *
+     * @param path The path.
+     */
     public GetDiffVisitor(Path<?> path) {
         this(path.iterator());
     }
 
+    /**
+     * Constructor.
+     *
+     * @param path The path elements iterator.
+     */
     private GetDiffVisitor(Iterator<?> path) {
         this.path = path;
     }
@@ -52,16 +64,8 @@ public final class GetDiffVisitor<T> implements DiffVisitor<T, Diff<?>> {
      * {@inheritDoc}
      */
     @Override
-    public Diff<?> visitBean(BeanDiff<T> bean) {
-        return process(bean, n -> bean.getProperty((String) n));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public <E> Diff<?> visitList(ListDiff<T, E> list) {
-        return process(list, n -> list.getList().get((Integer) n));
+        return followNestedOrGetValue(list, pathElement -> list.getList().get((Integer) pathElement));
     }
 
     /**
@@ -69,7 +73,7 @@ public final class GetDiffVisitor<T> implements DiffVisitor<T, Diff<?>> {
      */
     @Override
     public <K, V> Diff<?> visitMap(MapDiff<T, K, V> map) {
-        return process(map, n -> map.getMap().get((K) n));
+        return followNestedOrGetValue(map, pathElement -> map.getMap().get((K) pathElement));
     }
 
     /**
@@ -77,12 +81,20 @@ public final class GetDiffVisitor<T> implements DiffVisitor<T, Diff<?>> {
      */
     @Override
     public Diff<?> visitSimple(SimpleDiff<T> simple) {
-        return process(simple, n -> {
+        return followNestedOrGetValue(simple, pathElement -> {
             throw new IllegalArgumentException("SimpleDiff must be terminal");
         });
     }
 
-    private <N> Diff<?> process(Diff<T> diff, Function<Object, Diff<N>> next) {
-        return path.hasNext() ? next.apply(path.next()).accept(new GetDiffVisitor<>(path)) : diff;
+    /**
+     * Follow the next path element (if any) or else get the value.
+     *
+     * @param diff         The current diff.
+     * @param nestedGetter A function which takes a key and return a diff.
+     * @param <N>          The type of the nested element.
+     * @return A diff.
+     */
+    private <N> Diff<?> followNestedOrGetValue(Diff<T> diff, Function<Object, Diff<N>> nestedGetter) {
+        return path.hasNext() ? nestedGetter.apply(path.next()).accept(new GetDiffVisitor<>(path)) : diff;
     }
 }

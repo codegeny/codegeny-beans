@@ -38,9 +38,20 @@ public final class MapDiff<M, K, V> extends AbstractDiff<M> {
      */
     private static final long serialVersionUID = 1L;
 
-    private final Map<K, Diff<V>> map;
+    /**
+     * The map of diffs.
+     */
+    private final Map<K, Diff<? extends V>> map;
 
-    MapDiff(Status status, M left, M right, Map<K, ? extends Diff<V>> map) {
+    /**
+     * Constructor.
+     *
+     * @param status The status.
+     * @param left   The left value.
+     * @param right  The right value.
+     * @param map    The map of diffs.
+     */
+    MapDiff(Status status, M left, M right, Map<K, ? extends Diff<? extends V>> map) {
         super(map.values(), status, left, right);
         this.map = unmodifiableMap(map);
     }
@@ -58,7 +69,7 @@ public final class MapDiff<M, K, V> extends AbstractDiff<M> {
      *
      * @return The map.
      */
-    public Map<K, Diff<V>> getMap() {
+    public Map<K, Diff<? extends V>> getMap() {
         return map;
     }
 }

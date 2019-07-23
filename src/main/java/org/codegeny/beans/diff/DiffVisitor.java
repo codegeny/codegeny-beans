@@ -19,9 +19,6 @@
  */
 package org.codegeny.beans.diff;
 
-import java.util.function.BiFunction;
-import java.util.function.Function;
-
 /**
  * Visitor pattern for <code>{@link Diff}</code>s.
  *
@@ -30,49 +27,6 @@ import java.util.function.Function;
  * @author Xavier DURY
  */
 public interface DiffVisitor<T, R> {
-
-    /**
-     * Create a visitor which process all type of {@link Diff} with the same function.
-     *
-     * @param function The function.
-     * @param <T>      The type of <code>{@link Diff}&lt;T&gt;</code>.
-     * @param <R>      The type of the result.
-     * @return A visitor.
-     */
-    static <T, R> DiffVisitor<T, R> adapter(Function<? super Diff<T>, ? extends R> function) {
-        return new Adapter<>(function);
-    }
-
-    /**
-     * Visitor which returns the {@link Diff} itself.
-     *
-     * @param <T> The type of <code>{@link Diff}&lt;T&gt;</code>.
-     * @return A visitor.
-     */
-    static <T> DiffVisitor<T, Diff<T>> identity() {
-        return adapter(Function.identity());
-    }
-
-    /**
-     * Visitor which combineWith the result of the current visitor and the result of the given visitor.
-     *
-     * @param that     The other visitor.
-     * @param combiner The combining function.
-     * @param <X>      The other other visitor return type.
-     * @param <Y>      The type of the combined values (&lt;R&gt; and &lt;X&gt;).
-     * @return A visitor.
-     */
-    default <X, Y> DiffVisitor<T, Y> andThen(DiffVisitor<T, ? extends X> that, BiFunction<? super R, ? super X, ? extends Y> combiner) {
-        return adapter(diff -> combiner.apply(diff.accept(this), diff.accept(that)));
-    }
-
-    /**
-     * Visit a <code>{@link BeanDiff}&lt;T&gt;</code>
-     *
-     * @param bean The bean to visit.
-     * @return The computed result.
-     */
-    R visitBean(BeanDiff<T> bean);
 
     /**
      * Visit a <code>{@link ListDiff}&lt;T, E&gt;</code>
@@ -100,51 +54,4 @@ public interface DiffVisitor<T, R> {
      * @return The computed result.
      */
     R visitSimple(SimpleDiff<T> simple);
-
-    /**
-     * Visitor adapter which converts diffs.
-     *
-     * @param <T> The diff type.
-     * @param <R> The result type.
-     */
-    class Adapter<T, R> implements DiffVisitor<T, R> {
-
-        private final Function<? super Diff<T>, ? extends R> function;
-
-        Adapter(Function<? super Diff<T>, ? extends R> function) {
-            this.function = function;
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public R visitBean(BeanDiff<T> bean) {
-            return function.apply(bean);
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public <E> R visitList(ListDiff<T, E> list) {
-            return function.apply(list);
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public <K, V> R visitMap(MapDiff<T, K, V> map) {
-            return function.apply(map);
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        public R visitSimple(SimpleDiff<T> simple) {
-            return function.apply(simple);
-        }
-    }
 }

@@ -32,6 +32,13 @@ public final class SimpleDiff<T> extends AbstractDiff<T> {
      */
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Constructor.
+     *
+     * @param status The status.
+     * @param left   The left value.
+     * @param right  The right value.
+     */
     SimpleDiff(Status status, T left, T right) {
         super(status.isChanged() ? 0.0 : 1.0, status, left, right);
     }

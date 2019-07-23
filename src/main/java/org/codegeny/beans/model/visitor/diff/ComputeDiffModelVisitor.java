@@ -19,7 +19,6 @@
  */
 package org.codegeny.beans.model.visitor.diff;
 
-import org.codegeny.beans.diff.BeanDiff;
 import org.codegeny.beans.diff.Diff;
 import org.codegeny.beans.diff.Diff.Status;
 import org.codegeny.beans.diff.ListDiff;
@@ -99,7 +98,7 @@ public final class ComputeDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>
         keys.addAll(leftMap.keySet());
         keys.addAll(rightMap.keySet());
         Map<K, Diff<V>> result = keys.stream().collect(toMap(k -> k, k -> map.acceptValue(newVisitor(leftMap.get(k), rightMap.get(k)))));
-        return Diff.map(Status.combineAll(result.values()), this.left, this.right, result);
+        return Diff.map(Status.combineAll(result.values()), left, right, result);
     }
 
     @Override
@@ -108,12 +107,12 @@ public final class ComputeDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>
     }
 
     @Override
-    public BeanDiff<T> visitBean(BeanModel<T> bean) {
+    public MapDiff<T, String, ?> visitBean(BeanModel<T> bean) {
         if (left == null ^ right == null) {
             return (left == null ? new AddedDiffModelVisitor<>(right) : new RemovedDiffModelVisitor<>(left)).visitBean(bean);
         }
         Map<String, Diff<?>> properties = bean.getProperties().stream().collect(toMap(Property::getName, this::visitProperty, ComputeDiffModelVisitor::throwingBinaryOperator, LinkedHashMap::new));
-        return Diff.bean(Status.combineAll(properties.values()), this.left, this.right, properties);
+        return Diff.map(Status.combineAll(properties.values()), left, right, properties);
     }
 
     @Override
@@ -337,8 +336,8 @@ public final class ComputeDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>
 
         protected abstract <N> AbstractDiffModelVisitor<N> create(N value);
 
-        public BeanDiff<T> visitBean(BeanModel<T> bean) {
-            return Diff.bean(type, left, right, bean.getProperties().stream().collect(toMap(Property::getName, this::visitProperty)));
+        public MapDiff<T, String, ?> visitBean(BeanModel<T> bean) {
+            return Diff.map(type, left, right, bean.getProperties().stream().collect(toMap(Property::getName, this::visitProperty)));
         }
 
         public <E> ListDiff<T, E> visitSet(SetModel<T, E> values) {

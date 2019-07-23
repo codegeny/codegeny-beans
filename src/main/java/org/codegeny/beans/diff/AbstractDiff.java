@@ -36,10 +36,34 @@ abstract class AbstractDiff<T> implements Diff<T> {
      */
     private static final long serialVersionUID = 1L;
 
-    private final T left, right;
+    /**
+     * The left value.
+     */
+    private final T left;
+
+    /**
+     * The right value.
+     */
+    private final T right;
+
+    /**
+     * The score.
+     */
     private final double normalizedScore;
+
+    /**
+     * The status.
+     */
     private final Status status;
 
+    /**
+     * Constructor.
+     *
+     * @param normalizedScore The score.
+     * @param status          The status.
+     * @param left            The left value.
+     * @param right           The right value.
+     */
     AbstractDiff(double normalizedScore, Status status, T left, T right) {
         this.normalizedScore = normalizedScore;
         this.status = requireNonNull(status, "Status cannot be null");
@@ -47,6 +71,14 @@ abstract class AbstractDiff<T> implements Diff<T> {
         this.right = right;
     }
 
+    /**
+     * Constructor.
+     *
+     * @param diffs  The diff children.
+     * @param status The status?
+     * @param left   The left value.
+     * @param right  The right value.
+     */
     AbstractDiff(Collection<? extends Diff<?>> diffs, Status status, T left, T right) {
         this(status.isChanged() ? diffs.stream().mapToDouble(Diff::getScore).average().orElse(0.0) : 1.0, status, left, right);
     }

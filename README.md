@@ -129,15 +129,15 @@ right = President {
 	electedYears: [2001, 2005]
 }
 
-diff(left, right) = BeanDiff<President>(score = 5/12, status = MODIFIED, left = ..., right = ...) {
-	firstNames: ListDiff<List<String>, String>(score = 2/3, status = MODIFIED, left = ..., right = ...) [
+diff(left, right) = MapDiff<President>(score = 5/12, status = MODIFIED, left = ..., right = ...) {
+	'firstNames': ListDiff<List<String>, String>(score = 2/3, status = MODIFIED, left = ..., right = ...) [
 		SimpleDiff<String>(score = 1, status = UNCHANGED, left = 'George', right = 'George'),
 		SimpleDiff<String>(score = 0, status = REMOVED, left = 'Herbert', right = null),
 		SimpleDiff<String>(score = 1, status = UNCHANGED, left = 'Walker', right = 'Walker'),
 	],
-	lastName: SimpleDiff<String>(score = 1, status = UNCHANGED, left = 'Bush', right = 'Bush'),
-	birthYear: SimpleDiff<Integer>(score = 0, status = MODIFIED, left = 1924, right = 1946),
-	electedYears: ListDiff<List<Integer>, Integer>(score = 0/3, status = MODIFIED, left = ..., right = ...) [
+	'lastName': SimpleDiff<String>(score = 1, status = UNCHANGED, left = 'Bush', right = 'Bush'),
+	'birthYear': SimpleDiff<Integer>(score = 0, status = MODIFIED, left = 1924, right = 1946),
+	'electedYears': ListDiff<List<Integer>, Integer>(score = 0/3, status = MODIFIED, left = ..., right = ...) [
 		SimpleDiff<Integer>(score = 0, status = REMOVED, left = 1989, right = null),
 		SimpleDiff<Integer>(score = 0, status = ADDED, left = null, right = 2001),
 		SimpleDiff<Integer>(score = 0, status = ADDED, left = null, right = 2005),

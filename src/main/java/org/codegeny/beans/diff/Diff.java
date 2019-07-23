@@ -42,20 +42,6 @@ import static java.util.Objects.requireNonNull;
 public interface Diff<T> extends Serializable {
 
     /**
-     * Static method factory for <code>{@link BeanDiff}</code>.
-     *
-     * @param status     The status.
-     * @param left       The left bean.
-     * @param right      The right bean.
-     * @param properties The diff'ed properties as a map.
-     * @param <B>        The type of the bean.
-     * @return A <code>{@link BeanDiff}</code>.
-     */
-    static <B> BeanDiff<B> bean(Status status, B left, B right, Map<String, ? extends Diff<?>> properties) {
-        return new BeanDiff<>(status, left, right, properties);
-    }
-
-    /**
      * Static method factory for <code>{@link ListDiff}</code>.
      *
      * @param status The status.
@@ -66,7 +52,7 @@ public interface Diff<T> extends Serializable {
      * @param <E>    The type of the list elements.
      * @return A <code>{@link ListDiff}</code>.
      */
-    static <L, E> ListDiff<L, E> list(Status status, L left, L right, List<? extends Diff<E>> list) {
+    static <L, E> ListDiff<L, E> list(Status status, L left, L right, List<? extends Diff<? extends E>> list) {
         return new ListDiff<>(status, left, right, list);
     }
 
@@ -82,7 +68,7 @@ public interface Diff<T> extends Serializable {
      * @param <V>    The type of the map values.
      * @return A <code>{@link MapDiff}</code>.
      */
-    static <M, K, V> MapDiff<M, K, V> map(Status status, M left, M right, Map<K, ? extends Diff<V>> map) {
+    static <M, K, V> MapDiff<M, K, V> map(Status status, M left, M right, Map<K, ? extends Diff<? extends V>> map) {
         return new MapDiff<>(status, left, right, map);
     }
 

@@ -37,9 +37,20 @@ public final class ListDiff<L, E> extends AbstractDiff<L> {
      */
     private static final long serialVersionUID = 1L;
 
-    private final List<Diff<E>> list;
+    /**
+     * The list of diffs.
+     */
+    private final List<Diff<? extends E>> list;
 
-    ListDiff(Status status, L left, L right, List<? extends Diff<E>> list) {
+    /**
+     * Constructor.
+     *
+     * @param status The status.
+     * @param left   The left value.
+     * @param right  The right value.
+     * @param list   The list of diffs.
+     */
+    ListDiff(Status status, L left, L right, List<? extends Diff<? extends E>> list) {
         super(list, status, left, right);
         this.list = unmodifiableList(list);
     }
@@ -57,7 +68,7 @@ public final class ListDiff<L, E> extends AbstractDiff<L> {
      *
      * @return The list.
      */
-    public List<Diff<E>> getList() {
+    public List<Diff<? extends E>> getList() {
         return list;
     }
 }
