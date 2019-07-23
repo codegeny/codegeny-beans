@@ -26,8 +26,8 @@ import org.codegeny.beans.model.Model;
 import org.codegeny.beans.model.ModelVisitor;
 import org.codegeny.beans.model.Property;
 import org.codegeny.beans.model.SetModel;
-import org.codegeny.beans.model.Typer;
 import org.codegeny.beans.model.ValueModel;
+import org.codegeny.beans.path.Converter;
 import org.codegeny.beans.path.Path;
 
 import java.util.Iterator;
@@ -56,32 +56,32 @@ public final class GetModelVisitor<S, T> implements ModelVisitor<T, Object> {
     private final Iterator<? extends S> path;
 
     /**
-     * The typer.
+     * The converter.
      */
-    private final Typer<S> typer;
+    private final Converter<? super S> converter;
 
     /**
      * Constructor.
      *
-     * @param current The current object node.
-     * @param path    The path.
-     * @param typer   The typer.
+     * @param current   The current object node.
+     * @param path      The path.
+     * @param converter The converter.
      */
-    public GetModelVisitor(T current, Path<S> path, Typer<S> typer) {
-        this(current, path.iterator(), typer);
+    public GetModelVisitor(T current, Path<? extends S> path, Converter<? super S> converter) {
+        this(current, path.iterator(), converter);
     }
 
     /**
      * Constructor.
      *
-     * @param current The current object node.
-     * @param path    The path elements iterator.
-     * @param typer   The typer.
+     * @param current   The current object node.
+     * @param path      The path elements iterator.
+     * @param converter The converter.
      */
-    private GetModelVisitor(T current, Iterator<? extends S> path, Typer<S> typer) {
+    private GetModelVisitor(T current, Iterator<? extends S> path, Converter<? super S> converter) {
         this.current = current;
         this.path = path;
-        this.typer = typer;
+        this.converter = converter;
     }
 
     /**
@@ -89,7 +89,7 @@ public final class GetModelVisitor<S, T> implements ModelVisitor<T, Object> {
      */
     @Override
     public Object visitBean(BeanModel<T> beanModel) {
-        return followNestedPathOrGetValue(propertyPath -> visitProperty(beanModel.getProperty(typer.retype(Model.STRING, propertyPath))));
+        return followNestedPathOrGetValue(propertyPath -> visitProperty(beanModel.getProperty(converter.convert(String.class, propertyPath))));
     }
 
     /**
@@ -162,8 +162,8 @@ public final class GetModelVisitor<S, T> implements ModelVisitor<T, Object> {
      * @param <E>          The nested type.
      * @return The extracted value.
      */
-    private <K, E> Object getNested(Model<E> nestedModel, Model<? extends K> keyModel, Function<? super K, ? extends E> nestedGetter) {
-        return followNestedPathOrGetValue(pathElement -> nestedModel.accept(newVisitor(nestedGetter.apply(typer.retype(keyModel, pathElement)))));
+    private <K, E> Object getNested(Model<E> nestedModel, Model<? super K> keyModel, Function<? super K, ? extends E> nestedGetter) {
+        return followNestedPathOrGetValue(pathElement -> nestedModel.accept(newVisitor(nestedGetter.apply(converter.convert(keyModel.accept(new TypeModelVisitor<>()), pathElement)))));
     }
 
     /**
@@ -174,6 +174,6 @@ public final class GetModelVisitor<S, T> implements ModelVisitor<T, Object> {
      * @return A visitor.
      */
     private <Z> GetModelVisitor<S, Z> newVisitor(Z current) {
-        return new GetModelVisitor<>(current, path, typer);
+        return new GetModelVisitor<>(current, path, converter);
     }
 }

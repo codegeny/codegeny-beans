@@ -26,8 +26,8 @@ import org.codegeny.beans.model.Model;
 import org.codegeny.beans.model.ModelVisitor;
 import org.codegeny.beans.model.Property;
 import org.codegeny.beans.model.SetModel;
-import org.codegeny.beans.model.Typer;
 import org.codegeny.beans.model.ValueModel;
+import org.codegeny.beans.path.Converter;
 import org.codegeny.beans.path.Path;
 
 import java.util.Iterator;
@@ -70,9 +70,9 @@ public final class SetModelVisitor<S, T> implements ModelVisitor<T, Void> {
     private final Consumer<? super T> setter;
 
     /**
-     * The typer to convert path elements and value to set to the correct type.
+     * The converter used for converting path elements and value to set to the correct type.
      */
-    private final Typer<S> typer;
+    private final Converter<? super S> converter;
 
     /**
      * Constructor.
@@ -80,10 +80,10 @@ public final class SetModelVisitor<S, T> implements ModelVisitor<T, Void> {
      * @param current    The current node in the object structure.
      * @param valueToSet The value to set inside the object structure.
      * @param path       The path to get to the place in the object structure where the given value must be set.
-     * @param typer      The typer to convert path elements and value to set to the correct type.
+     * @param converter  The converter used for converting path elements and value to set to the correct type.
      */
-    public SetModelVisitor(T current, S valueToSet, Path<S> path, Typer<S> typer) {
-        this(current, valueToSet, path.iterator(), typer, a -> {
+    public SetModelVisitor(T current, S valueToSet, Path<? extends S> path, Converter<? super S> converter) {
+        this(current, valueToSet, path.iterator(), converter, a -> {
             throw new UnsupportedOperationException("Cannot set root object");
         });
     }
@@ -94,14 +94,14 @@ public final class SetModelVisitor<S, T> implements ModelVisitor<T, Void> {
      * @param current    The current node in the object structure.
      * @param valueToSet The value to set inside the object structure.
      * @param path       The path elements iterator to get to the place in the object structure where the given value must be set.
-     * @param typer      The typer to convert path elements and value to set to the correct type.
+     * @param converter  The converter used for converting path elements and value to set to the correct type.
      * @param setter     The setter.
      */
-    private SetModelVisitor(T current, S valueToSet, Iterator<? extends S> path, Typer<S> typer, Consumer<? super T> setter) {
+    private SetModelVisitor(T current, S valueToSet, Iterator<? extends S> path, Converter<? super S> converter, Consumer<? super T> setter) {
         this.current = current;
         this.valueToSet = valueToSet;
         this.path = path;
-        this.typer = typer;
+        this.converter = converter;
         this.setter = setter;
     }
 
@@ -110,7 +110,7 @@ public final class SetModelVisitor<S, T> implements ModelVisitor<T, Void> {
      */
     @Override
     public Void visitBean(BeanModel<T> beanModel) {
-        return followNestedPathOrSetValue(k -> visitProperty(beanModel.getProperty(typer.retype(Model.STRING, k))), setter, beanModel);
+        return followNestedPathOrSetValue(k -> visitProperty(beanModel.getProperty(converter.convert(String.class, k))), setter, beanModel);
     }
 
     /**
@@ -179,7 +179,7 @@ public final class SetModelVisitor<S, T> implements ModelVisitor<T, Void> {
         if (path.hasNext()) {
             pathElementCallback.accept(path.next());
         } else {
-            setter.accept(typer.retype(valueModel, valueToSet));
+            setter.accept(converter.convert(valueModel.accept(new TypeModelVisitor<>()), valueToSet));
         }
         return null;
     }
@@ -197,9 +197,9 @@ public final class SetModelVisitor<S, T> implements ModelVisitor<T, Void> {
      * @param <E>          The nested type.
      * @return Nothing.
      */
-    private <K, E> Void setNested(Model<E> nestedModel, Model<? extends K> keyModel, Function<? super K, ? extends E> nestedGetter, BiConsumer<? super K, ? super E> nestedSetter, Model<? extends T> model, Consumer<? super T> setter) {
+    private <K, E> Void setNested(Model<E> nestedModel, Model<? super K> keyModel, Function<? super K, ? extends E> nestedGetter, BiConsumer<? super K, ? super E> nestedSetter, Model<? extends T> model, Consumer<? super T> setter) {
         return followNestedPathOrSetValue(pathElement -> {
-            K key = typer.retype(keyModel, pathElement);
+            K key = converter.convert(keyModel.accept(new TypeModelVisitor<>()), pathElement);
             nestedModel.accept(newVisitor(nestedGetter.apply(key), value -> nestedSetter.accept(key, value)));
         }, setter, model);
     }
@@ -213,6 +213,6 @@ public final class SetModelVisitor<S, T> implements ModelVisitor<T, Void> {
      * @return A visitor.
      */
     private <Z> SetModelVisitor<S, Z> newVisitor(Z current, Consumer<? super Z> setter) {
-        return new SetModelVisitor<>(current, valueToSet, path, typer, setter);
+        return new SetModelVisitor<>(current, valueToSet, path, converter, setter);
     }
 }

@@ -39,31 +39,56 @@ import static org.codegeny.beans.util.Utils.forEachIndexed;
  */
 public final class TraversingDiffVisitor<T> implements DiffVisitor<T, Void> {
 
+    /**
+     * The current path.
+     */
     private final Path<Object> path;
+
+    /**
+     * A predicate which receives the current path and the current diff and returns a boolean indicating if traversing should stop.
+     */
     private final BiPredicate<? super Path<?>, ? super Diff<?>> processor;
 
+    /**
+     * Constructor.
+     *
+     * @param processor A predicate which receives the current path and the current diff and returns a boolean indicating if traversing should stop.
+     */
     public TraversingDiffVisitor(BiPredicate<? super Path<?>, ? super Diff<?>> processor) {
         this(Path.root(), processor);
     }
 
+    /**
+     * Constructor.
+     *
+     * @param processor A consumer which receives the current path and the current diff.
+     */
     public TraversingDiffVisitor(BiConsumer<? super Path<?>, ? super Diff<?>> processor) {
         this(Path.root(), processor);
     }
 
-    private TraversingDiffVisitor(Path<Object> path, BiConsumer<? super Path<?>, ? super Diff<?>> processor) {
-        this(path, (a, b) -> {
-            processor.accept(a, b);
-            return true;
-        });
-    }
-
+    /**
+     * Constructor.
+     *
+     * @param path      The current path.
+     * @param processor A predicate which receives the current path and the current diff and returns a boolean indicating if traversing should stop.
+     */
     private TraversingDiffVisitor(Path<Object> path, BiPredicate<? super Path<?>, ? super Diff<?>> processor) {
         this.path = path;
         this.processor = processor;
     }
 
-    private <R> TraversingDiffVisitor<R> childVisitor(Path<Object> path) {
-        return new TraversingDiffVisitor<>(path, processor);
+    /**
+     * Constructor.
+     *
+     * @param path      The current path.
+     * @param processor A consumer which receives the current path and the current diff.
+     */
+    private TraversingDiffVisitor(Path<Object> path, BiConsumer<? super Path<?>, ? super Diff<?>> processor) {
+        this(path, (a, b) -> {
+            processor.accept(a, b);
+            return true;
+        });
     }
 
     /**
@@ -72,7 +97,7 @@ public final class TraversingDiffVisitor<T> implements DiffVisitor<T, Void> {
     @Override
     public <E> Void visitList(ListDiff<T, E> listDiff) {
         if (processor.test(path, listDiff)) {
-            forEachIndexed(listDiff.getList(), (n, i) -> n.accept(childVisitor(path.append(i))));
+            forEachIndexed(listDiff.getList(), (n, i) -> n.accept(newVisitor(path.append(i))));
         }
         return null;
     }
@@ -83,7 +108,7 @@ public final class TraversingDiffVisitor<T> implements DiffVisitor<T, Void> {
     @Override
     public <K, V> Void visitMap(MapDiff<T, K, V> mapDiff) {
         if (processor.test(path, mapDiff)) {
-            mapDiff.getMap().forEach((k, v) -> v.accept(childVisitor(path.append(k))));
+            mapDiff.getMap().forEach((k, v) -> v.accept(newVisitor(path.append(k))));
         }
         return null;
     }
@@ -95,5 +120,16 @@ public final class TraversingDiffVisitor<T> implements DiffVisitor<T, Void> {
     public Void visitSimple(SimpleDiff<T> simpleDiff) {
         processor.test(path, simpleDiff);
         return null;
+    }
+
+    /**
+     * Create a new visitor.
+     *
+     * @param path The current path.
+     * @param <R>  The type.
+     * @return A new visitor.
+     */
+    private <R> TraversingDiffVisitor<R> newVisitor(Path<Object> path) {
+        return new TraversingDiffVisitor<>(path, processor);
     }
 }

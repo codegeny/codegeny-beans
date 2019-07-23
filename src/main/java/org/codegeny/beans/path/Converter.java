@@ -17,20 +17,22 @@
  * limitations under the License.
  * #L%
  */
-package org.codegeny.beans.model;
+package org.codegeny.beans.path;
+
+import java.lang.reflect.Type;
 
 /**
- * Class which converts or casts objects to the type of a given model.
+ * Class which converts or casts objects to the given type.
  *
  * @param <S> The source object constrained type.
  * @author Xavier DURY
  */
-public interface Typer<S> {
+public interface Converter<S> {
 
     /**
      * Identity typer which casts the value to the model type.
      */
-    enum Identity implements Typer<Object> {
+    enum Identity implements Converter<Object> {
 
         /**
          * Singleton.
@@ -42,18 +44,18 @@ public interface Typer<S> {
          */
         @Override
         @SuppressWarnings("unchecked")
-        public <T> T retype(Model<T> model, Object value) {
-            return (T) value;
+        public <T> T convert(Type type, Object source) {
+            return (T) source;
         }
     }
 
     /**
      * Convert/cast the value to &gt;T&lt;
      *
-     * @param model The model.
+     * @param type  The type.
      * @param value The value to convert.
      * @param <T>   The type of the model.
      * @return An object of type &gt;T&lt;
      */
-    <T> T retype(Model<T> model, S value);
+    <T> T convert(Type type, S value);
 }

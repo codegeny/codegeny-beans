@@ -51,6 +51,7 @@ public class Person {
             property("formerAddresses", set(Person::getFormerAddresses, Person::addFormerAddress), set(Address.MODEL)), //
             property("hints", Person::getHints, map(STRING, STRING)) //
     );
+
     private LocalDate birthDate;
     private Address currentAddress;
     private String firstName;

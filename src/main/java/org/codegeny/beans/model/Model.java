@@ -26,6 +26,7 @@ import org.codegeny.beans.model.visitor.GetModelVisitor;
 import org.codegeny.beans.model.visitor.HashModelVisitor;
 import org.codegeny.beans.model.visitor.SetModelVisitor;
 import org.codegeny.beans.model.visitor.ToStringModelVisitor;
+import org.codegeny.beans.path.Converter;
 import org.codegeny.beans.path.Path;
 
 import java.util.Comparator;
@@ -275,28 +276,28 @@ public interface Model<T> extends Comparator<T> {
      * <code>Integer</code>s for lists indexes or any other types for maps keys. The value to set could also be given
      * as a <code>String</code> and converted at the last moment (when it is actually set on the target object).
      *
-     * @param target The &gt;T&lt; instance to modify.
-     * @param path   The path of the property to set.
-     * @param value  The value to set.
-     * @param typer  The typer which allows conversion of path elements and value along the way.
-     * @param <S>    The bottom type for path elements and value.
+     * @param target    The &gt;T&lt; instance to modify.
+     * @param path      The path of the property to set.
+     * @param value     The value to set.
+     * @param converter The converter for converting path elements along the way.
+     * @param <S>       The bottom type for path elements and value.
      */
-    default <S> void set(T target, Path<S> path, S value, Typer<S> typer) {
-        accept(new SetModelVisitor<>(target, value, path, typer));
+    default <S> void set(T target, Path<S> path, S value, Converter<? super S> converter) {
+        accept(new SetModelVisitor<>(target, value, path, converter));
     }
 
     /**
      * Get the value from the specified path in the target.
-     * A typer is needed for the same reasons as for {@link Model#set(Object, Path, Object, Typer)}.
+     * A typer is needed for the same reasons as for {@link Model#set(Object, Path, Object, Converter)}.
      *
-     * @param target The &gt;T&lt; instance.
-     * @param path   The path of the property to retrieve.
-     * @param typer  The typer which allows conversion of path elements along the way.
-     * @param <S>    The bottom type for path elements.
+     * @param target    The &gt;T&lt; instance.
+     * @param path      The path of the property to retrieve.
+     * @param converter The converter for converting path elements along the way.
+     * @param <S>       The bottom type for path elements.
      * @return The retrieved property value.
      */
-    default <S> Object get(T target, Path<S> path, Typer<S> typer) {
-        return accept(new GetModelVisitor<>(target, path, typer));
+    default <S> Object get(T target, Path<S> path, Converter<? super S> converter) {
+        return accept(new GetModelVisitor<>(target, path, converter));
     }
 
     /**
@@ -309,7 +310,7 @@ public interface Model<T> extends Comparator<T> {
      * @param value  The value to set.
      */
     default void set(T target, Path<Object> path, Object value) {
-        set(target, path, value, Typer.Identity.INSTANCE);
+        set(target, path, value, Converter.Identity.INSTANCE);
     }
 
     /**
@@ -321,7 +322,7 @@ public interface Model<T> extends Comparator<T> {
      * @return The retrieved property value.
      */
     default Object get(T target, Path<Object> path) {
-        return get(target, path, Typer.Identity.INSTANCE);
+        return get(target, path, Converter.Identity.INSTANCE);
     }
 
     /**

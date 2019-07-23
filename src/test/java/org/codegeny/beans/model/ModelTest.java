@@ -21,12 +21,11 @@ package org.codegeny.beans.model;
 
 import org.codegeny.beans.Person;
 import org.codegeny.beans.model.visitor.TraversingModelVisitor;
-import org.codegeny.beans.model.visitor.TypeModelVisitor;
+import org.codegeny.beans.path.Converter;
+import org.codegeny.beans.path.JsonConverter;
 import org.codegeny.beans.path.Path;
 import org.junit.jupiter.api.Test;
 
-import javax.json.bind.Jsonb;
-import javax.json.bind.JsonbBuilder;
 import java.time.LocalDate;
 import java.util.Arrays;
 
@@ -37,15 +36,7 @@ public class ModelTest {
     @Test
     public void extractPath() {
 
-        Jsonb jsonb = JsonbBuilder.create();
-
-        Typer<String> jsonTyper = new Typer<String>() {
-
-            @Override
-            public <T> T retype(Model<T> model, String value) {
-                return jsonb.fromJson(value, model.accept(new TypeModelVisitor<>()));
-            }
-        };
+        Converter<String> jsonConverter = new JsonConverter();
 
         Person person = Person.createDefaultPerson();
 
@@ -53,10 +44,10 @@ public class ModelTest {
         Person.MODEL.set(person, Path.of("middleNames", 0), "Fridrick");
         assertEquals(Arrays.asList("Fridrick", "Fitzgerald"), person.getMiddleNames());
 
-        Person.MODEL.set(person, Path.of("\"middleNames\"", "0"), "\"Yannick\"", jsonTyper);
+        Person.MODEL.set(person, Path.of("\"middleNames\"", "0"), "\"Yannick\"", jsonConverter);
         assertEquals(Arrays.asList("Yannick", "Fitzgerald"), person.getMiddleNames());
 
-        Person.MODEL.set(person, Path.of("\"birthDate\""), "\"2018-01-01\"", jsonTyper);
+        Person.MODEL.set(person, Path.of("\"birthDate\""), "\"2018-01-01\"", jsonConverter);
         assertEquals(LocalDate.of(2018, 1, 1), person.getBirthDate());
 
         assertEquals("John", person.getFirstName());

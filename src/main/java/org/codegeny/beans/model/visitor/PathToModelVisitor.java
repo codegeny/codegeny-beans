@@ -26,8 +26,8 @@ import org.codegeny.beans.model.Model;
 import org.codegeny.beans.model.ModelVisitor;
 import org.codegeny.beans.model.Property;
 import org.codegeny.beans.model.SetModel;
-import org.codegeny.beans.model.Typer;
 import org.codegeny.beans.model.ValueModel;
+import org.codegeny.beans.path.Converter;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -36,16 +36,16 @@ import java.util.function.Function;
 public final class PathToModelVisitor<S, T> implements ModelVisitor<T, Model<?>> {
 
     private final Iterator<? extends S> path;
-    private final Typer<S> typer;
+    private final Converter<S> converter;
 
     @SafeVarargs
-    public PathToModelVisitor(Typer<S> typer, S... path) {
+    public PathToModelVisitor(Converter<S> typer, S... path) {
         this(Arrays.asList(path).iterator(), typer);
     }
 
-    private PathToModelVisitor(Iterator<? extends S> path, Typer<S> typer) {
+    private PathToModelVisitor(Iterator<? extends S> path, Converter<S> converter) {
         this.path = path;
-        this.typer = typer;
+        this.converter = converter;
     }
 
     /**
@@ -53,7 +53,7 @@ public final class PathToModelVisitor<S, T> implements ModelVisitor<T, Model<?>>
      */
     @Override
     public Model<?> visitBean(BeanModel<T> bean) {
-        return process(bean, k -> visitProperty(bean.getProperty(typer.retype(Model.STRING, k))));
+        return process(bean, k -> visitProperty(bean.getProperty(converter.convert(String.class, k))));
     }
 
     /**
@@ -98,11 +98,11 @@ public final class PathToModelVisitor<S, T> implements ModelVisitor<T, Model<?>>
         return path.hasNext() ? p.apply(path.next()) : model;
     }
 
-    private <I, E> Model<?> process2(Model<T> t, Model<E> e) {
+    private <E> Model<?> process2(Model<T> t, Model<E> e) {
         return process(t, k -> e.accept(visitor()));
     }
 
     private <Z> PathToModelVisitor<S, Z> visitor() {
-        return new PathToModelVisitor<>(path, typer);
+        return new PathToModelVisitor<>(path, converter);
     }
 }
