@@ -41,6 +41,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import java.util.function.IntConsumer;
 
 import static java.lang.Math.max;
@@ -63,20 +64,50 @@ import static org.codegeny.beans.diff.Diff.Status.UNCHANGED;
  * 2 objects which have a matching score greater or equals to 0.8 could be considered the same instance with
  * modifications).
  *
- * @param <T> The model type.
+ * @param <T> The model status.
  * @author Xavier DURY
  */
 public final class ComputeDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>> {
 
+    /**
+     * The left value;
+     */
     private final T left;
+
+    /**
+     * The right value.
+     */
     private final T right;
+
+    /**
+     * The minimum matching score above which 2 objects can be considered the same "instance".
+     */
     private final double threshold;
+
+    /**
+     * The score optimizer.
+     */
     private final ScoreOptimizer optimizer;
 
+    /**
+     * Constructor with default scopre optimizer.
+     *
+     * @param left      The left value to diff.
+     * @param right     The right value to diff.
+     * @param threshold The minimum matching score above which 2 objects can be considered the same "instance".
+     */
     public ComputeDiffModelVisitor(T left, T right, double threshold) {
         this(left, right, threshold, LocalScoreOptimizer.INSTANCE);
     }
 
+    /**
+     * Constructor.
+     *
+     * @param left      The left value to diff.
+     * @param right     The right value to diff.
+     * @param threshold The minimum matching score above which 2 objects can be considered the same "instance".
+     * @param optimizer The score optimizer.
+     */
     public ComputeDiffModelVisitor(T left, T right, double threshold, ScoreOptimizer optimizer) {
         if (threshold <= 0 || threshold > 1) {
             throw new IllegalArgumentException("Threshold must be (strictly greater-than 0) and (lower-than or equal-to 1)");
@@ -87,10 +118,13 @@ public final class ComputeDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>
         this.optimizer = requireNonNull(optimizer);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <K, V> MapDiff<T, K, V> visitMap(MapModel<T, K, V> map) {
         if (left == null ^ right == null) {
-            return (left == null ? new AddedDiffModelVisitor<>(right) : new RemovedDiffModelVisitor<>(left)).visitMap(map);
+            return (left == null ? added(right) : removed(left)).visitMap(map);
         }
         Map<K, V> leftMap = map.toMap(left);
         Map<K, V> rightMap = map.toMap(right);
@@ -101,20 +135,29 @@ public final class ComputeDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>
         return Diff.map(Status.combineAll(result.values()), left, right, result);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public SimpleDiff<T> visitValue(ValueModel<T> value) {
         return Diff.simple(left == null ^ right == null ? left == null ? ADDED : REMOVED : value.compare(left, right) == 0 ? UNCHANGED : MODIFIED, left, right);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public MapDiff<T, String, ?> visitBean(BeanModel<T> bean) {
         if (left == null ^ right == null) {
-            return (left == null ? new AddedDiffModelVisitor<>(right) : new RemovedDiffModelVisitor<>(left)).visitBean(bean);
+            return (left == null ? added(right) : removed(left)).visitBean(bean);
         }
-        Map<String, Diff<?>> properties = bean.getProperties().stream().collect(toMap(Property::getName, this::visitProperty, ComputeDiffModelVisitor::throwingBinaryOperator, LinkedHashMap::new));
+        Map<String, Diff<?>> properties = bean.getProperties().stream().collect(toMap(Property::getName, this::visitProperty, throwingMerger(), LinkedHashMap::new));
         return Diff.map(Status.combineAll(properties.values()), left, right, properties);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <E> ListDiff<T, E> visitList(ListModel<T, E> values) {
         List<E> left = values.toList(this.left);
@@ -131,12 +174,12 @@ public final class ComputeDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>
                     Diff<E> diff = values.acceptElement(newVisitor(left.get(a), r));
                     if (diff.getScore() >= threshold) {
                         if (removeFirst) {
-                            range(i - m, i = a).forEach(q -> result.add(values.acceptElement(new RemovedDiffModelVisitor<>(left.get(q)))));
-                            range(j - n, j).forEach(q -> result.add(values.acceptElement(new AddedDiffModelVisitor<>(right.get(q)))));
+                            range(i - m, i = a).forEach(q -> result.add(values.acceptElement(removed(left.get(q)))));
+                            range(j - n, j).forEach(q -> result.add(values.acceptElement(added(right.get(q)))));
                             removeFirst = n == 0;
                         } else {
-                            range(j - n, j).forEach(q -> result.add(values.acceptElement(new AddedDiffModelVisitor<>(right.get(q)))));
-                            range(i - m, i = a).forEach(q -> result.add(values.acceptElement(new RemovedDiffModelVisitor<>(left.get(q)))));
+                            range(j - n, j).forEach(q -> result.add(values.acceptElement(added(right.get(q)))));
+                            range(i - m, i = a).forEach(q -> result.add(values.acceptElement(removed(left.get(q)))));
                             removeFirst = m > 0;
                         }
                         result.add(diff);
@@ -150,12 +193,12 @@ public final class ComputeDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>
                     Diff<E> diff = values.acceptElement(newVisitor(l, right.get(b)));
                     if (diff.getScore() >= threshold) {
                         if (removeFirst) {
-                            range(i - m, i).forEach(q -> result.add(values.acceptElement(new RemovedDiffModelVisitor<>(left.get(q)))));
-                            range(j - n, j = b).forEach(q -> result.add(values.acceptElement(new AddedDiffModelVisitor<>(right.get(q)))));
+                            range(i - m, i).forEach(q -> result.add(values.acceptElement(removed(left.get(q)))));
+                            range(j - n, j = b).forEach(q -> result.add(values.acceptElement(added(right.get(q)))));
                             removeFirst = n == 0;
                         } else {
-                            range(j - n, j = b).forEach(q -> result.add(values.acceptElement(new AddedDiffModelVisitor<>(right.get(q)))));
-                            range(i - m, i).forEach(q -> result.add(values.acceptElement(new RemovedDiffModelVisitor<>(left.get(q)))));
+                            range(j - n, j = b).forEach(q -> result.add(values.acceptElement(added(right.get(q)))));
+                            range(i - m, i).forEach(q -> result.add(values.acceptElement(removed(left.get(q)))));
                             removeFirst = m > 0;
                         }
                         result.add(diff);
@@ -172,15 +215,18 @@ public final class ComputeDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>
             n++;
         }
         if (removeFirst) {
-            range(i - m, left.size()).forEach(q -> result.add(values.acceptElement(new RemovedDiffModelVisitor<>(left.get(q)))));
-            range(j - n, right.size()).forEach(q -> result.add(values.acceptElement(new AddedDiffModelVisitor<>(right.get(q)))));
+            range(i - m, left.size()).forEach(q -> result.add(values.acceptElement(removed(left.get(q)))));
+            range(j - n, right.size()).forEach(q -> result.add(values.acceptElement(added(right.get(q)))));
         } else {
-            range(j - n, right.size()).forEach(q -> result.add(values.acceptElement(new AddedDiffModelVisitor<>(right.get(q)))));
-            range(i - m, left.size()).forEach(q -> result.add(values.acceptElement(new RemovedDiffModelVisitor<>(left.get(q)))));
+            range(j - n, right.size()).forEach(q -> result.add(values.acceptElement(added(right.get(q)))));
+            range(i - m, left.size()).forEach(q -> result.add(values.acceptElement(removed(left.get(q)))));
         }
         return Diff.list(Diff.Status.combineAll(result), this.left, this.right, result);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public <E> ListDiff<T, E> visitSet(SetModel<T, E> values) {
 
@@ -253,8 +299,8 @@ public final class ComputeDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>
 
         // calculate left/null and right/null
 
-        range(0, leftSize).filter(i -> !leftUsed[i]).forEach(i -> leftNulls[i] = values.getElementModel().accept(new RemovedDiffModelVisitor<>(leftValues.get(i)))); // left->null:REMOVED
-        range(0, rightSize).filter(j -> !rightUsed[j]).forEach(j -> rightNulls[j] = values.getElementModel().accept(new AddedDiffModelVisitor<>(rightValues.get(j)))); // null->right:ADDED
+        range(0, leftSize).filter(i -> !leftUsed[i]).forEach(i -> leftNulls[i] = values.getElementModel().accept(removed(leftValues.get(i)))); // left->null:REMOVED
+        range(0, rightSize).filter(j -> !rightUsed[j]).forEach(j -> rightNulls[j] = values.getElementModel().accept(added(rightValues.get(j)))); // null->right:ADDED
 
         // if a column or row is full of nulls, remove it
 
@@ -305,81 +351,186 @@ public final class ComputeDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>
         return Diff.list(Diff.Status.combineAll(list), left, right, list);
     }
 
-    private <S> ComputeDiffModelVisitor<S> newVisitor(S left, S right) {
-        return new ComputeDiffModelVisitor<>(left, right, threshold, optimizer);
-    }
-
+    /**
+     * Visit a property.
+     *
+     * @param property The property.
+     * @param <P>      The property status.
+     * @return A diff.
+     */
     private <P> Diff<P> visitProperty(Property<? super T, P> property) {
         return property.getModel().accept(newVisitor(property.get(left), property.get(right)));
     }
 
-    private static <X> X throwingBinaryOperator(X left, X right) {
-        throw new IllegalStateException(String.format("Duplicate key %s", left));
+    /**
+     * Create a new visitor.
+     *
+     * @param left  The new left value.
+     * @param right The new right value.
+     * @param <S>   The model status for the new visitor.
+     * @return A new visitor.
+     */
+    private <S> ComputeDiffModelVisitor<S> newVisitor(S left, S right) {
+        return new ComputeDiffModelVisitor<>(left, right, threshold, optimizer);
     }
 
+    /**
+     * Binary operator which prevent merging two keys.
+     *
+     * @param <T> The key type.
+     * @return A binary operator.
+     */
+    private static <T> BinaryOperator<T> throwingMerger() {
+        return (u, v) -> {
+            throw new IllegalStateException(String.format("Duplicate key %s", u));
+        };
+    }
+
+    /**
+     * Internal added interface.
+     *
+     * @param <T> The diff'ed type.
+     */
     private interface Adder<T> {
 
         void accept(int x, int y, Diff<T> diff);
     }
 
-    private static abstract class AbstractDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>> {
+    /**
+     * Create a REMOVED model visitor.
+     *
+     * @param left The left value.
+     * @param <S>  The value type.
+     * @return A model visitor.
+     */
+    private static <S> ConstantDiffModelVisitor<S> removed(S left) {
+        return new ConstantDiffModelVisitor<>(left, null, false);
+    }
 
-        private final T left, right, target;
-        private final Status type;
+    /**
+     * Create an ADDED model visitor.
+     *
+     * @param right The right value.
+     * @param <S>   The value type.
+     * @return A model visitor.
+     */
+    private static <S> ConstantDiffModelVisitor<S> added(S right) {
+        return new ConstantDiffModelVisitor<>(null, right, true);
+    }
 
-        AbstractDiffModelVisitor(T left, T right, T target, Status type) {
+    /**
+     * Model visitor to be used for children of ADDED/REMOVED nodes.
+     *
+     * @param <T> The model type.
+     */
+    private static final class ConstantDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>> {
+
+        /**
+         * The left value.
+         */
+        private final T left;
+
+        /**
+         * The right value.
+         */
+        private final T right;
+
+        /**
+         * Indicator for being ADDED (or REMOVED).
+         */
+        private final boolean added;
+
+        /**
+         * Constructor.
+         *
+         * @param left  The left value.
+         * @param right The right value.
+         * @param added Indicator for being ADDED (or REMOVED).
+         */
+        ConstantDiffModelVisitor(T left, T right, boolean added) {
             this.left = left;
             this.right = right;
-            this.target = target;
-            this.type = type;
+            this.added = added;
         }
 
-        protected abstract <N> AbstractDiffModelVisitor<N> create(N value);
+        /**
+         * Get the diff status.
+         *
+         * @return The diff status.
+         */
+        private Status status() {
+            return added ? ADDED : REMOVED;
+        }
 
+        /**
+         * Get the target. ADDED = right, REMOVED = left.
+         *
+         * @return The target.
+         */
+        private T target() {
+            return added ? right : left;
+        }
+
+        /**
+         * Create a visitor for a sub-node.
+         *
+         * @param value The value.
+         * @param <N>   The node type.
+         * @return A visitor.
+         */
+        private <N> ConstantDiffModelVisitor<N> newVisitor(N value) {
+            return new ConstantDiffModelVisitor<>(added ? null : value, added ? value : null, added);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
         public MapDiff<T, String, ?> visitBean(BeanModel<T> bean) {
-            return Diff.map(type, left, right, bean.getProperties().stream().collect(toMap(Property::getName, this::visitProperty)));
+            return Diff.map(status(), left, right, bean.getProperties().stream().collect(toMap(Property::getName, this::visitProperty)));
         }
 
+        /**
+         * {@inheritDoc}
+         */
+        @Override
         public <E> ListDiff<T, E> visitSet(SetModel<T, E> values) {
-            return Diff.list(type, left, right, values.toSet(target).stream().map(e -> values.acceptElement(create(e))).collect(toList()));
+            return Diff.list(status(), left, right, values.toSet(target()).stream().map(e -> values.acceptElement(newVisitor(e))).collect(toList()));
         }
 
+        /**
+         * {@inheritDoc}
+         */
+        @Override
         public <E> ListDiff<T, E> visitList(ListModel<T, E> values) {
-            return Diff.list(type, left, right, values.toList(target).stream().map(e -> values.acceptElement(create(e))).collect(toList()));
+            return Diff.list(status(), left, right, values.toList(target()).stream().map(e -> values.acceptElement(newVisitor(e))).collect(toList()));
         }
 
+        /**
+         * {@inheritDoc}
+         */
+        @Override
         public <K, V> MapDiff<T, K, V> visitMap(MapModel<T, K, V> map) {
-            return Diff.map(type, left, right, map.toMap(target).entrySet().stream().collect(toMap(Map.Entry::getKey, e -> map.acceptValue(create(e.getValue())))));
+            return Diff.map(status(), left, right, map.toMap(target()).entrySet().stream().collect(toMap(Map.Entry::getKey, e -> map.acceptValue(newVisitor(e.getValue())))));
         }
 
-        private <P> Diff<P> visitProperty(Property<? super T, P> property) {
-            return property.accept(create(property.get(target)));
-        }
-
+        /**
+         * {@inheritDoc}
+         */
+        @Override
         public SimpleDiff<T> visitValue(ValueModel<T> value) {
-            return Diff.simple(type, left, right);
-        }
-    }
-
-    protected static class AddedDiffModelVisitor<T> extends AbstractDiffModelVisitor<T> {
-
-        AddedDiffModelVisitor(T right) {
-            super(null, right, right, ADDED);
+            return Diff.simple(status(), left, right);
         }
 
-        protected <N> AbstractDiffModelVisitor<N> create(N value) {
-            return new AddedDiffModelVisitor<>(value);
-        }
-    }
-
-    protected static class RemovedDiffModelVisitor<T> extends AbstractDiffModelVisitor<T> {
-
-        RemovedDiffModelVisitor(T left) {
-            super(left, null, left, REMOVED);
-        }
-
-        protected <N> AbstractDiffModelVisitor<N> create(N value) {
-            return new RemovedDiffModelVisitor<>(value);
+        /**
+         * Visit a property.
+         *
+         * @param property The property.
+         * @param <P>      The property status.
+         * @return A diff.
+         */
+        private <P> Diff<P> visitProperty(Property<? super T, P> property) {
+            return property.accept(newVisitor(property.get(target())));
         }
     }
 }

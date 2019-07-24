@@ -28,9 +28,15 @@ package org.codegeny.beans.model.visitor.diff;
  */
 public enum LocalScoreOptimizer implements ScoreOptimizer {
 
+    /**
+     * Singleton.
+     */
     INSTANCE;
 
-    // TODO prettify
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public int[] solve(int k, int n, double[][] matrix) {
         boolean[] usedN = new boolean[n], usedK = new boolean[k];
         int[] bestSolution = new int[k];

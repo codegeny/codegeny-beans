@@ -91,40 +91,80 @@ public final class TypeModelVisitor<T> implements ModelVisitor<T, Type> {
      */
     private static final class ParameterizedTypeImpl implements ParameterizedType {
 
+        /**
+         * Arguments.
+         */
         private final Type[] actualTypeArguments;
+
+        /**
+         * Raw/base type.
+         */
         private final Type rawType;
 
+        /**
+         * Constructor.
+         *
+         * @param rawType             Arguments.
+         * @param actualTypeArguments Raw/base type.
+         */
         ParameterizedTypeImpl(Type rawType, Type... actualTypeArguments) {
             this.actualTypeArguments = requireNonNull(actualTypeArguments);
             this.rawType = requireNonNull(rawType);
         }
 
+        /**
+         * {@inheritDoc}
+         */
+        @Override
         public Type[] getActualTypeArguments() {
             return Arrays.copyOf(actualTypeArguments, actualTypeArguments.length);
         }
 
+        /**
+         * {@inheritDoc}
+         */
+        @Override
         public Type getOwnerType() {
             return null;
         }
 
+        /**
+         * {@inheritDoc}
+         */
+        @Override
         public Type getRawType() {
             return rawType;
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public int hashCode() {
             return Arrays.hashCode(actualTypeArguments) ^ rawType.hashCode();
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public boolean equals(Object that) {
             return super.equals(that) || that instanceof ParameterizedType && equals((ParameterizedType) that);
         }
 
+        /**
+         * Private equal implementation.
+         *
+         * @param that The other ParameterizedType
+         * @return True/false.
+         */
         private boolean equals(ParameterizedType that) {
             return that.getOwnerType() == null && rawType.equals(that.getRawType()) && Arrays.equals(actualTypeArguments, that.getActualTypeArguments());
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder(rawType.toString());

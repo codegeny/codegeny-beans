@@ -27,25 +27,40 @@ import org.codegeny.beans.model.ModelVisitor;
 import org.codegeny.beans.model.Property;
 import org.codegeny.beans.model.SetModel;
 import org.codegeny.beans.model.ValueModel;
-import org.codegeny.beans.path.Converter;
+import org.codegeny.beans.path.Path;
 
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.function.Function;
 
-public final class PathToModelVisitor<S, T> implements ModelVisitor<T, Model<?>> {
+/**
+ * Extract a {@link Model} from another {@link Model} by a given path.
+ *
+ * @param <T> The model type.
+ * @author Xavier DURY
+ */
+public final class PathToModelVisitor<T> implements ModelVisitor<T, Model<?>> {
 
-    private final Iterator<? extends S> path;
-    private final Converter<S> converter;
+    /**
+     * The path elements iterator.
+     */
+    private final Iterator<?> path;
 
-    @SafeVarargs
-    public PathToModelVisitor(Converter<S> typer, S... path) {
-        this(Arrays.asList(path).iterator(), typer);
+    /**
+     * Constructor.
+     *
+     * @param path The path.
+     */
+    public PathToModelVisitor(Path<?> path) {
+        this(path.iterator());
     }
 
-    private PathToModelVisitor(Iterator<? extends S> path, Converter<S> converter) {
+    /**
+     * Constructor.
+     *
+     * @param path The path elements iterator.
+     */
+    private PathToModelVisitor(Iterator<?> path) {
         this.path = path;
-        this.converter = converter;
     }
 
     /**
@@ -53,7 +68,7 @@ public final class PathToModelVisitor<S, T> implements ModelVisitor<T, Model<?>>
      */
     @Override
     public Model<?> visitBean(BeanModel<T> bean) {
-        return process(bean, k -> visitProperty(bean.getProperty(converter.convert(String.class, k))));
+        return followNestedPathOrGetModel(bean, pathElement -> visitProperty(bean.getProperty((String) pathElement)));
     }
 
     /**
@@ -61,7 +76,7 @@ public final class PathToModelVisitor<S, T> implements ModelVisitor<T, Model<?>>
      */
     @Override
     public <K, V> Model<?> visitMap(MapModel<T, K, V> map) {
-        return process2(map, map.getValueModel());
+        return getNested(map, map.getValueModel());
     }
 
     /**
@@ -69,7 +84,7 @@ public final class PathToModelVisitor<S, T> implements ModelVisitor<T, Model<?>>
      */
     @Override
     public <E> Model<?> visitSet(SetModel<T, E> set) {
-        return process2(set, set.getElementModel());
+        return getNested(set, set.getElementModel());
     }
 
     /**
@@ -77,7 +92,7 @@ public final class PathToModelVisitor<S, T> implements ModelVisitor<T, Model<?>>
      */
     @Override
     public <E> Model<?> visitList(ListModel<T, E> list) {
-        return process2(list, list.getElementModel());
+        return getNested(list, list.getElementModel());
     }
 
     /**
@@ -85,24 +100,50 @@ public final class PathToModelVisitor<S, T> implements ModelVisitor<T, Model<?>>
      */
     @Override
     public Model<?> visitValue(ValueModel<T> value) {
-        return process(value, p -> {
+        return followNestedPathOrGetModel(value, pathElement -> {
             throw new UnsupportedOperationException("Value object must be terminal");
         });
     }
 
+    /**
+     * Visit a property.
+     *
+     * @param property The property.
+     * @param <P>      The property type.
+     * @return A model.
+     */
     private <P> Model<?> visitProperty(Property<? super T, P> property) {
-        return property.accept(visitor());
+        return property.accept(newVisitor());
     }
 
-    private Model<?> process(Model<?> model, Function<? super S, Model<?>> p) {
-        return path.hasNext() ? p.apply(path.next()) : model;
+    /**
+     * Either go deeper down the path if there are any path elements left or return the current model.
+     *
+     * @param pathElementCallback A callback to apply on the next path element to return the result (extracted model).
+     * @return The extracted model.
+     */
+    private Model<?> followNestedPathOrGetModel(Model<?> model, Function<Object, Model<?>> pathElementCallback) {
+        return path.hasNext() ? pathElementCallback.apply(path.next()) : model;
     }
 
-    private <E> Model<?> process2(Model<T> t, Model<E> e) {
-        return process(t, k -> e.accept(visitor()));
+    /**
+     * Follow a path by converting the next path element to a key (property name, index, map key...) and extracting the
+     * corresponding model from the current model.
+     *
+     * @param currentModel The current model.
+     * @return The extracted model.
+     */
+    private <E> Model<?> getNested(Model<T> currentModel, Model<? super E> nestedModel) {
+        return followNestedPathOrGetModel(currentModel, pathElement -> nestedModel.accept(newVisitor()));
     }
 
-    private <Z> PathToModelVisitor<S, Z> visitor() {
-        return new PathToModelVisitor<>(path, converter);
+    /**
+     * Create a new visitor.
+     *
+     * @param <Z> The model type for the new visitor.
+     * @return A new visitor.
+     */
+    private <Z> PathToModelVisitor<Z> newVisitor() {
+        return new PathToModelVisitor<>(path);
     }
 }

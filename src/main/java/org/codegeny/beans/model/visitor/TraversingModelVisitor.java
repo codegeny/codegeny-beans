@@ -33,21 +33,45 @@ import java.util.function.BiConsumer;
 import static org.codegeny.beans.util.Utils.forEachIndexed;
 
 /**
- * TODO
+ * Visitor which will traverse the whole model tree for a given instance of &gt;T&lt;.
  *
- * @param <T> TODO
+ * @param <T> The model type.
  * @author Xavier DURY
  */
 public final class TraversingModelVisitor<T> implements ModelVisitor<T, Void> {
 
+    /**
+     * The current path.
+     */
     private final Path<Object> path;
+
+    /*
+     * A consumer which receives the current path and the current diff.
+     */
     private final BiConsumer<? super Path<?>, Object> processor;
+
+    /**
+     * The current value.
+     */
     private final T target;
 
+    /**
+     * Constructor.
+     *
+     * @param target    The root value.
+     * @param processor A consumer which receives the current path and the current diff.
+     */
     public TraversingModelVisitor(T target, BiConsumer<? super Path<?>, Object> processor) {
         this(target, Path.root(), processor);
     }
 
+    /**
+     * Constructor.
+     *
+     * @param target    The current value.
+     * @param path      The current path.
+     * @param processor A consumer which receives the current path and the current diff.
+     */
     private TraversingModelVisitor(T target, Path<Object> path, BiConsumer<? super Path<?>, Object> processor) {
         this.target = target;
         this.path = path;
@@ -70,7 +94,7 @@ public final class TraversingModelVisitor<T> implements ModelVisitor<T, Void> {
     @Override
     public <E> Void visitList(ListModel<T, E> list) {
         process();
-        forEachIndexed(list.toList(target), (n, i) -> list.acceptElement(childVisitor(n, path.append(i))));
+        forEachIndexed(list.toList(target), (n, i) -> list.acceptElement(newVisitor(n, path.append(i))));
         return null;
     }
 
@@ -80,7 +104,7 @@ public final class TraversingModelVisitor<T> implements ModelVisitor<T, Void> {
     @Override
     public <K, V> Void visitMap(MapModel<T, K, V> map) {
         process();
-        map.toMap(target).forEach((k, v) -> map.acceptValue(childVisitor(v, path.append(k))));
+        map.toMap(target).forEach((k, v) -> map.acceptValue(newVisitor(v, path.append(k))));
         return null;
     }
 
@@ -90,7 +114,7 @@ public final class TraversingModelVisitor<T> implements ModelVisitor<T, Void> {
     @Override
     public <E> Void visitSet(SetModel<T, E> set) {
         process();
-        forEachIndexed(set.toSet(target), (n, i) -> set.acceptElement(childVisitor(n, path.append(i))));
+        forEachIndexed(set.toSet(target), (n, i) -> set.acceptElement(newVisitor(n, path.append(i))));
         return null;
     }
 
@@ -103,15 +127,32 @@ public final class TraversingModelVisitor<T> implements ModelVisitor<T, Void> {
         return null;
     }
 
+    /**
+     * Visit a property.
+     *
+     * @param property The property.
+     * @param <P>      The property type.
+     */
     private <P> void visitProperty(Property<? super T, P> property) {
-        property.accept(childVisitor(property.get(target), path.append(property.getName())));
+        property.accept(newVisitor(property.get(target), path.append(property.getName())));
     }
 
-    private <R> TraversingModelVisitor<R> childVisitor(R target, Path<Object> path) {
-        return new TraversingModelVisitor<>(target, path, processor);
-    }
-
+    /**
+     * Process the current path and value.
+     */
     private void process() {
-        this.processor.accept(path, target);
+        processor.accept(path, target);
+    }
+
+    /**
+     * Create a new visitor.
+     *
+     * @param target The value.
+     * @param path   The path.
+     * @param <R>    The value type.
+     * @return A new visitor.
+     */
+    private <R> TraversingModelVisitor<R> newVisitor(R target, Path<Object> path) {
+        return new TraversingModelVisitor<>(target, path, processor);
     }
 }

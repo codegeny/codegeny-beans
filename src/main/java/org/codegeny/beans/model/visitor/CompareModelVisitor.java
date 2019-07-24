@@ -39,6 +39,7 @@ import static java.util.Comparator.nullsLast;
  * Compare 2 objects whose structures are expressed by the same {@link org.codegeny.beans.model.Model}&gt;T&lt;.
  *
  * @param <T> The common type of the 2 objects to compare (also the model type).
+ * @author Xavier DURY
  */
 public final class CompareModelVisitor<T> implements ModelVisitor<T, Integer> {
 

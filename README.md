@@ -75,7 +75,7 @@ Model<Person> personModel = Model.bean(Person.class,
 	Model.property("lastName", Person::getLastName, Model.STRING),
 	Model.property("birthDate", Person::getBirthDate, Model.value(LocalDate.class)),
 	Model.property("mainAddress", Person::getMainAddress, addressModel),
-	Model.property("formerAddresses", Person::getFormerAddresses, Model.set(addressModel)
+	Model.property("formerAddresses", Person::getFormerAddresses, Model.set(addressModel))
 );
 ```
 
