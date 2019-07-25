@@ -24,26 +24,21 @@ import java.util.stream.IntStream;
 
 /**
  * This implementation of score optimizer will find THE best solution, the one that globally optimizes the score.
- * This implementation is not reusable. A timeout can be specified and an exception will thrown if it's exceeded.
+ * A timeout can be specified and an exception will be thrown if it's exceeded.
  *
  * @author Xavier DURY
  */
 public final class GlobalScoreOptimizer implements ScoreOptimizer {
 
     /**
-     * How many check before actually enforcing the timeout.
+     * The timeout duration.
      */
-    private static final long COUNTER = 1000000;
+    private final long duration;
 
     /**
-     * System time before time out.
+     * The timeout unit.
      */
-    private final long limit;
-
-    /**
-     * The current counter. When it reaches 0, timeout is checked.
-     */
-    private long counter = COUNTER;
+    private final TimeUnit unit;
 
     /**
      * Default constructor with a 10s timeout.
@@ -59,7 +54,8 @@ public final class GlobalScoreOptimizer implements ScoreOptimizer {
      * @param unit     The timeout unit.
      */
     public GlobalScoreOptimizer(long duration, TimeUnit unit) {
-        this.limit = System.currentTimeMillis() + unit.toMillis(duration);
+        this.duration = duration;
+        this.unit = unit;
     }
 
     /**
@@ -71,7 +67,7 @@ public final class GlobalScoreOptimizer implements ScoreOptimizer {
             throw new RuntimeException("0 < k <= n");
         }
         int[] bestSolution = new int[k];
-        double bestScore = solve(k, n, matrix, new boolean[n], new int[k], 0, bestSolution, Double.NEGATIVE_INFINITY);
+        double bestScore = solve(k, n, matrix, new boolean[n], new int[k], 0, bestSolution, Double.NEGATIVE_INFINITY, new Timeout(System.currentTimeMillis() + unit.toMillis(duration)));
         // if the score is zero, this means that the solution vector is empty and some default solution should be returned
         return bestScore > 0 ? bestSolution : IntStream.range(0, k).toArray();
     }
@@ -87,19 +83,20 @@ public final class GlobalScoreOptimizer implements ScoreOptimizer {
      * @param currentScore    The current score.
      * @param bestSolution    The vector (k) with the best solution so fat.
      * @param bestScore       The best score so far.
+     * @param timeout         The timeout.
      * @return The best score.
      */
-    private double solve(int k, int n, double[][] matrix, boolean[] used, int[] currentSolution, double currentScore, int[] bestSolution, double bestScore) {
+    private double solve(int k, int n, double[][] matrix, boolean[] used, int[] currentSolution, double currentScore, int[] bestSolution, double bestScore, Timeout timeout) {
         if (currentScore + k > bestScore) { // if we use >= instead of >, we don't need to return a default solution above but this could take more time
             if (k-- == 0) {
                 System.arraycopy(currentSolution, 0, bestSolution, 0, currentSolution.length);
                 bestScore = currentScore;
             } else {
-                check();
+                timeout.check();
                 for (int i = 0; i < n; i++) {
                     if (!used[i]) {
                         used[i] = true;
-                        bestScore = solve(k, n, matrix, used, currentSolution, currentScore + matrix[k][currentSolution[k] = i], bestSolution, bestScore);
+                        bestScore = solve(k, n, matrix, used, currentSolution, currentScore + matrix[k][currentSolution[k] = i], bestSolution, bestScore, timeout);
                         used[i] = false;
                     }
                 }
@@ -109,13 +106,43 @@ public final class GlobalScoreOptimizer implements ScoreOptimizer {
     }
 
     /**
-     * Check if the timeout is exceeded.
+     * Timeout class.
      */
-    private void check() {
-        if (--counter == 0) {
-            counter = COUNTER;
-            if (this.limit < System.currentTimeMillis()) {
-                throw new RuntimeException("TIMEOUT!");
+    private static final class Timeout {
+
+        /**
+         * How many checks before actually enforcing the timeout.
+         */
+        private static final long COUNTER = 1000000;
+
+        /**
+         * System time before timeout.
+         */
+        private final long limit;
+
+        /**
+         * The current counter. When it reaches 0, timeout is checked.
+         */
+        private long counter = COUNTER;
+
+        /**
+         * Constructor.
+         *
+         * @param limit System time before timeout.
+         */
+        Timeout(long limit) {
+            this.limit = limit;
+        }
+
+        /**
+         * Check if the timeout is exceeded.
+         */
+        void check() {
+            if (--counter == 0) {
+                counter = COUNTER;
+                if (limit < System.currentTimeMillis()) {
+                    throw new IllegalStateException("A solution could not be found in the given time.");
+                }
             }
         }
     }

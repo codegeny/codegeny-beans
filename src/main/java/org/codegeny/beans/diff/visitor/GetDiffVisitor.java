@@ -72,8 +72,9 @@ public final class GetDiffVisitor<T> implements DiffVisitor<T, Diff<?>> {
      * {@inheritDoc}
      */
     @Override
+    @SuppressWarnings("SuspiciousMethodCalls")
     public <K, V> Diff<?> visitMap(MapDiff<T, K, V> map) {
-        return followNestedOrGetValue(map, pathElement -> map.getMap().get((K) pathElement));
+        return followNestedOrGetValue(map, pathElement -> map.getMap().get(pathElement));
     }
 
     /**

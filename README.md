@@ -108,9 +108,8 @@ A diff:
 
 A diff can be of one of the following concrete classes:
 - `SimpleDiff<T>` representing a diff between two atomic values of type `T`, its score is always 0 or 1
-- `ListDiff<C, E>` representing a diff between two list-like values of type `C` containing elements of type `E`, its score being the average score of its elements
-- `MapDiff<M, K, V>` representing a diff between two map-like values of type `M` containing entries with key of type `K` and value of type `V`, its score being the average score of its entries
-- `BeanDiff<B>` representing a diff between two beans of type `B`, its score being the average score of its properties
+- `ListDiff<C, E>` representing a diff between two list-like values of type `C` containing elements of type `E`, its score being the average score of its elements (this type is used for sets and lists)
+- `MapDiff<M, K, V>` representing a diff between two map-like values of type `M` containing entries with key of type `K` and value of type `V`, its score being the average score of its entries (this type is used for maps and beans)
 
 ### Basic example
 

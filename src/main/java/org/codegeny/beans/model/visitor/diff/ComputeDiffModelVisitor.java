@@ -90,7 +90,7 @@ public final class ComputeDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>
     private final ScoreOptimizer optimizer;
 
     /**
-     * Constructor with default scopre optimizer.
+     * Constructor with default score optimizer.
      *
      * @param left      The left value to diff.
      * @param right     The right value to diff.
