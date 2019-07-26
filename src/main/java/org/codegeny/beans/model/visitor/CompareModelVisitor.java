@@ -85,12 +85,12 @@ public final class CompareModelVisitor<T> implements ModelVisitor<T, Integer> {
      */
     @Override
     public <K, V> Integer visitMap(MapModel<T, K, V> map) {
-        Map<K, V> leftMap = map.toMap(this.left);
-        Map<K, V> rightMap = map.toMap(this.right);
+        Map<K, V> leftMap = map.toMap(left);
+        Map<K, V> rightMap = map.toMap(right);
         Set<K> keys = new TreeSet<>(map.getKeyModel());
         keys.addAll(leftMap.keySet());
         keys.addAll(rightMap.keySet());
-        Comparator<? super V> valueComparator = map.getValueModel();
+        Comparator<V> valueComparator = map.getValueModel();
         return keys.stream().mapToInt(k -> valueComparator.compare(leftMap.get(k), rightMap.get(k))).filter(i -> i != 0).findFirst().orElse(0);
     }
 
@@ -100,8 +100,8 @@ public final class CompareModelVisitor<T> implements ModelVisitor<T, Integer> {
     @Override
     public <E> Integer visitSet(SetModel<T, E> values) {
         Comparator<E> comparator = values.getElementModel();
-        Iterator<E> leftIterator = values.toSet(this.left).stream().sorted(comparator).iterator();
-        Iterator<E> rightIterator = values.toSet(this.right).stream().sorted(comparator).iterator();
+        Iterator<E> leftIterator = values.toSet(left).stream().sorted(comparator).iterator();
+        Iterator<E> rightIterator = values.toSet(right).stream().sorted(comparator).iterator();
         return compareIterators(comparator, leftIterator, rightIterator);
     }
 
@@ -111,8 +111,8 @@ public final class CompareModelVisitor<T> implements ModelVisitor<T, Integer> {
     @Override
     public <E> Integer visitList(ListModel<T, E> values) {
         Comparator<E> comparator = values.getElementModel();
-        Iterator<E> leftIterator = values.toList(this.left).stream().iterator();
-        Iterator<E> rightIterator = values.toList(this.right).stream().iterator();
+        Iterator<E> leftIterator = values.toList(left).stream().iterator();
+        Iterator<E> rightIterator = values.toList(right).stream().iterator();
         return compareIterators(comparator, leftIterator, rightIterator);
     }
 

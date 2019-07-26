@@ -69,11 +69,11 @@ public final class DescribeModelVisitor<T> implements ModelVisitor<T, StringBuil
     public StringBuilder visitBean(BeanModel<T> bean) {
         return bean.getProperties().stream()
                 .reduce(
-                        this.builder.append("Bean[").append(bean.getType().getName()).append("] {"),
-                        (b, p) -> p.accept(indented(b.append("\n").append(this.indent).append("  ").append(p.getName()).append(": "))),
+                        builder.append("Bean[").append(bean.getType().getName()).append("] {"),
+                        (b, p) -> p.accept(indented(b.append("\n").append(indent).append("  ").append(p.getName()).append(": "))),
                         (x, y) -> null
                 )
-                .append(bean.getProperties().isEmpty() ? "" : "\n").append(this.indent).append("}");
+                .append(bean.getProperties().isEmpty() ? "" : "\n").append(indent).append("}");
     }
 
     /**
@@ -81,7 +81,7 @@ public final class DescribeModelVisitor<T> implements ModelVisitor<T, StringBuil
      */
     @Override
     public <K, V> StringBuilder visitMap(MapModel<T, K, V> map) {
-        return map.acceptValue(indented(map.acceptKey(indented(this.builder.append("Map<"))).append(", "))).append(">");
+        return map.acceptValue(indented(map.acceptKey(indented(builder.append("Map<"))).append(", "))).append(">");
     }
 
     /**
@@ -89,7 +89,7 @@ public final class DescribeModelVisitor<T> implements ModelVisitor<T, StringBuil
      */
     @Override
     public StringBuilder visitValue(ValueModel<T> value) {
-        return this.builder.append("Value[").append(value.getType().getName()).append("]");
+        return builder.append("Value[").append(value.getType().getName()).append("]");
     }
 
     /**
@@ -97,7 +97,7 @@ public final class DescribeModelVisitor<T> implements ModelVisitor<T, StringBuil
      */
     @Override
     public <E> StringBuilder visitSet(SetModel<T, E> values) {
-        return values.acceptElement(same(this.builder.append("Set<"))).append(">");
+        return values.acceptElement(same(builder.append("Set<"))).append(">");
     }
 
     /**
@@ -105,7 +105,7 @@ public final class DescribeModelVisitor<T> implements ModelVisitor<T, StringBuil
      */
     @Override
     public <E> StringBuilder visitList(ListModel<T, E> values) {
-        return values.acceptElement(same(this.builder.append("List<"))).append(">");
+        return values.acceptElement(same(builder.append("List<"))).append(">");
     }
 
     /**

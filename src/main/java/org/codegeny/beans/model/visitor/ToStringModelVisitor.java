@@ -85,12 +85,12 @@ public final class ToStringModelVisitor<T> implements ModelVisitor<T, StringBuil
      */
     @Override
     public StringBuilder visitBean(BeanModel<T> bean) {
-        this.builder.append("{");
+        builder.append("{");
         int count = forEachIndexed(bean.getProperties(), (property, index) -> {
-            this.builder.append(index > 0 ? "," : "").append("\n").append(indent).append("  ").append(property.getName()).append(": ");
+            builder.append(index > 0 ? "," : "").append("\n").append(indent).append("  ").append(property.getName()).append(": ");
             visitProperty(property);
         });
-        return this.builder.append(count > 0 ? "\n" : "").append(indent).append("}");
+        return builder.append(count > 0 ? "\n" : "").append(indent).append("}");
     }
 
     /**

@@ -62,7 +62,7 @@ public final class HashModelVisitor<T> implements ModelVisitor<T, Hasher> {
      */
     @Override
     public Hasher visitBean(BeanModel<T> bean) {
-        return bean.getProperties().stream().reduce(this.hasher, this::visitProperty, (x, y) -> null);
+        return bean.getProperties().stream().reduce(hasher, this::visitProperty, (x, y) -> null);
     }
 
     /**
@@ -70,7 +70,7 @@ public final class HashModelVisitor<T> implements ModelVisitor<T, Hasher> {
      */
     @Override
     public Hasher visitValue(ValueModel<T> value) {
-        return this.hasher.hash(this.target);
+        return hasher.hash(target);
     }
 
     /**
@@ -78,7 +78,7 @@ public final class HashModelVisitor<T> implements ModelVisitor<T, Hasher> {
      */
     @Override
     public <K, V> Hasher visitMap(MapModel<T, K, V> map) {
-        return map.toMap(this.target).entrySet().stream().reduce(this.hasher, (h, e) -> map.acceptKey(new HashModelVisitor<>(e.getKey(), map.acceptValue(new HashModelVisitor<>(e.getValue(), h)))), (x, y) -> null);
+        return map.toMap(target).entrySet().stream().reduce(hasher, (h, e) -> map.acceptKey(new HashModelVisitor<>(e.getKey(), map.acceptValue(new HashModelVisitor<>(e.getValue(), h)))), (x, y) -> null);
     }
 
     /**
@@ -86,7 +86,7 @@ public final class HashModelVisitor<T> implements ModelVisitor<T, Hasher> {
      */
     @Override
     public <E> Hasher visitSet(SetModel<T, E> values) {
-        return values.toSet(this.target).stream().reduce(this.hasher, (h, e) -> values.acceptElement(new HashModelVisitor<>(e, h)), (x, y) -> null);
+        return values.toSet(target).stream().reduce(hasher, (h, e) -> values.acceptElement(new HashModelVisitor<>(e, h)), (x, y) -> null);
     }
 
     /**
@@ -94,7 +94,7 @@ public final class HashModelVisitor<T> implements ModelVisitor<T, Hasher> {
      */
     @Override
     public <E> Hasher visitList(ListModel<T, E> values) {
-        return values.toList(this.target).stream().reduce(this.hasher, (h, e) -> values.acceptElement(new HashModelVisitor<>(e, h)), (x, y) -> null);
+        return values.toList(target).stream().reduce(hasher, (h, e) -> values.acceptElement(new HashModelVisitor<>(e, h)), (x, y) -> null);
     }
 
     /**

@@ -82,7 +82,7 @@ public final class BeanModel<B> implements Model<B> {
      * @return The properties.
      */
     public Collection<Property<? super B, ?>> getProperties() {
-        return unmodifiableCollection(this.properties.values());
+        return unmodifiableCollection(properties.values());
     }
 
     /**

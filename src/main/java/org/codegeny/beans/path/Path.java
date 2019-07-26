@@ -184,6 +184,6 @@ public final class Path<P> implements Iterable<P> {
      */
     @Override
     public boolean equals(Object that) {
-        return super.equals(that) || that instanceof Path && ((Path<?>) that).elements.equals(this.elements);
+        return super.equals(that) || that instanceof Path && ((Path<?>) that).elements.equals(elements);
     }
 }

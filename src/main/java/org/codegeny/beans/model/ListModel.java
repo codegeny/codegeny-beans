@@ -71,7 +71,7 @@ public final class ListModel<L, E> implements Model<L> {
      * @return A result of type &lt;R&gt;.
      */
     public <R> R acceptElement(ModelVisitor<E, ? extends R> visitor) {
-        return this.elementModel.accept(visitor);
+        return elementModel.accept(visitor);
     }
 
     /**
@@ -81,7 +81,7 @@ public final class ListModel<L, E> implements Model<L> {
      * @return A list of elements.
      */
     public List<E> toList(L values) {
-        return values == null ? emptyList() : this.extractor.apply(values);
+        return values == null ? emptyList() : extractor.apply(values);
     }
 
     /**
@@ -90,6 +90,6 @@ public final class ListModel<L, E> implements Model<L> {
      * @return The element model.
      */
     public Model<E> getElementModel() {
-        return this.elementModel;
+        return elementModel;
     }
 }

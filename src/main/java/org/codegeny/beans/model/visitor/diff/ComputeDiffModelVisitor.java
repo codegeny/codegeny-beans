@@ -160,26 +160,26 @@ public final class ComputeDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>
      */
     @Override
     public <E> ListDiff<T, E> visitList(ListModel<T, E> values) {
-        List<E> left = values.toList(this.left);
-        List<E> right = values.toList(this.right);
+        List<E> leftList = values.toList(left);
+        List<E> rightList = values.toList(right);
         List<Diff<E>> result = new LinkedList<>();
         boolean removeFirst = true;
         int i = 0, j = 0;
         int m = 0, n = 0;
         main:
-        while (i < left.size() && j < right.size()) {
-            E l = left.get(i), r = right.get(j);
-            for (int a = i, b = j; a < left.size() || b < right.size(); a++, b++) {
-                if (a < left.size()) {
-                    Diff<E> diff = values.acceptElement(newVisitor(left.get(a), r));
+        while (i < leftList.size() && j < rightList.size()) {
+            E l = leftList.get(i), r = rightList.get(j);
+            for (int a = i, b = j; a < leftList.size() || b < rightList.size(); a++, b++) {
+                if (a < leftList.size()) {
+                    Diff<E> diff = values.acceptElement(newVisitor(leftList.get(a), r));
                     if (diff.getScore() >= threshold) {
                         if (removeFirst) {
-                            range(i - m, i = a).forEach(q -> result.add(values.acceptElement(removed(left.get(q)))));
-                            range(j - n, j).forEach(q -> result.add(values.acceptElement(added(right.get(q)))));
+                            range(i - m, i = a).forEach(q -> result.add(values.acceptElement(removed(leftList.get(q)))));
+                            range(j - n, j).forEach(q -> result.add(values.acceptElement(added(rightList.get(q)))));
                             removeFirst = n == 0;
                         } else {
-                            range(j - n, j).forEach(q -> result.add(values.acceptElement(added(right.get(q)))));
-                            range(i - m, i = a).forEach(q -> result.add(values.acceptElement(removed(left.get(q)))));
+                            range(j - n, j).forEach(q -> result.add(values.acceptElement(added(rightList.get(q)))));
+                            range(i - m, i = a).forEach(q -> result.add(values.acceptElement(removed(leftList.get(q)))));
                             removeFirst = m > 0;
                         }
                         result.add(diff);
@@ -189,16 +189,16 @@ public final class ComputeDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>
                         continue main;
                     }
                 }
-                if (b < right.size()) { // TODO: do not compare initial values twice
-                    Diff<E> diff = values.acceptElement(newVisitor(l, right.get(b)));
+                if (b < rightList.size()) { // TODO: do not compare initial values twice
+                    Diff<E> diff = values.acceptElement(newVisitor(l, rightList.get(b)));
                     if (diff.getScore() >= threshold) {
                         if (removeFirst) {
-                            range(i - m, i).forEach(q -> result.add(values.acceptElement(removed(left.get(q)))));
-                            range(j - n, j = b).forEach(q -> result.add(values.acceptElement(added(right.get(q)))));
+                            range(i - m, i).forEach(q -> result.add(values.acceptElement(removed(leftList.get(q)))));
+                            range(j - n, j = b).forEach(q -> result.add(values.acceptElement(added(rightList.get(q)))));
                             removeFirst = n == 0;
                         } else {
-                            range(j - n, j = b).forEach(q -> result.add(values.acceptElement(added(right.get(q)))));
-                            range(i - m, i).forEach(q -> result.add(values.acceptElement(removed(left.get(q)))));
+                            range(j - n, j = b).forEach(q -> result.add(values.acceptElement(added(rightList.get(q)))));
+                            range(i - m, i).forEach(q -> result.add(values.acceptElement(removed(leftList.get(q)))));
                             removeFirst = m > 0;
                         }
                         result.add(diff);
@@ -215,13 +215,13 @@ public final class ComputeDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>
             n++;
         }
         if (removeFirst) {
-            range(i - m, left.size()).forEach(q -> result.add(values.acceptElement(removed(left.get(q)))));
-            range(j - n, right.size()).forEach(q -> result.add(values.acceptElement(added(right.get(q)))));
+            range(i - m, leftList.size()).forEach(q -> result.add(values.acceptElement(removed(leftList.get(q)))));
+            range(j - n, rightList.size()).forEach(q -> result.add(values.acceptElement(added(rightList.get(q)))));
         } else {
-            range(j - n, right.size()).forEach(q -> result.add(values.acceptElement(added(right.get(q)))));
-            range(i - m, left.size()).forEach(q -> result.add(values.acceptElement(removed(left.get(q)))));
+            range(j - n, rightList.size()).forEach(q -> result.add(values.acceptElement(added(rightList.get(q)))));
+            range(i - m, leftList.size()).forEach(q -> result.add(values.acceptElement(removed(leftList.get(q)))));
         }
-        return Diff.list(Diff.Status.combineAll(result), this.left, this.right, result);
+        return Diff.list(Diff.Status.combineAll(result), left, right, result);
     }
 
     /**
@@ -230,8 +230,8 @@ public final class ComputeDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>
     @Override
     public <E> ListDiff<T, E> visitSet(SetModel<T, E> values) {
 
-        List<E> leftValues = new ArrayList<>(values.toSet(this.left));
-        List<E> rightValues = new ArrayList<>(values.toSet(this.right));
+        List<E> leftValues = new ArrayList<>(values.toSet(left));
+        List<E> rightValues = new ArrayList<>(values.toSet(right));
 
         final int leftSize = leftValues.size();
         final int rightSize = rightValues.size();
@@ -326,7 +326,7 @@ public final class ComputeDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>
                 }
             }
 
-            int[] mapping = this.optimizer.solve(min(rightMapping.length, leftMapping.length), max(rightMapping.length, leftMapping.length), scores);
+            int[] mapping = optimizer.solve(min(rightMapping.length, leftMapping.length), max(rightMapping.length, leftMapping.length), scores);
             range(0, mapping.length).forEach(i -> {
                 int x = leftMapping[leftMapping.length >= rightMapping.length ? mapping[i] : i];
                 int y = rightMapping[leftMapping.length >= rightMapping.length ? i : mapping[i]];

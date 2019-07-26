@@ -79,7 +79,7 @@ public final class MapModel<M, K, V> implements Model<M> {
      * @return A result of type &lt;R&gt;.
      */
     public <R> R acceptKey(ModelVisitor<K, ? extends R> visitor) {
-        return this.keyModel.accept(visitor);
+        return keyModel.accept(visitor);
     }
 
     /**
@@ -90,7 +90,7 @@ public final class MapModel<M, K, V> implements Model<M> {
      * @return A result of type &lt;R&gt;.
      */
     public <R> R acceptValue(ModelVisitor<V, ? extends R> visitor) {
-        return this.valueModel.accept(visitor);
+        return valueModel.accept(visitor);
     }
 
     /**
@@ -100,7 +100,7 @@ public final class MapModel<M, K, V> implements Model<M> {
      * @return A map of (key, value).
      */
     public Map<K, V> toMap(M values) {
-        return values == null ? emptyMap() : this.extractor.apply(values);
+        return values == null ? emptyMap() : extractor.apply(values);
     }
 
     /**
@@ -109,7 +109,7 @@ public final class MapModel<M, K, V> implements Model<M> {
      * @return The key model.
      */
     public Model<K> getKeyModel() {
-        return this.keyModel;
+        return keyModel;
     }
 
     /**
@@ -118,6 +118,6 @@ public final class MapModel<M, K, V> implements Model<M> {
      * @return The value model.
      */
     public Model<V> getValueModel() {
-        return this.valueModel;
+        return valueModel;
     }
 }

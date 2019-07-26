@@ -41,8 +41,8 @@ public final class AddAndXorHasher implements Hasher {
      */
     @Override
     public Hasher hash(int value) {
-        this.add += value;
-        this.xor ^= value;
+        add += value;
+        xor ^= value;
         return this;
     }
 
@@ -51,6 +51,6 @@ public final class AddAndXorHasher implements Hasher {
      */
     @Override
     public int toHash() {
-        return (MASK & this.add) | (~MASK & this.xor);
+        return (MASK & add) | (~MASK & xor);
     }
 }
