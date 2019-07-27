@@ -52,7 +52,7 @@ public interface Diff<T> extends Serializable {
      * @param <E>    The type of the list elements.
      * @return A <code>{@link ListDiff}</code>.
      */
-    static <L, E> ListDiff<L, E> list(Status status, L left, L right, List<? extends Diff<? extends E>> list) {
+    static <L, E> ListDiff<L, E> list(Status status, L left, L right, List<? extends Diff<E>> list) {
         return new ListDiff<>(status, left, right, list);
     }
 
@@ -68,7 +68,7 @@ public interface Diff<T> extends Serializable {
      * @param <V>    The type of the map values.
      * @return A <code>{@link MapDiff}</code>.
      */
-    static <M, K, V> MapDiff<M, K, V> map(Status status, M left, M right, Map<K, ? extends Diff<? extends V>> map) {
+    static <M, K, V> MapDiff<M, K, V> map(Status status, M left, M right, Map<K, ? extends Diff<V>> map) {
         return new MapDiff<>(status, left, right, map);
     }
 

@@ -64,10 +64,11 @@ import static org.codegeny.beans.diff.Diff.Status.UNCHANGED;
  * 2 objects which have a matching score greater or equals to 0.8 could be considered the same instance with
  * modifications).
  *
- * @param <T> The model status.
+ * @param <T> The model type.
+ * @param <B> The base type (super type of &gt;T&lt;) for which the diff should be produced.
  * @author Xavier DURY
  */
-public final class ComputeDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>> {
+public final class ComputeDiffModelVisitor<T extends B, B> implements ModelVisitor<T, Diff<B>> {
 
     /**
      * The left value;
@@ -122,9 +123,9 @@ public final class ComputeDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>
      * {@inheritDoc}
      */
     @Override
-    public <K, V> MapDiff<T, K, V> visitMap(MapModel<T, K, V> map) {
+    public <K, V> MapDiff<B, K, V> visitMap(MapModel<T, K, V> map) {
         if (left == null ^ right == null) {
-            return (left == null ? added(right) : removed(left)).visitMap(map);
+            return (left == null ? ComputeDiffModelVisitor.<T, B>added(right) : ComputeDiffModelVisitor.<T, B>removed(left)).visitMap(map);
         }
         Map<K, V> leftMap = map.toMap(left);
         Map<K, V> rightMap = map.toMap(right);
@@ -139,7 +140,7 @@ public final class ComputeDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>
      * {@inheritDoc}
      */
     @Override
-    public SimpleDiff<T> visitValue(ValueModel<T> value) {
+    public SimpleDiff<B> visitValue(ValueModel<T> value) {
         return Diff.simple(left == null ^ right == null ? left == null ? ADDED : REMOVED : value.compare(left, right) == 0 ? UNCHANGED : MODIFIED, left, right);
     }
 
@@ -147,11 +148,11 @@ public final class ComputeDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>
      * {@inheritDoc}
      */
     @Override
-    public MapDiff<T, String, ?> visitBean(BeanModel<T> bean) {
+    public MapDiff<B, String, ?> visitBean(BeanModel<T> bean) {
         if (left == null ^ right == null) {
-            return (left == null ? added(right) : removed(left)).visitBean(bean);
+            return (left == null ? ComputeDiffModelVisitor.<T, B>added(right) : ComputeDiffModelVisitor.<T, B>removed(left)).visitBean(bean);
         }
-        Map<String, Diff<?>> properties = bean.getProperties().stream().collect(toMap(Property::getName, this::visitProperty, throwingMerger(), LinkedHashMap::new));
+        Map<String, Diff<Object>> properties = bean.getProperties().stream().collect(toMap(Property::getName, this::visitProperty, throwingMerger(), LinkedHashMap::new));
         return Diff.map(Status.combineAll(properties.values()), left, right, properties);
     }
 
@@ -159,7 +160,7 @@ public final class ComputeDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>
      * {@inheritDoc}
      */
     @Override
-    public <E> ListDiff<T, E> visitList(ListModel<T, E> values) {
+    public <E> ListDiff<B, E> visitList(ListModel<T, E> values) {
         List<E> leftList = values.toList(left);
         List<E> rightList = values.toList(right);
         List<Diff<E>> result = new LinkedList<>();
@@ -228,7 +229,7 @@ public final class ComputeDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>
      * {@inheritDoc}
      */
     @Override
-    public <E> ListDiff<T, E> visitSet(SetModel<T, E> values) {
+    public <E> ListDiff<B, E> visitSet(SetModel<T, E> values) {
 
         List<E> leftValues = new ArrayList<>(values.toSet(left));
         List<E> rightValues = new ArrayList<>(values.toSet(right));
@@ -355,10 +356,10 @@ public final class ComputeDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>
      * Visit a property.
      *
      * @param property The property.
-     * @param <P>      The property status.
+     * @param <P>      The property type.
      * @return A diff.
      */
-    private <P> Diff<P> visitProperty(Property<? super T, P> property) {
+    private <P> Diff<Object> visitProperty(Property<? super T, P> property) {
         return property.getModel().accept(newVisitor(property.get(left), property.get(right)));
     }
 
@@ -367,10 +368,11 @@ public final class ComputeDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>
      *
      * @param left  The new left value.
      * @param right The new right value.
-     * @param <S>   The model status for the new visitor.
+     * @param <S>   The model type for the new visitor.
+     * @param <C>   The base type (super type of &gt;S&lt;) for which the diff should be produced.
      * @return A new visitor.
      */
-    private <S> ComputeDiffModelVisitor<S> newVisitor(S left, S right) {
+    private <S extends C, C> ComputeDiffModelVisitor<S, C> newVisitor(S left, S right) {
         return new ComputeDiffModelVisitor<>(left, right, threshold, optimizer);
     }
 
@@ -401,9 +403,10 @@ public final class ComputeDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>
      *
      * @param left The left value.
      * @param <S>  The value type.
+     * @param <B>  The base type (super type of &gt;T&lt;) for which the diff should be produced.
      * @return A model visitor.
      */
-    private static <S> ConstantDiffModelVisitor<S> removed(S left) {
+    private static <S extends B, B> ConstantDiffModelVisitor<S, B> removed(S left) {
         return new ConstantDiffModelVisitor<>(left, null, false);
     }
 
@@ -412,9 +415,10 @@ public final class ComputeDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>
      *
      * @param right The right value.
      * @param <S>   The value type.
+     * @param <B>   The base type (super type of &gt;T&lt;) for which the diff should be produced.
      * @return A model visitor.
      */
-    private static <S> ConstantDiffModelVisitor<S> added(S right) {
+    private static <S extends B, B> ConstantDiffModelVisitor<S, B> added(S right) {
         return new ConstantDiffModelVisitor<>(null, right, true);
     }
 
@@ -422,8 +426,9 @@ public final class ComputeDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>
      * Model visitor to be used for children of ADDED/REMOVED nodes.
      *
      * @param <T> The model type.
+     * @param <B> The base type (super type of &gt;T&lt;) for which the diff should be produced.
      */
-    private static final class ConstantDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>> {
+    private static final class ConstantDiffModelVisitor<T extends B, B> implements ModelVisitor<T, Diff<B>> {
 
         /**
          * The left value.
@@ -476,9 +481,10 @@ public final class ComputeDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>
          *
          * @param value The value.
          * @param <N>   The node type.
+         * @param <C>   The base type (super type of &gt;N&lt;) for which the diff should be produced.
          * @return A visitor.
          */
-        private <N> ConstantDiffModelVisitor<N> newVisitor(N value) {
+        private <N extends C, C> ConstantDiffModelVisitor<N, C> newVisitor(N value) {
             return new ConstantDiffModelVisitor<>(added ? null : value, added ? value : null, added);
         }
 
@@ -486,7 +492,7 @@ public final class ComputeDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>
          * {@inheritDoc}
          */
         @Override
-        public MapDiff<T, String, ?> visitBean(BeanModel<T> bean) {
+        public MapDiff<B, String, ?> visitBean(BeanModel<T> bean) {
             return Diff.map(status(), left, right, bean.getProperties().stream().collect(toMap(Property::getName, this::visitProperty)));
         }
 
@@ -494,7 +500,7 @@ public final class ComputeDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>
          * {@inheritDoc}
          */
         @Override
-        public <E> ListDiff<T, E> visitSet(SetModel<T, E> values) {
+        public <E> ListDiff<B, E> visitSet(SetModel<T, E> values) {
             return Diff.list(status(), left, right, values.toSet(target()).stream().map(e -> values.acceptElement(newVisitor(e))).collect(toList()));
         }
 
@@ -502,7 +508,7 @@ public final class ComputeDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>
          * {@inheritDoc}
          */
         @Override
-        public <E> ListDiff<T, E> visitList(ListModel<T, E> values) {
+        public <E> ListDiff<B, E> visitList(ListModel<T, E> values) {
             return Diff.list(status(), left, right, values.toList(target()).stream().map(e -> values.acceptElement(newVisitor(e))).collect(toList()));
         }
 
@@ -510,7 +516,7 @@ public final class ComputeDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>
          * {@inheritDoc}
          */
         @Override
-        public <K, V> MapDiff<T, K, V> visitMap(MapModel<T, K, V> map) {
+        public <K, V> MapDiff<B, K, V> visitMap(MapModel<T, K, V> map) {
             return Diff.map(status(), left, right, map.toMap(target()).entrySet().stream().collect(toMap(Map.Entry::getKey, e -> map.acceptValue(newVisitor(e.getValue())))));
         }
 
@@ -518,7 +524,7 @@ public final class ComputeDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>
          * {@inheritDoc}
          */
         @Override
-        public SimpleDiff<T> visitValue(ValueModel<T> value) {
+        public SimpleDiff<B> visitValue(ValueModel<T> value) {
             return Diff.simple(status(), left, right);
         }
 
@@ -526,7 +532,7 @@ public final class ComputeDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>
          * Visit a property.
          *
          * @param property The property.
-         * @param <P>      The property status.
+         * @param <P>      The property type.
          * @return A diff.
          */
         private <P> Diff<P> visitProperty(Property<? super T, P> property) {

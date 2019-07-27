@@ -41,7 +41,7 @@ public final class MapDiff<M, K, V> extends AbstractDiff<M> {
     /**
      * The map of diffs.
      */
-    private final Map<K, Diff<? extends V>> map;
+    private final Map<K, Diff<V>> map;
 
     /**
      * Constructor.
@@ -51,7 +51,7 @@ public final class MapDiff<M, K, V> extends AbstractDiff<M> {
      * @param right  The right value.
      * @param map    The map of diffs.
      */
-    MapDiff(Status status, M left, M right, Map<K, ? extends Diff<? extends V>> map) {
+    MapDiff(Status status, M left, M right, Map<K, ? extends Diff<V>> map) {
         super(map.values(), status, left, right);
         this.map = unmodifiableMap(map);
     }
@@ -69,7 +69,7 @@ public final class MapDiff<M, K, V> extends AbstractDiff<M> {
      *
      * @return The map.
      */
-    public Map<K, Diff<? extends V>> getMap() {
+    public Map<K, Diff<V>> getMap() {
         return map;
     }
 }
