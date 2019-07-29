@@ -38,6 +38,9 @@ public enum LocalScoreOptimizer implements ScoreOptimizer {
      */
     @Override
     public int[] solve(int k, int n, double[][] matrix) {
+        if (n < k || k <= 0) {
+            throw new IllegalArgumentException("0 < k <= n");
+        }
         boolean[] usedN = new boolean[n], usedK = new boolean[k];
         int[] bestSolution = new int[k];
         double bestScore, score;

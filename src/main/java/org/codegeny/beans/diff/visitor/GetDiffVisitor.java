@@ -65,7 +65,7 @@ public final class GetDiffVisitor<T> implements DiffVisitor<T, Diff<?>> {
      */
     @Override
     public <E> Diff<?> visitList(ListDiff<T, E> list) {
-        return followNestedOrGetValue(list, pathElement -> list.getList().get((Integer) pathElement));
+        return followNestedOrGetValue(list, pathElement -> list.getList().get(((Number) pathElement).intValue()));
     }
 
     /**

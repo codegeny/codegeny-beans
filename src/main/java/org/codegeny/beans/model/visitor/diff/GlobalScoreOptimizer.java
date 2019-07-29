@@ -64,7 +64,7 @@ public final class GlobalScoreOptimizer implements ScoreOptimizer {
     @Override
     public int[] solve(int k, int n, double[][] matrix) {
         if (n < k || k <= 0) {
-            throw new RuntimeException("0 < k <= n");
+            throw new IllegalArgumentException("0 < k <= n");
         }
         int[] bestSolution = new int[k];
         double bestScore = solve(k, n, matrix, new boolean[n], new int[k], 0, bestSolution, Double.NEGATIVE_INFINITY, new Timeout(System.currentTimeMillis() + unit.toMillis(duration)));
