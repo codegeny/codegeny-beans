@@ -19,18 +19,40 @@
  */
 package org.codegeny.beans.diff;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * Implementation of <code>{@link Diff}</code> for simple values.
  *
  * @param <T> The type of the 2 compared objects.
  * @author Xavier DURY
  */
-public final class SimpleDiff<T> extends AbstractDiff<T> {
+public final class SimpleDiff<T> implements Diff<T> {
 
     /**
      * @see java.io.Serializable
      */
     private static final long serialVersionUID = 1L;
+
+    /**
+     * The left value.
+     */
+    private final T left;
+
+    /**
+     * The right value.
+     */
+    private final T right;
+
+    /**
+     * The score.
+     */
+    private final double normalizedScore;
+
+    /**
+     * The status.
+     */
+    private final Status status;
 
     /**
      * Constructor.
@@ -40,7 +62,10 @@ public final class SimpleDiff<T> extends AbstractDiff<T> {
      * @param right  The right value.
      */
     SimpleDiff(Status status, T left, T right) {
-        super(status.isChanged() ? 0.0 : 1.0, status, left, right);
+        this.normalizedScore = status.isChanged() ? 0.0 : 1.0;
+        this.status = requireNonNull(status, "Status cannot be null");
+        this.left = left;
+        this.right = right;
     }
 
     /**
@@ -49,5 +74,50 @@ public final class SimpleDiff<T> extends AbstractDiff<T> {
     @Override
     public <R> R accept(DiffVisitor<T, R> visitor) {
         return visitor.visitSimple(this);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public T getLeft() {
+        return left;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public T getRight() {
+        return right;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public double getScore() {
+        return normalizedScore;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Status getStatus() {
+        return status;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String toString() {
+        return "SimpleDiff{" +
+                "left=" + left +
+                ", right=" + right +
+                ", score=" + normalizedScore +
+                ", status=" + status +
+                '}';
     }
 }

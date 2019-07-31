@@ -19,9 +19,11 @@
  */
 package org.codegeny.beans.diff;
 
+import java.util.AbstractList;
 import java.util.List;
 
 import static java.util.Collections.unmodifiableList;
+import static java.util.Objects.requireNonNull;
 
 /**
  * Implementation of <code>{@link Diff}</code> for lists.
@@ -30,12 +32,32 @@ import static java.util.Collections.unmodifiableList;
  * @param <E> The type of list element.
  * @author Xavier DURY
  */
-public final class ListDiff<L, E> extends AbstractDiff<L> {
+public final class ListDiff<L, E> extends AbstractList<Diff<E>> implements Diff<L> {
 
     /**
      * @see java.io.Serializable
      */
     private static final long serialVersionUID = 1L;
+
+    /**
+     * The left value.
+     */
+    private final L left;
+
+    /**
+     * The right value.
+     */
+    private final L right;
+
+    /**
+     * The score.
+     */
+    private final double normalizedScore;
+
+    /**
+     * The status.
+     */
+    private final Status status;
 
     /**
      * The list of diffs.
@@ -51,7 +73,10 @@ public final class ListDiff<L, E> extends AbstractDiff<L> {
      * @param list   The list of diffs.
      */
     ListDiff(Status status, L left, L right, List<? extends Diff<E>> list) {
-        super(list, status, left, right);
+        this.normalizedScore = status.isChanged() ? list.stream().mapToDouble(Diff::getScore).average().orElse(0.0) : 1.0;
+        this.status = requireNonNull(status, "Status cannot be null");
+        this.left = left;
+        this.right = right;
         this.list = unmodifiableList(list);
     }
 
@@ -64,11 +89,63 @@ public final class ListDiff<L, E> extends AbstractDiff<L> {
     }
 
     /**
-     * Get the list of diff'ed elements.
-     *
-     * @return The list.
+     * {@inheritDoc}
      */
-    public List<Diff<E>> getList() {
-        return list;
+    @Override
+    public L getLeft() {
+        return left;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public L getRight() {
+        return right;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public double getScore() {
+        return normalizedScore;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Status getStatus() {
+        return status;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Diff<E> get(int index) {
+        return list.get(index);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int size() {
+        return list.size();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String toString() {
+        return "ListDiff{" +
+                "left=" + left +
+                ", right=" + right +
+                ", score=" + normalizedScore +
+                ", status=" + status +
+                '}';
     }
 }

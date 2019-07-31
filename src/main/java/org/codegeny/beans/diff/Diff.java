@@ -68,7 +68,7 @@ public interface Diff<T> extends Serializable {
      * @param <V>    The type of the map values.
      * @return A <code>{@link MapDiff}</code>.
      */
-    static <M, K, V> MapDiff<M, K, V> map(Status status, M left, M right, Map<K, ? extends Diff<V>> map) {
+    static <M, K, V> MapDiff<M, K, V> map(Status status, M left, M right, Map<? extends K, ? extends Diff<V>> map) {
         return new MapDiff<>(status, left, right, map);
     }
 
@@ -182,7 +182,25 @@ public interface Diff<T> extends Serializable {
      */
     enum Status {
 
-        ADDED, MODIFIED, REMOVED, UNCHANGED;
+        /**
+         * The value as been added to the right side and did not exist on the left side.
+         */
+        ADDED,
+
+        /**
+         * The value was present on the left side and has been removed from the right.
+         */
+        REMOVED,
+
+        /**
+         * The value has changed between the left and right sides.
+         */
+        MODIFIED,
+
+        /**
+         * The value is the same on the right and the left.
+         */
+        UNCHANGED;
 
         /**
          * Combine 2 statuses given the following rules:

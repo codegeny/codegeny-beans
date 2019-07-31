@@ -17,7 +17,7 @@
   See the License for the specific language governing permissions and
   limitations under the License.
   #L%
-  -->
+-->
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -25,7 +25,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.codegeny</groupId>
     <artifactId>codegeny-beans</artifactId>
-    <version>0.0.4</version>
+    <version>0.0.5-SNAPSHOT</version>
     <url>http://codegeny.org/codegeny-beans</url>
     <name>Codegeny Beans</name>
     <description>Library which provides meta-model, diffs, paths... for java beans</description>

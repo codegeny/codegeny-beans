@@ -97,7 +97,7 @@ public final class TraversingDiffVisitor<T> implements DiffVisitor<T, Void> {
     @Override
     public <E> Void visitList(ListDiff<T, E> listDiff) {
         if (processor.test(path, listDiff)) {
-            forEachIndexed(listDiff.getList(), (n, i) -> n.accept(newVisitor(path.append(i))));
+            forEachIndexed(listDiff, (n, i) -> n.accept(newVisitor(path.append(i))));
         }
         return null;
     }
@@ -108,7 +108,7 @@ public final class TraversingDiffVisitor<T> implements DiffVisitor<T, Void> {
     @Override
     public <K, V> Void visitMap(MapDiff<T, K, V> mapDiff) {
         if (processor.test(path, mapDiff)) {
-            mapDiff.getMap().forEach((k, v) -> v.accept(newVisitor(path.append(k))));
+            mapDiff.forEach((k, v) -> v.accept(newVisitor(path.append(k))));
         }
         return null;
     }

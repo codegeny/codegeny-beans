@@ -65,7 +65,7 @@ public final class GetDiffVisitor<T> implements DiffVisitor<T, Diff<?>> {
      */
     @Override
     public <E> Diff<?> visitList(ListDiff<T, E> list) {
-        return followNestedOrGetValue(list, pathElement -> list.getList().get(((Number) pathElement).intValue()));
+        return followNestedOrGetValue(list, pathElement -> list.get(((Number) pathElement).intValue()));
     }
 
     /**
@@ -74,7 +74,7 @@ public final class GetDiffVisitor<T> implements DiffVisitor<T, Diff<?>> {
     @Override
     @SuppressWarnings("SuspiciousMethodCalls")
     public <K, V> Diff<?> visitMap(MapDiff<T, K, V> map) {
-        return followNestedOrGetValue(map, pathElement -> map.getMap().get(pathElement));
+        return followNestedOrGetValue(map, map::get);
     }
 
     /**

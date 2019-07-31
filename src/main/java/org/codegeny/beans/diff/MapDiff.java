@@ -19,9 +19,12 @@
  */
 package org.codegeny.beans.diff;
 
+import java.util.AbstractMap;
 import java.util.Map;
+import java.util.Set;
 
 import static java.util.Collections.unmodifiableMap;
+import static java.util.Objects.requireNonNull;
 
 /**
  * Implementation of <code>{@link Diff}</code> for maps.
@@ -31,12 +34,32 @@ import static java.util.Collections.unmodifiableMap;
  * @param <V> The type of map value.
  * @author Xavier DURY
  */
-public final class MapDiff<M, K, V> extends AbstractDiff<M> {
+public final class MapDiff<M, K, V> extends AbstractMap<K, Diff<V>> implements Diff<M> {
 
     /**
      * @see java.io.Serializable
      */
     private static final long serialVersionUID = 1L;
+
+    /**
+     * The left value.
+     */
+    private final M left;
+
+    /**
+     * The right value.
+     */
+    private final M right;
+
+    /**
+     * The score.
+     */
+    private final double normalizedScore;
+
+    /**
+     * The status.
+     */
+    private final Status status;
 
     /**
      * The map of diffs.
@@ -51,8 +74,11 @@ public final class MapDiff<M, K, V> extends AbstractDiff<M> {
      * @param right  The right value.
      * @param map    The map of diffs.
      */
-    MapDiff(Status status, M left, M right, Map<K, ? extends Diff<V>> map) {
-        super(map.values(), status, left, right);
+    MapDiff(Status status, M left, M right, Map<? extends K, ? extends Diff<V>> map) {
+        this.normalizedScore = status.isChanged() ? map.values().stream().mapToDouble(Diff::getScore).average().orElse(0.0) : 1.0;
+        this.status = requireNonNull(status, "Status cannot be null");
+        this.left = left;
+        this.right = right;
         this.map = unmodifiableMap(map);
     }
 
@@ -65,11 +91,55 @@ public final class MapDiff<M, K, V> extends AbstractDiff<M> {
     }
 
     /**
-     * Get the map of diff'ed values.
-     *
-     * @return The map.
+     * {@inheritDoc}
      */
-    public Map<K, Diff<V>> getMap() {
-        return map;
+    @Override
+    public M getLeft() {
+        return left;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public M getRight() {
+        return right;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public double getScore() {
+        return normalizedScore;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Status getStatus() {
+        return status;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Set<Entry<K, Diff<V>>> entrySet() {
+        return map.entrySet();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String toString() {
+        return "MapDiff{" +
+                "left=" + left +
+                ", right=" + right +
+                ", score=" + normalizedScore +
+                ", status=" + status +
+                '}';
     }
 }

@@ -89,8 +89,7 @@ public final class Path<P> implements Iterable<P> {
      * @return A new path with the appended element.
      */
     public Path<P> append(P element) {
-        List<P> result = new ArrayList<>(size() + 1);
-        forEach(result::add);
+        List<P> result = new ArrayList<>(elements);
         result.add(element);
         return new Path<>(result);
     }
@@ -102,9 +101,8 @@ public final class Path<P> implements Iterable<P> {
      * @return A new path with the prepended element.
      */
     public Path<P> prepend(P element) {
-        List<P> result = new ArrayList<>(size() + 1);
-        result.add(element);
-        forEach(result::add);
+        List<P> result = new ArrayList<>(elements);
+        result.add(0, element);
         return new Path<>(result);
     }
 
@@ -115,9 +113,8 @@ public final class Path<P> implements Iterable<P> {
      * @return A new path with the appended path.
      */
     public Path<P> append(Path<P> path) {
-        List<P> result = new ArrayList<>(size() + path.size());
-        forEach(result::add);
-        path.forEach(result::add);
+        List<P> result = new ArrayList<>(elements);
+        result.addAll(path.elements);
         return new Path<>(result);
     }
 
@@ -128,9 +125,8 @@ public final class Path<P> implements Iterable<P> {
      * @return A new path with the prepended path.
      */
     public Path<P> prepend(Path<P> path) {
-        List<P> result = new ArrayList<>(size() + path.size());
-        path.forEach(result::add);
-        forEach(result::add);
+        List<P> result = new ArrayList<>(path.elements);
+        result.addAll(elements);
         return new Path<>(result);
     }
 
