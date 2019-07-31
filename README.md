@@ -185,3 +185,7 @@ Diff<Person> personDiff = personModel.diff(left, right);
 Object object = personModel.get(left, path); // extract value from left
 Diff<?> diff = personDiff.get(path); // extract diff
 ```
+
+## Examples
+
+Examples can be found on the [codegeny-beans-examples repo](https://github.com/codegeny/codegeny-beans-examples).
