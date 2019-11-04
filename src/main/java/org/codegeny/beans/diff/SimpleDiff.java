@@ -45,11 +45,6 @@ public final class SimpleDiff<T> implements Diff<T> {
     private final T right;
 
     /**
-     * The score.
-     */
-    private final double normalizedScore;
-
-    /**
      * The status.
      */
     private final Status status;
@@ -62,7 +57,6 @@ public final class SimpleDiff<T> implements Diff<T> {
      * @param right  The right value.
      */
     SimpleDiff(Status status, T left, T right) {
-        this.normalizedScore = status.isChanged() ? 0.0 : 1.0;
         this.status = requireNonNull(status, "Status cannot be null");
         this.left = left;
         this.right = right;
@@ -96,14 +90,6 @@ public final class SimpleDiff<T> implements Diff<T> {
      * {@inheritDoc}
      */
     @Override
-    public double getScore() {
-        return normalizedScore;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public Status getStatus() {
         return status;
     }
@@ -116,7 +102,6 @@ public final class SimpleDiff<T> implements Diff<T> {
         return "SimpleDiff{" +
                 "left=" + left +
                 ", right=" + right +
-                ", score=" + normalizedScore +
                 ", status=" + status +
                 '}';
     }

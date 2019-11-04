@@ -50,11 +50,6 @@ public final class ListDiff<L, E> extends AbstractList<Diff<E>> implements Diff<
     private final L right;
 
     /**
-     * The score.
-     */
-    private final double normalizedScore;
-
-    /**
      * The status.
      */
     private final Status status;
@@ -73,7 +68,6 @@ public final class ListDiff<L, E> extends AbstractList<Diff<E>> implements Diff<
      * @param list   The list of diffs.
      */
     ListDiff(Status status, L left, L right, List<? extends Diff<E>> list) {
-        this.normalizedScore = status.isChanged() ? list.stream().mapToDouble(Diff::getScore).average().orElse(0.0) : 1.0;
         this.status = requireNonNull(status, "Status cannot be null");
         this.left = left;
         this.right = right;
@@ -108,14 +102,6 @@ public final class ListDiff<L, E> extends AbstractList<Diff<E>> implements Diff<
      * {@inheritDoc}
      */
     @Override
-    public double getScore() {
-        return normalizedScore;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public Status getStatus() {
         return status;
     }
@@ -144,7 +130,6 @@ public final class ListDiff<L, E> extends AbstractList<Diff<E>> implements Diff<
         return "ListDiff{" +
                 "left=" + left +
                 ", right=" + right +
-                ", score=" + normalizedScore +
                 ", status=" + status +
                 '}';
     }

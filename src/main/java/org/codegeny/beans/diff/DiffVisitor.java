@@ -54,4 +54,12 @@ public interface DiffVisitor<T, R> {
      * @return The computed result.
      */
     R visitSimple(SimpleDiff<T> simple);
+
+    /**
+     * Visit a <code>{@link BeanDiff}&lt;T&gt;</code>
+     *
+     * @param bean The bean to visit.
+     * @return The computed result.
+     */
+    R visitBean(BeanDiff<T> bean);
 }

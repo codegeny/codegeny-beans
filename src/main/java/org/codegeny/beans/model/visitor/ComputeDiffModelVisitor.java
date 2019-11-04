@@ -17,14 +17,14 @@
  * limitations under the License.
  * #L%
  */
-package org.codegeny.beans.model.visitor.diff;
+package org.codegeny.beans.model.visitor;
 
+import org.codegeny.beans.diff.BeanDiff;
 import org.codegeny.beans.diff.Diff;
 import org.codegeny.beans.diff.Diff.Status;
 import org.codegeny.beans.diff.ListDiff;
 import org.codegeny.beans.diff.MapDiff;
 import org.codegeny.beans.diff.SimpleDiff;
-import org.codegeny.beans.hash.AddAndXorHasher;
 import org.codegeny.beans.model.BeanModel;
 import org.codegeny.beans.model.ListModel;
 import org.codegeny.beans.model.MapModel;
@@ -33,22 +33,14 @@ import org.codegeny.beans.model.Property;
 import org.codegeny.beans.model.SetModel;
 import org.codegeny.beans.model.ValueModel;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
-import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
-import java.util.function.IntConsumer;
+import java.util.stream.Collectors;
 
-import static java.lang.Math.max;
-import static java.lang.Math.min;
-import static java.util.Comparator.comparing;
-import static java.util.Comparator.nullsLast;
-import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.IntStream.range;
@@ -81,42 +73,14 @@ public final class ComputeDiffModelVisitor<T extends B, B> implements ModelVisit
     private final T right;
 
     /**
-     * The minimum matching score above which 2 objects can be considered the same "instance".
-     */
-    private final double threshold;
-
-    /**
-     * The score optimizer.
-     */
-    private final ScoreOptimizer optimizer;
-
-    /**
-     * Constructor with default score optimizer.
-     *
-     * @param left      The left value to diff.
-     * @param right     The right value to diff.
-     * @param threshold The minimum matching score above which 2 objects can be considered the same "instance".
-     */
-    public ComputeDiffModelVisitor(T left, T right, double threshold) {
-        this(left, right, threshold, LocalScoreOptimizer.INSTANCE);
-    }
-
-    /**
      * Constructor.
      *
      * @param left      The left value to diff.
      * @param right     The right value to diff.
-     * @param threshold The minimum matching score above which 2 objects can be considered the same "instance".
-     * @param optimizer The score optimizer.
      */
-    public ComputeDiffModelVisitor(T left, T right, double threshold, ScoreOptimizer optimizer) {
-        if (threshold <= 0 || threshold > 1) {
-            throw new IllegalArgumentException("Threshold must be (strictly greater-than 0) and (lower-than or equal-to 1)");
-        }
+    public ComputeDiffModelVisitor(T left, T right) {
         this.left = left;
         this.right = right;
-        this.threshold = threshold;
-        this.optimizer = requireNonNull(optimizer);
     }
 
     /**
@@ -129,10 +93,14 @@ public final class ComputeDiffModelVisitor<T extends B, B> implements ModelVisit
         }
         Map<K, V> leftMap = map.toMap(left);
         Map<K, V> rightMap = map.toMap(right);
-        Set<K> keys = new TreeSet<>(map.getKeyModel());
+        Map<K, K> leftKeys = map.getEquivalence().newMap();
+        Map<K, K> rightKeys = map.getEquivalence().newMap();
+        Set<K> keys = map.getEquivalence().newSet();
+        leftMap.keySet().forEach(k -> leftKeys.put(k, k));
+        rightMap.keySet().forEach(k -> rightKeys.put(k, k));
         keys.addAll(leftMap.keySet());
         keys.addAll(rightMap.keySet());
-        Map<K, Diff<V>> result = keys.stream().collect(toMap(k -> k, k -> map.acceptValue(newVisitor(leftMap.get(k), rightMap.get(k)))));
+        Map<Diff<K>, Diff<V>> result = keys.stream().collect(toMap(k -> map.acceptKey(newVisitor(leftKeys.get(k), rightKeys.get(k))), k -> map.acceptValue(newVisitor(leftMap.get(k), rightMap.get(k)))));
         return Diff.map(Status.combineAll(result.values()), left, right, result);
     }
 
@@ -148,12 +116,12 @@ public final class ComputeDiffModelVisitor<T extends B, B> implements ModelVisit
      * {@inheritDoc}
      */
     @Override
-    public MapDiff<B, String, ?> visitBean(BeanModel<T> bean) {
+    public BeanDiff<B> visitBean(BeanModel<T> bean) {
         if (left == null ^ right == null) {
             return (left == null ? ComputeDiffModelVisitor.<T, B>added(right) : ComputeDiffModelVisitor.<T, B>removed(left)).visitBean(bean);
         }
-        Map<String, Diff<Object>> properties = bean.getProperties().stream().collect(toMap(Property::getName, this::visitProperty, throwingMerger(), LinkedHashMap::new));
-        return Diff.map(Status.combineAll(properties.values()), left, right, properties);
+        Map<String, Diff<?>> properties = bean.getProperties().stream().collect(toMap(Property::getName, this::visitProperty, throwingMerger(), LinkedHashMap::new));
+        return Diff.bean(Status.combineAll(properties.values()), left, right, properties);
     }
 
     /**
@@ -172,8 +140,8 @@ public final class ComputeDiffModelVisitor<T extends B, B> implements ModelVisit
             E l = leftList.get(i), r = rightList.get(j);
             for (int a = i, b = j; a < leftList.size() || b < rightList.size(); a++, b++) {
                 if (a < leftList.size()) {
-                    Diff<E> diff = values.acceptElement(newVisitor(leftList.get(a), r));
-                    if (diff.getScore() >= threshold) {
+                    if (values.getEquivalence().test(leftList.get(a), r)) {
+                        Diff<E> diff = values.acceptElement(newVisitor(leftList.get(a), r));
                         if (removeFirst) {
                             range(i - m, i = a).forEach(q -> result.add(values.acceptElement(removed(leftList.get(q)))));
                             range(j - n, j).forEach(q -> result.add(values.acceptElement(added(rightList.get(q)))));
@@ -191,8 +159,8 @@ public final class ComputeDiffModelVisitor<T extends B, B> implements ModelVisit
                     }
                 }
                 if (b < rightList.size()) { // TODO: do not compare initial values twice
-                    Diff<E> diff = values.acceptElement(newVisitor(l, rightList.get(b)));
-                    if (diff.getScore() >= threshold) {
+                    if (values.getEquivalence().test(l, rightList.get(b))) {
+                        Diff<E> diff = values.acceptElement(newVisitor(l, rightList.get(b)));
                         if (removeFirst) {
                             range(i - m, i).forEach(q -> result.add(values.acceptElement(removed(leftList.get(q)))));
                             range(j - n, j = b).forEach(q -> result.add(values.acceptElement(added(rightList.get(q)))));
@@ -231,125 +199,21 @@ public final class ComputeDiffModelVisitor<T extends B, B> implements ModelVisit
     @Override
     public <E> ListDiff<B, E> visitSet(SetModel<T, E> values) {
 
-        List<E> leftValues = new ArrayList<>(values.toSet(left));
-        List<E> rightValues = new ArrayList<>(values.toSet(right));
-
-        final int leftSize = leftValues.size();
-        final int rightSize = rightValues.size();
-
-        List<Diff<E>> list = new LinkedList<>();
-
-        // used objects (all false to begin)
-
-        boolean[] leftUsed = new boolean[leftSize];
-        boolean[] rightUsed = new boolean[rightSize];
-
-        // hash all objects to guide comparison (same hash = maybe same object)
-
-        int[] leftHashes = leftValues.stream().mapToInt(e -> values.getElementModel().hash(e, new AddAndXorHasher())).toArray();
-        int[] rightHashes = rightValues.stream().mapToInt(e -> values.getElementModel().hash(e, new AddAndXorHasher())).toArray();
-
-        Adder<E> addBoth = (i, j, diff) -> {
-            rightUsed[j] = leftUsed[i] = true;
-            list.add(diff);
-        };
-
-        // if two objects have the same hash, compare them, if equal remove them from the list and add a diff
-
-        for (int i = 0; i < leftSize; i++) {
-            for (int j = 0; !leftUsed[i] && j < rightSize; j++) {
-                if (!rightUsed[j] && leftHashes[i] == rightHashes[j]) {
-                    E left = leftValues.get(i);
-                    E right = rightValues.get(j);
-                    Diff<E> diff = values.acceptElement(newVisitor(left, right));
-                    if (!diff.getStatus().isChanged()) {
-                        addBoth.accept(i, j, diff);
-                        break;
-                    }
-                }
-            }
+        if (left == null ^ right == null) {
+            return (left == null ? ComputeDiffModelVisitor.<T, B>added(right) : ComputeDiffModelVisitor.<T, B>removed(left)).visitSet(values);
         }
+        Map<E, E> leftMap = values.getEquivalence().newMap();
+        Map<E, E> rightMap = values.getEquivalence().newMap();
 
-        // for remaining, objects calculate a diff matrix for each possible pair
+        values.toSet(left).forEach(e -> leftMap.put(e, e));
+        values.toSet(right).forEach(e -> rightMap.put(e, e));
 
-        @SuppressWarnings("unchecked")
-        Diff<E>[][] matrix = new Diff[leftSize][rightSize];
+        Set<E> keys = values.getEquivalence().newSet();
+        keys.addAll(leftMap.keySet());
+        keys.addAll(rightMap.keySet());
 
-        range(0, leftSize).filter(i -> !leftUsed[i]).forEach(i -> range(0, rightSize).filter(j -> !rightUsed[j]).forEach(j -> {
-            E left = leftValues.get(i);
-            E right = rightValues.get(j);
-            Diff<E> diff = values.acceptElement(newVisitor(left, right));
-            matrix[i][j] = diff.getScore() >= threshold ? diff : null;
-        }));
-
-        @SuppressWarnings("unchecked")
-        Diff<E>[] leftNulls = new Diff[leftSize];
-
-        @SuppressWarnings("unchecked")
-        Diff<E>[] rightNulls = new Diff[rightSize];
-
-        IntConsumer addLeft = i -> {
-            leftUsed[i] = true;
-            list.add(leftNulls[i]);
-        };
-
-        IntConsumer addRight = j -> {
-            rightUsed[j] = true;
-            list.add(rightNulls[j]);
-        };
-
-        // calculate left/null and right/null
-
-        range(0, leftSize).filter(i -> !leftUsed[i]).forEach(i -> leftNulls[i] = values.getElementModel().accept(removed(leftValues.get(i)))); // left->null:REMOVED
-        range(0, rightSize).filter(j -> !rightUsed[j]).forEach(j -> rightNulls[j] = values.getElementModel().accept(added(rightValues.get(j)))); // null->right:ADDED
-
-        // if a column or row is full of nulls, remove it
-
-        range(0, leftSize).filter(i -> !leftUsed[i]).filter(i -> range(0, rightSize).filter(j -> !rightUsed[j]).allMatch(j -> matrix[i][j] == null)).forEach(addLeft);
-        range(0, rightSize).filter(j -> !rightUsed[j]).filter(j -> range(0, leftSize).filter(i -> !leftUsed[i]).allMatch(i -> matrix[i][j] == null)).forEach(addRight);
-
-        // try to find the permutation that maximize the score
-
-        int[] leftMapping = range(0, leftSize).filter(i -> !leftUsed[i]).toArray();
-        int[] rightMapping = range(0, rightSize).filter(j -> !rightUsed[j]).toArray();
-
-        if (leftMapping.length > 0 && rightMapping.length > 0) {
-
-            BiFunction<Integer, Integer, Diff<E>> source = leftMapping.length < rightMapping.length
-                    ? (a, b) -> matrix[leftMapping[a]][rightMapping[b]]
-                    : (a, b) -> matrix[leftMapping[b]][rightMapping[a]];
-
-            double[][] scores = new double[min(rightMapping.length, leftMapping.length)][max(rightMapping.length, leftMapping.length)];
-            for (int k = 0; k < min(rightMapping.length, leftMapping.length); k++) {
-                for (int n = 0; n < max(rightMapping.length, leftMapping.length); n++) {
-                    Diff<E> diff = source.apply(k, n);
-                    scores[k][n] = diff != null ? diff.getScore() : 0; // TODO sum of both scores (0 + 0 for normalized, -x + -x for absolute)
-                }
-            }
-
-            int[] mapping = optimizer.solve(min(rightMapping.length, leftMapping.length), max(rightMapping.length, leftMapping.length), scores);
-            range(0, mapping.length).forEach(i -> {
-                int x = leftMapping[leftMapping.length >= rightMapping.length ? mapping[i] : i];
-                int y = rightMapping[leftMapping.length >= rightMapping.length ? i : mapping[i]];
-                Diff<E> diff = matrix[x][y];
-                if (diff != null) {
-                    addBoth.accept(x, y, diff);
-                } else {
-                    addLeft.accept(x);
-                    addRight.accept(y);
-                }
-            });
-        }
-
-        // the rest is the non-matching values
-
-        range(0, leftSize).filter(i -> !leftUsed[i]).forEach(addLeft);
-        range(0, rightSize).filter(j -> !rightUsed[j]).forEach(addRight);
-
-        // sort the result
-
-        list.sort(comparing(e -> e.getLeft() == null ? e.getRight() : e.getLeft(), nullsLast(values.getElementModel())));
-        return Diff.list(Diff.Status.combineAll(list), left, right, list);
+        List<Diff<E>> result = keys.stream().map(e -> values.acceptElement(newVisitor(leftMap.get(e), rightMap.get(e)))).collect(Collectors.toList());
+        return Diff.list(Status.combineAll(result), left, right, result);
     }
 
     /**
@@ -373,7 +237,7 @@ public final class ComputeDiffModelVisitor<T extends B, B> implements ModelVisit
      * @return A new visitor.
      */
     private <S extends C, C> ComputeDiffModelVisitor<S, C> newVisitor(S left, S right) {
-        return new ComputeDiffModelVisitor<>(left, right, threshold, optimizer);
+        return new ComputeDiffModelVisitor<>(left, right);
     }
 
     /**
@@ -386,16 +250,6 @@ public final class ComputeDiffModelVisitor<T extends B, B> implements ModelVisit
         return (u, v) -> {
             throw new IllegalStateException(String.format("Duplicate key %s", u));
         };
-    }
-
-    /**
-     * Internal added interface.
-     *
-     * @param <T> The diff'ed type.
-     */
-    private interface Adder<T> {
-
-        void accept(int x, int y, Diff<T> diff);
     }
 
     /**
@@ -492,8 +346,8 @@ public final class ComputeDiffModelVisitor<T extends B, B> implements ModelVisit
          * {@inheritDoc}
          */
         @Override
-        public MapDiff<B, String, ?> visitBean(BeanModel<T> bean) {
-            return Diff.map(status(), left, right, bean.getProperties().stream().collect(toMap(Property::getName, this::visitProperty)));
+        public BeanDiff<B> visitBean(BeanModel<T> bean) {
+            return Diff.bean(status(), left, right, bean.getProperties().stream().collect(toMap(Property::getName, this::visitProperty)));
         }
 
         /**
@@ -517,7 +371,7 @@ public final class ComputeDiffModelVisitor<T extends B, B> implements ModelVisit
          */
         @Override
         public <K, V> MapDiff<B, K, V> visitMap(MapModel<T, K, V> map) {
-            return Diff.map(status(), left, right, map.toMap(target()).entrySet().stream().collect(toMap(Map.Entry::getKey, e -> map.acceptValue(newVisitor(e.getValue())))));
+            return Diff.map(status(), left, right, map.toMap(target()).entrySet().stream().collect(toMap(e -> map.acceptKey(newVisitor(e.getKey())), e -> map.acceptValue(newVisitor(e.getValue())))));
         }
 
         /**

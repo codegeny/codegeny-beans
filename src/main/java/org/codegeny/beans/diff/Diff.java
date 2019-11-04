@@ -68,8 +68,22 @@ public interface Diff<T> extends Serializable {
      * @param <V>    The type of the map values.
      * @return A <code>{@link MapDiff}</code>.
      */
-    static <M, K, V> MapDiff<M, K, V> map(Status status, M left, M right, Map<? extends K, ? extends Diff<V>> map) {
+    static <M, K, V> MapDiff<M, K, V> map(Status status, M left, M right, Map<? extends Diff<K>, ? extends Diff<V>> map) {
         return new MapDiff<>(status, left, right, map);
+    }
+
+    /**
+     * Static method factory for <code>{@link MapDiff}</code>.
+     *
+     * @param status The status.
+     * @param left   The left bean.
+     * @param right  The right bean.
+     * @param map    The diffed values as a map.
+     * @param <B>    The type of the bean.
+     * @return A <code>{@link BeanDiff}</code>.
+     */
+    static <B> BeanDiff<B> bean(Status status, B left, B right, Map<String, ? extends Diff<?>> map) {
+        return new BeanDiff<>(status, left, right, map);
     }
 
     /**
@@ -108,20 +122,6 @@ public interface Diff<T> extends Serializable {
      */
 
     T getRight();
-
-    /**
-     * The score which has a range of [0; 1].
-     * <ul>
-     * <li>Each terminal value has a score of either 0 (not matched) or 1
-     * (matched).</li>
-     * <li>Each bean has an averaged score of all its properties scores.</li>
-     * <li>Each collection has an averaged score of its elements scores.</li>
-     * <li>Each map has an averaged score of its values scores.</li>
-     * </ul>
-     *
-     * @return The normalized score ranging from 0 to 1.
-     */
-    double getScore();
 
     /**
      * Get the status for this diff which can be either <code>ADDED</code>, <code>REMOVED</code>, <code>MODIFIED</code> or <code>UNCHANGED</code>.

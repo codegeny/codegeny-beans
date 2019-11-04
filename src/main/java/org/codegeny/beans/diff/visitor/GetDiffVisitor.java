@@ -19,6 +19,7 @@
  */
 package org.codegeny.beans.diff.visitor;
 
+import org.codegeny.beans.diff.BeanDiff;
 import org.codegeny.beans.diff.Diff;
 import org.codegeny.beans.diff.DiffVisitor;
 import org.codegeny.beans.diff.ListDiff;
@@ -85,6 +86,14 @@ public final class GetDiffVisitor<T> implements DiffVisitor<T, Diff<?>> {
         return followNestedOrGetValue(simple, pathElement -> {
             throw new IllegalArgumentException("SimpleDiff must be terminal");
         });
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Diff<?> visitBean(BeanDiff<T> bean) {
+        return followNestedOrGetValue(bean, pathElement -> bean.getProperty((String) pathElement));
     }
 
     /**

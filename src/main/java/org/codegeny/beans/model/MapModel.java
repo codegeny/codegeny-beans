@@ -19,6 +19,8 @@
  */
 package org.codegeny.beans.model;
 
+import org.codegeny.beans.base.Equivalence;
+
 import java.util.Map;
 import java.util.function.Function;
 
@@ -48,19 +50,26 @@ public final class MapModel<M, K, V> implements Model<M> {
     /**
      * A function to convert the type &gt;M&gt; to Map&gt;K, V&lt;.
      */
-    private final Function<? super M, ? extends Map<K, V>> extractor;
+    private final Function<? super M, ? extends Map<K, V>> converter;
+
+    /**
+     * The key equivalence strategy.
+     */
+    private final Equivalence<K> equivalence;
 
     /**
      * Constructor.
      *
-     * @param extractor  A function to convert the type &gt;M&gt; to Map&gt;K, V&lt;.
-     * @param keyModel   The key model.
-     * @param valueModel The value model.
+     * @param keyModel    The key model.
+     * @param valueModel  The value model.
+     * @param converter   A function to convert the type &gt;M&gt; to Map&gt;K, V&lt;.
+     * @param equivalence The key equivalence strategy.
      */
-    MapModel(Function<? super M, ? extends Map<K, V>> extractor, Model<K> keyModel, Model<V> valueModel) {
-        this.extractor = requireNonNull(extractor);
+    MapModel(Model<K> keyModel, Model<V> valueModel, Function<? super M, ? extends Map<K, V>> converter, Equivalence<K> equivalence) {
+        this.converter = requireNonNull(converter);
         this.keyModel = requireNonNull(keyModel);
         this.valueModel = requireNonNull(valueModel);
+        this.equivalence = requireNonNull(equivalence);
     }
 
     /**
@@ -100,7 +109,7 @@ public final class MapModel<M, K, V> implements Model<M> {
      * @return A map of (key, value).
      */
     public Map<K, V> toMap(M values) {
-        return values == null ? emptyMap() : extractor.apply(values);
+        return values == null ? emptyMap() : converter.apply(values);
     }
 
     /**
@@ -119,5 +128,14 @@ public final class MapModel<M, K, V> implements Model<M> {
      */
     public Model<V> getValueModel() {
         return valueModel;
+    }
+
+    /**
+     * Get the key equivalence strategy.
+     *
+     * @return The key equivalence strategy.
+     */
+    public Equivalence<K> getEquivalence() {
+        return equivalence;
     }
 }

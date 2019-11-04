@@ -19,6 +19,8 @@
  */
 package org.codegeny.beans.model;
 
+import org.codegeny.beans.base.Equivalence;
+import org.codegeny.beans.diff.Diff;
 import org.codegeny.beans.hash.Hasher;
 import org.codegeny.beans.model.visitor.CompareModelVisitor;
 import org.codegeny.beans.model.visitor.DescribeModelVisitor;
@@ -26,6 +28,7 @@ import org.codegeny.beans.model.visitor.GetModelVisitor;
 import org.codegeny.beans.model.visitor.HashModelVisitor;
 import org.codegeny.beans.model.visitor.SetModelVisitor;
 import org.codegeny.beans.model.visitor.ToStringModelVisitor;
+import org.codegeny.beans.model.visitor.ComputeDiffModelVisitor;
 import org.codegeny.beans.path.Converter;
 import org.codegeny.beans.path.Path;
 
@@ -124,7 +127,19 @@ public interface Model<T> extends Comparator<T> {
      * @return The list model.
      */
     static <E> ListModel<List<E>, E> list(Model<E> elementModel) {
-        return list(elementModel, identity());
+        return list(elementModel, Equivalence.byComparison(elementModel));
+    }
+
+    /**
+     * Construct a new {@link ListModel} for a list of &lt;E&gt; elements which implements the {@link List} interface.
+     *
+     * @param elementModel The delegate {@link Model} to be used for elements.
+     * @param equivalence  The element equivalence strategy.
+     * @param <E>          The type of elements.
+     * @return The list model.
+     */
+    static <E> ListModel<List<E>, E> list(Model<E> elementModel, Equivalence<E> equivalence) {
+        return list(elementModel, identity(), equivalence);
     }
 
     /**
@@ -137,7 +152,21 @@ public interface Model<T> extends Comparator<T> {
      * @return The list model.
      */
     static <L, E> ListModel<L, E> list(Model<E> elementModel, Function<? super L, ? extends List<E>> converter) {
-        return new ListModel<>(converter, elementModel);
+        return list(elementModel, converter, Equivalence.byComparison(elementModel));
+    }
+
+    /**
+     * Construct a new {@link ListModel} for a list of &lt;E&gt; objects which does not implement the {@link List} interface.
+     *
+     * @param elementModel The delegate {@link Model} to be used for elements.
+     * @param converter    The converter is a function which transforms objects of type &lt;L&gt; to a <code>List&lt;E&gt;</code>.
+     * @param equivalence  The element equivalence strategy.
+     * @param <L>          The type of the list of &lt;E&gt; elements.
+     * @param <E>          The type of elements.
+     * @return The list model.
+     */
+    static <L, E> ListModel<L, E> list(Model<E> elementModel, Function<? super L, ? extends List<E>> converter, Equivalence<E> equivalence) {
+        return new ListModel<>(elementModel, converter, equivalence);
     }
 
     /**
@@ -150,7 +179,21 @@ public interface Model<T> extends Comparator<T> {
      * @return The map model.
      */
     static <K, V> MapModel<Map<K, V>, K, V> map(Model<K> keyModel, Model<V> valueModel) {
-        return map(keyModel, valueModel, identity());
+        return map(keyModel, valueModel, Equivalence.byComparison(keyModel));
+    }
+
+    /**
+     * Construct a new {@link MapModel} for a map of &lt;K, V&gt; entries which implements the {@link Map} interface.
+     *
+     * @param keyModel    The delegate {@link Model} to be used for keys.
+     * @param valueModel  The delegate {@link Model} to be used for values.
+     * @param equivalence The key equivalence strategy.
+     * @param <K>         The type of keys.
+     * @param <V>         The type of values.
+     * @return The map model.
+     */
+    static <K, V> MapModel<Map<K, V>, K, V> map(Model<K> keyModel, Model<V> valueModel, Equivalence<K> equivalence) {
+        return map(keyModel, valueModel, identity(), equivalence);
     }
 
     /**
@@ -165,7 +208,23 @@ public interface Model<T> extends Comparator<T> {
      * @return The map model.
      */
     static <M, K, V> MapModel<M, K, V> map(Model<K> keyModel, Model<V> valueModel, Function<? super M, ? extends Map<K, V>> converter) {
-        return new MapModel<>(converter, keyModel, valueModel);
+        return map(keyModel, valueModel, converter, Equivalence.byComparison(keyModel));
+    }
+
+    /**
+     * Construct a new {@link MapModel} for a map of &lt;K, V&gt; entries which does not implement the {@link Map} interface.
+     *
+     * @param keyModel    The delegate {@link Model} to be used for keys.
+     * @param valueModel  The delegate {@link Model} to be used for values.
+     * @param converter   The collector is a function which transforms objects of type &lt;M&gt; to a <code>Map&lt;K, V&gt;</code>.
+     * @param equivalence The key equivalence strategy.
+     * @param <M>         The type of the map of &lt;K, V&gt; entries.
+     * @param <K>         The type of keys.
+     * @param <V>         The type of values.
+     * @return The map model.
+     */
+    static <M, K, V> MapModel<M, K, V> map(Model<K> keyModel, Model<V> valueModel, Function<? super M, ? extends Map<K, V>> converter, Equivalence<K> equivalence) {
+        return new MapModel<>(keyModel, valueModel, converter, equivalence);
     }
 
     /**
@@ -176,7 +235,19 @@ public interface Model<T> extends Comparator<T> {
      * @return The set model.
      */
     static <E> SetModel<Set<E>, E> set(Model<E> elementModel) {
-        return set(elementModel, identity());
+        return set(elementModel, Equivalence.byComparison(elementModel));
+    }
+
+    /**
+     * Construct a new {@link SetModel} for a set of &lt;E&gt; elements which implements the {@link Set} interface.
+     *
+     * @param elementModel The delegate {@link Model} to be used for elements.
+     * @param equivalence  The element equivalence strategy.
+     * @param <E>          The type of elements.
+     * @return The set model.
+     */
+    static <E> SetModel<Set<E>, E> set(Model<E> elementModel, Equivalence<E> equivalence) {
+        return set(elementModel, identity(), equivalence);
     }
 
     /**
@@ -189,7 +260,21 @@ public interface Model<T> extends Comparator<T> {
      * @return The set model.
      */
     static <S, E> SetModel<S, E> set(Model<E> elementModel, Function<? super S, ? extends Set<E>> converter) {
-        return new SetModel<>(converter, elementModel);
+        return set(elementModel, converter, Equivalence.byComparison(elementModel));
+    }
+
+    /**
+     * Construct a new {@link SetModel} for a set of &lt;E&gt; objects which does not implement the {@link Set} interface.
+     *
+     * @param elementModel The delegate {@link Model} to be used for elements.
+     * @param converter    The collector is a function which transforms objects of type &lt;S&gt; to a <code>Collection&lt;E&gt;</code>.
+     * @param equivalence  The element equivalence strategy.
+     * @param <S>          The type of the set of &lt;E&gt; elements.
+     * @param <E>          The type of elements.
+     * @return The set model.
+     */
+    static <S, E> SetModel<S, E> set(Model<E> elementModel, Function<? super S, ? extends Set<E>> converter, Equivalence<E> equivalence) {
+        return new SetModel<>(elementModel, converter, equivalence);
     }
 
     /**
@@ -309,7 +394,7 @@ public interface Model<T> extends Comparator<T> {
      * @param path   The path of the property to set.
      * @param value  The value to set.
      */
-    default void set(T target, Path<Object> path, Object value) {
+    default <S> void set(T target, Path<S> path, S value) {
         set(target, path, value, Converter.Identity.INSTANCE);
     }
 
@@ -321,7 +406,7 @@ public interface Model<T> extends Comparator<T> {
      * @param path   The path of the property to retrieve.
      * @return The retrieved property value.
      */
-    default Object get(T target, Path<Object> path) {
+    default <S> Object get(T target, Path<S> path) {
         return get(target, path, Converter.Identity.INSTANCE);
     }
 
@@ -344,5 +429,16 @@ public interface Model<T> extends Comparator<T> {
      */
     default String toString(T target) {
         return accept(new ToStringModelVisitor<>(target)).toString();
+    }
+
+    /**
+     * Diff two values.
+     *
+     * @param left  The left value.
+     * @param right The right value.
+     * @return The diff.
+     */
+    default Diff<T> diff(T left, T right) {
+        return accept(new ComputeDiffModelVisitor<>(left, right));
     }
 }

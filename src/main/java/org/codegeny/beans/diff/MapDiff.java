@@ -34,7 +34,7 @@ import static java.util.Objects.requireNonNull;
  * @param <V> The type of map value.
  * @author Xavier DURY
  */
-public final class MapDiff<M, K, V> extends AbstractMap<K, Diff<V>> implements Diff<M> {
+public final class MapDiff<M, K, V> extends AbstractMap<Diff<K>, Diff<V>> implements Diff<M> {
 
     /**
      * @see java.io.Serializable
@@ -52,11 +52,6 @@ public final class MapDiff<M, K, V> extends AbstractMap<K, Diff<V>> implements D
     private final M right;
 
     /**
-     * The score.
-     */
-    private final double normalizedScore;
-
-    /**
      * The status.
      */
     private final Status status;
@@ -64,7 +59,7 @@ public final class MapDiff<M, K, V> extends AbstractMap<K, Diff<V>> implements D
     /**
      * The map of diffs.
      */
-    private final Map<K, Diff<V>> map;
+    private final Map<Diff<K>, Diff<V>> map;
 
     /**
      * Constructor.
@@ -74,8 +69,7 @@ public final class MapDiff<M, K, V> extends AbstractMap<K, Diff<V>> implements D
      * @param right  The right value.
      * @param map    The map of diffs.
      */
-    MapDiff(Status status, M left, M right, Map<? extends K, ? extends Diff<V>> map) {
-        this.normalizedScore = status.isChanged() ? map.values().stream().mapToDouble(Diff::getScore).average().orElse(0.0) : 1.0;
+    MapDiff(Status status, M left, M right, Map<? extends Diff<K>, ? extends Diff<V>> map) {
         this.status = requireNonNull(status, "Status cannot be null");
         this.left = left;
         this.right = right;
@@ -110,14 +104,6 @@ public final class MapDiff<M, K, V> extends AbstractMap<K, Diff<V>> implements D
      * {@inheritDoc}
      */
     @Override
-    public double getScore() {
-        return normalizedScore;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public Status getStatus() {
         return status;
     }
@@ -126,7 +112,7 @@ public final class MapDiff<M, K, V> extends AbstractMap<K, Diff<V>> implements D
      * {@inheritDoc}
      */
     @Override
-    public Set<Entry<K, Diff<V>>> entrySet() {
+    public Set<Entry<Diff<K>, Diff<V>>> entrySet() {
         return map.entrySet();
     }
 
@@ -138,7 +124,6 @@ public final class MapDiff<M, K, V> extends AbstractMap<K, Diff<V>> implements D
         return "MapDiff{" +
                 "left=" + left +
                 ", right=" + right +
-                ", score=" + normalizedScore +
                 ", status=" + status +
                 '}';
     }

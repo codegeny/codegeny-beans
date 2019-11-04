@@ -19,6 +19,7 @@
  */
 package org.codegeny.beans.diff.visitor;
 
+import org.codegeny.beans.diff.BeanDiff;
 import org.codegeny.beans.diff.Diff;
 import org.codegeny.beans.diff.DiffVisitor;
 import org.codegeny.beans.diff.ListDiff;
@@ -119,6 +120,17 @@ public final class TraversingDiffVisitor<T> implements DiffVisitor<T, Void> {
     @Override
     public Void visitSimple(SimpleDiff<T> simpleDiff) {
         processor.test(path, simpleDiff);
+        return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Void visitBean(BeanDiff<T> beanDiff) {
+        if (processor.test(path, beanDiff)) {
+            beanDiff.forEach((k, v) -> v.accept(newVisitor(path.append(k))));
+        }
         return null;
     }
 

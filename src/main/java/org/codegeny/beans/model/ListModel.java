@@ -19,6 +19,8 @@
  */
 package org.codegeny.beans.model;
 
+import org.codegeny.beans.base.Equivalence;
+
 import java.util.List;
 import java.util.function.Function;
 
@@ -42,17 +44,24 @@ public final class ListModel<L, E> implements Model<L> {
     /**
      * A function to convert the type &gt;L&gt; to List&gt;E&lt;.
      */
-    private final Function<? super L, ? extends List<E>> extractor;
+    private final Function<? super L, ? extends List<E>> converter;
+
+    /**
+     * The element equivalence strategy.
+     */
+    private final Equivalence<E> equivalence;
 
     /**
      * Constructor.
      *
-     * @param extractor    A function to convert the type &gt;L&gt; to List&gt;E&lt;.
      * @param elementModel The element model.
+     * @param converter    A function to convert the type &gt;L&gt; to List&gt;E&lt;.
+     * @param equivalence  The element equivalence strategy.
      */
-    ListModel(Function<? super L, ? extends List<E>> extractor, Model<E> elementModel) {
-        this.extractor = requireNonNull(extractor);
+    ListModel(Model<E> elementModel, Function<? super L, ? extends List<E>> converter, Equivalence<E> equivalence) {
         this.elementModel = requireNonNull(elementModel);
+        this.converter = requireNonNull(converter);
+        this.equivalence = requireNonNull(equivalence);
     }
 
     /**
@@ -81,7 +90,7 @@ public final class ListModel<L, E> implements Model<L> {
      * @return A list of elements.
      */
     public List<E> toList(L values) {
-        return values == null ? emptyList() : extractor.apply(values);
+        return values == null ? emptyList() : converter.apply(values);
     }
 
     /**
@@ -91,5 +100,14 @@ public final class ListModel<L, E> implements Model<L> {
      */
     public Model<E> getElementModel() {
         return elementModel;
+    }
+
+    /**
+     * Get the element equivalence strategy.
+     *
+     * @return The element equivalence strategy.
+     */
+    public Equivalence<E> getEquivalence() {
+        return equivalence;
     }
 }
