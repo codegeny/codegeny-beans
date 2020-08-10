@@ -37,7 +37,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -90,9 +89,9 @@ public final class ComputeDiffModelVisitor<T extends B, B> implements ModelVisit
      * {@inheritDoc}
      */
     @Override
-    public <K, V> MapDiff<B, K, V> visitMap(MapModel<T, K, V> map) {
+    public <K, V> Diff<B> visitMap(MapModel<T, K, V> map) {
         if (left == null ^ right == null) {
-            return (left == null ? ComputeDiffModelVisitor.<T, B>added(right) : ComputeDiffModelVisitor.<T, B>removed(left)).visitMap(map);
+            return map.accept(left == null ? added(right) : removed(left));
         }
         Map<K, V> leftMap = map.toMap(left);
         Map<K, V> rightMap = map.toMap(right);
@@ -111,7 +110,7 @@ public final class ComputeDiffModelVisitor<T extends B, B> implements ModelVisit
      * {@inheritDoc}
      */
     @Override
-    public SimpleDiff<B> visitValue(ValueModel<T> value) {
+    public Diff<B> visitValue(ValueModel<T> value) {
         return Diff.simple(left == null ^ right == null ? left == null ? ADDED : REMOVED : value.compare(left, right) == 0 ? UNCHANGED : MODIFIED, left, right);
     }
 
@@ -119,9 +118,9 @@ public final class ComputeDiffModelVisitor<T extends B, B> implements ModelVisit
      * {@inheritDoc}
      */
     @Override
-    public BeanDiff<B> visitBean(BeanModel<T> bean) {
+    public Diff<B> visitBean(BeanModel<T> bean) {
         if (left == null ^ right == null) {
-            return (left == null ? ComputeDiffModelVisitor.<T, B>added(right) : ComputeDiffModelVisitor.<T, B>removed(left)).visitBean(bean);
+            return bean.accept(left == null ? added(right) : removed(left));
         }
         Map<String, Diff<?>> properties = bean.getProperties().stream().collect(toMap(Property::getName, this::visitProperty, throwingMerger(), LinkedHashMap::new));
         return Diff.bean(Status.combineAll(properties.values()), left, right, properties);
@@ -133,43 +132,42 @@ public final class ComputeDiffModelVisitor<T extends B, B> implements ModelVisit
      * Using Myers diff algorithm.
      */
     @Override
-    public <E> ListDiff<B, E> visitList(ListModel<T, E> values) {
-        List<E> leftList = values.toList(left);
-        List<E> rightList = values.toList(right);
+    public <E> Diff<B> visitList(ListModel<T, E> list) {
+        if (left == null ^ right == null) {
+            return list.accept(left == null ? added(right) : removed(left));
+        }
+        List<E> leftList = list.toList(left);
+        List<E> rightList = list.toList(right);
         int n = leftList.size();
         int m = rightList.size();
-        int max = n + m;
-        int[] v = new int[2 * max + 1];
+        int z = n + m;
+        int[] v = new int[z + 1 + z];
         List<int[]> trace = new ArrayList<>();
-        for (int d = 0; d <= max; d++) {
+        for (int d = 0; d <= z; d++) {
             trace.add(v.clone());
             for (int k = -d; k <= d; k += 2) {
-                int x = k == -d || k != d && v[max + k - 1] < v[max + k + 1] ? v[max + k + 1] : v[max + k - 1] + 1;
+                int x = k == -d || k != d && v[z + k - 1] < v[z + k + 1] ? v[z + k + 1] : v[z + k - 1] + 1;
                 int y = x - k;
                 while (x < n && y < m && Objects.equals(leftList.get(x), rightList.get(y))) {
                     x++;
                     y++;
                 }
-                v[max + k] = x;
-                if (x >= n && y >= m) {
-                    List<Diff<E>> result = new LinkedList<>();
-                    for (x = n, y = m; d >= 0; d--) {
+                v[z + k] = x;
+                if (x == n && y == m) {
+                    List<Diff<E>> result = new ArrayList<>();
+                    do {
                         v = trace.get(d);
                         k = x - y;
-                        int pk = k == -d || k != d && v[max + k - 1] < v[max + k + 1] ? k + 1 : k - 1;
-                        int px = v[max + pk];
+                        int pk = k == -d || k != d && v[z + k - 1] < v[z + k + 1] ? k + 1 : k - 1;
+                        int px = v[z + pk];
                         int py = px - pk;
                         while (x > px && y > py) {
-                            result.add(0, diff(x - 1, y - 1, x, y, leftList, rightList, values));
-                            x--;
-                            y--;
+                            result.add(0, diff(x, y, --x, --y, leftList, rightList, list));
                         }
                         if (d > 0) {
-                            result.add(0, diff(px, py, x, y, leftList, rightList, values));
+                            result.add(0, diff(x, y, x = px, y = py, leftList, rightList, list));
                         }
-                        x = px;
-                        y = py;
-                    }
+                    } while (--d >= 0);
                     return Diff.list(Diff.Status.combineAll(result), left, right, result);
                 }
             }
@@ -177,36 +175,30 @@ public final class ComputeDiffModelVisitor<T extends B, B> implements ModelVisit
         throw new InternalError("Unreachable");
     }
 
-    private <E> Diff<E> diff(int px, int py, int x, int y, List<E> left, List<E> right, ListModel<T, E> model) {
-        if (x == px) {
-            return model.acceptElement(added(right.get(py)));
-        } else if (y == py) {
-            return model.acceptElement(removed(left.get(px)));
-        } else {
-            return model.acceptElement(newVisitor(left.get(px), right.get(py)));
-        }
+    private <E> Diff<E> diff(int x, int y, int px, int py, List<E> left, List<E> right, ListModel<T, E> model) {
+        return model.acceptElement(x != px ? y != py ? newVisitor(left.get(px), right.get(py)) : removed(left.get(px)) : added(right.get(py)));
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public <E> ListDiff<B, E> visitSet(SetModel<T, E> values) {
+    public <E> Diff<B> visitSet(SetModel<T, E> set) {
 
         if (left == null ^ right == null) {
-            return (left == null ? ComputeDiffModelVisitor.<T, B>added(right) : ComputeDiffModelVisitor.<T, B>removed(left)).visitSet(values);
+            return set.accept(left == null ? added(right) : removed(left));
         }
 
         Map<E, E> leftMap = new HashMap<>();
         Map<E, E> rightMap = new HashMap<>();
-        values.toSet(left).forEach(e -> leftMap.put(e, e));
-        values.toSet(right).forEach(e -> rightMap.put(e, e));
+        set.toSet(left).forEach(e -> leftMap.put(e, e));
+        set.toSet(right).forEach(e -> rightMap.put(e, e));
 
         Set<E> keys = new HashSet<>();
         keys.addAll(leftMap.keySet());
         keys.addAll(rightMap.keySet());
 
-        List<Diff<E>> result = keys.stream().map(e -> values.acceptElement(newVisitor(leftMap.get(e), rightMap.get(e)))).collect(Collectors.toList());
+        List<Diff<E>> result = keys.stream().map(e -> set.acceptElement(newVisitor(leftMap.get(e), rightMap.get(e)))).collect(Collectors.toList());
         return Diff.list(Status.combineAll(result), left, right, result);
     }
 
