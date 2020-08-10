@@ -19,8 +19,6 @@
  */
 package org.codegeny.beans.model;
 
-import org.codegeny.beans.base.Equivalence;
-
 import java.util.Set;
 import java.util.function.Function;
 
@@ -47,21 +45,14 @@ public final class SetModel<S, E> implements Model<S> {
     private final Function<? super S, ? extends Set<E>> converter;
 
     /**
-     * The element equivalence strategy.
-     */
-    private final Equivalence<E> equivalence;
-
-    /**
      * Constructor.
      *
      * @param elementModel The element model.
      * @param converter    A function to convert the type &gt;L&gt; to Set&gt;E&lt;.
-     * @param equivalence  The element equivalence strategy.
      */
-    SetModel(Model<E> elementModel, Function<? super S, ? extends Set<E>> converter, Equivalence<E> equivalence) {
+    SetModel(Model<E> elementModel, Function<? super S, ? extends Set<E>> converter) {
         this.elementModel = requireNonNull(elementModel);
         this.converter = requireNonNull(converter);
-        this.equivalence = requireNonNull(equivalence);
     }
 
     /**
@@ -100,14 +91,5 @@ public final class SetModel<S, E> implements Model<S> {
      */
     public Model<E> getElementModel() {
         return elementModel;
-    }
-
-    /**
-     * Get the element equivalence strategy.
-     *
-     * @return The element equivalence strategy.
-     */
-    public Equivalence<E> getEquivalence() {
-        return equivalence;
     }
 }

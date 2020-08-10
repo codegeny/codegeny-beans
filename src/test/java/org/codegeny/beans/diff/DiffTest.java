@@ -20,8 +20,12 @@
 package org.codegeny.beans.diff;
 
 import org.codegeny.beans.Person;
+import org.codegeny.beans.model.Model;
 import org.codegeny.beans.path.Path;
 import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import static org.codegeny.beans.Person.MODEL;
 import static org.codegeny.beans.Person.createDefaultPerson;
@@ -32,6 +36,14 @@ import static org.codegeny.beans.diff.Diff.Status.UNCHANGED;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class DiffTest {
+
+    @Test
+    public void testMyersAlgorithm() {
+        System.out.println(Model.list(Model.CHARACTER).diff(
+                Arrays.asList('A', 'B', 'C', 'A', 'B', 'B', 'A'),
+                Arrays.asList('C', 'B', 'A', 'B', 'A', 'C')
+        ).describe());
+    }
 
     @Test
     public void identicalObjectsShouldYieldNoDifferences() {

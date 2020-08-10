@@ -33,17 +33,20 @@ import org.codegeny.beans.model.Property;
 import org.codegeny.beans.model.SetModel;
 import org.codegeny.beans.model.ValueModel;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
-import static java.util.stream.IntStream.range;
 import static org.codegeny.beans.diff.Diff.Status.ADDED;
 import static org.codegeny.beans.diff.Diff.Status.MODIFIED;
 import static org.codegeny.beans.diff.Diff.Status.REMOVED;
@@ -93,9 +96,9 @@ public final class ComputeDiffModelVisitor<T extends B, B> implements ModelVisit
         }
         Map<K, V> leftMap = map.toMap(left);
         Map<K, V> rightMap = map.toMap(right);
-        Map<K, K> leftKeys = map.getEquivalence().newMap();
-        Map<K, K> rightKeys = map.getEquivalence().newMap();
-        Set<K> keys = map.getEquivalence().newSet();
+        Map<K, K> leftKeys = new HashMap<>();
+        Map<K, K> rightKeys = new HashMap<>();
+        Set<K> keys = new HashSet<>();
         leftMap.keySet().forEach(k -> leftKeys.put(k, k));
         rightMap.keySet().forEach(k -> rightKeys.put(k, k));
         keys.addAll(leftMap.keySet());
@@ -126,71 +129,62 @@ public final class ComputeDiffModelVisitor<T extends B, B> implements ModelVisit
 
     /**
      * {@inheritDoc}
+     *
+     * Using Myers diff algorithm.
      */
     @Override
     public <E> ListDiff<B, E> visitList(ListModel<T, E> values) {
         List<E> leftList = values.toList(left);
         List<E> rightList = values.toList(right);
-        List<Diff<E>> result = new LinkedList<>();
-        boolean removeFirst = true;
-        int i = 0, j = 0;
-        int m = 0, n = 0;
-        main:
-        while (i < leftList.size() && j < rightList.size()) {
-            E l = leftList.get(i), r = rightList.get(j);
-            for (int a = i, b = j; a < leftList.size() || b < rightList.size(); a++, b++) {
-                if (a < leftList.size()) {
-                    if (values.getEquivalence().test(leftList.get(a), r)) {
-                        Diff<E> diff = values.acceptElement(newVisitor(leftList.get(a), r));
-                        if (removeFirst) {
-                            range(i - m, i = a).forEach(q -> result.add(values.acceptElement(removed(leftList.get(q)))));
-                            range(j - n, j).forEach(q -> result.add(values.acceptElement(added(rightList.get(q)))));
-                            removeFirst = n == 0;
-                        } else {
-                            range(j - n, j).forEach(q -> result.add(values.acceptElement(added(rightList.get(q)))));
-                            range(i - m, i = a).forEach(q -> result.add(values.acceptElement(removed(leftList.get(q)))));
-                            removeFirst = m > 0;
-                        }
-                        result.add(diff);
-                        i++;
-                        j++;
-                        m = n = 0;
-                        continue main;
-                    }
+        int n = leftList.size();
+        int m = rightList.size();
+        int max = n + m;
+        int[] v = new int[2 * max + 1];
+        List<int[]> trace = new ArrayList<>();
+        for (int d = 0; d <= max; d++) {
+            trace.add(v.clone());
+            for (int k = -d; k <= d; k += 2) {
+                int x = k == -d || k != d && v[max + k - 1] < v[max + k + 1] ? v[max + k + 1] : v[max + k - 1] + 1;
+                int y = x - k;
+                while (x < n && y < m && Objects.equals(leftList.get(x), rightList.get(y))) {
+                    x++;
+                    y++;
                 }
-                if (b < rightList.size()) { // TODO: do not compare initial values twice
-                    if (values.getEquivalence().test(l, rightList.get(b))) {
-                        Diff<E> diff = values.acceptElement(newVisitor(l, rightList.get(b)));
-                        if (removeFirst) {
-                            range(i - m, i).forEach(q -> result.add(values.acceptElement(removed(leftList.get(q)))));
-                            range(j - n, j = b).forEach(q -> result.add(values.acceptElement(added(rightList.get(q)))));
-                            removeFirst = n == 0;
-                        } else {
-                            range(j - n, j = b).forEach(q -> result.add(values.acceptElement(added(rightList.get(q)))));
-                            range(i - m, i).forEach(q -> result.add(values.acceptElement(removed(leftList.get(q)))));
-                            removeFirst = m > 0;
+                v[max + k] = x;
+                if (x >= n && y >= m) {
+                    List<Diff<E>> result = new LinkedList<>();
+                    for (x = n, y = m; d >= 0; d--) {
+                        v = trace.get(d);
+                        k = x - y;
+                        int pk = k == -d || k != d && v[max + k - 1] < v[max + k + 1] ? k + 1 : k - 1;
+                        int px = v[max + pk];
+                        int py = px - pk;
+                        while (x > px && y > py) {
+                            result.add(0, diff(x - 1, y - 1, x, y, leftList, rightList, values));
+                            x--;
+                            y--;
                         }
-                        result.add(diff);
-                        i++;
-                        j++;
-                        m = n = 0;
-                        continue main;
+                        if (d > 0) {
+                            result.add(0, diff(px, py, x, y, leftList, rightList, values));
+                        }
+                        x = px;
+                        y = py;
                     }
+                    return Diff.list(Diff.Status.combineAll(result), left, right, result);
                 }
             }
-            i++;
-            j++;
-            m++;
-            n++;
         }
-        if (removeFirst) {
-            range(i - m, leftList.size()).forEach(q -> result.add(values.acceptElement(removed(leftList.get(q)))));
-            range(j - n, rightList.size()).forEach(q -> result.add(values.acceptElement(added(rightList.get(q)))));
+        throw new InternalError("Unreachable");
+    }
+
+    private <E> Diff<E> diff(int px, int py, int x, int y, List<E> left, List<E> right, ListModel<T, E> model) {
+        if (x == px) {
+            return model.acceptElement(added(right.get(py)));
+        } else if (y == py) {
+            return model.acceptElement(removed(left.get(px)));
         } else {
-            range(j - n, rightList.size()).forEach(q -> result.add(values.acceptElement(added(rightList.get(q)))));
-            range(i - m, leftList.size()).forEach(q -> result.add(values.acceptElement(removed(leftList.get(q)))));
+            return model.acceptElement(newVisitor(left.get(px), right.get(py)));
         }
-        return Diff.list(Diff.Status.combineAll(result), left, right, result);
     }
 
     /**
@@ -202,13 +196,13 @@ public final class ComputeDiffModelVisitor<T extends B, B> implements ModelVisit
         if (left == null ^ right == null) {
             return (left == null ? ComputeDiffModelVisitor.<T, B>added(right) : ComputeDiffModelVisitor.<T, B>removed(left)).visitSet(values);
         }
-        Map<E, E> leftMap = values.getEquivalence().newMap();
-        Map<E, E> rightMap = values.getEquivalence().newMap();
 
+        Map<E, E> leftMap = new HashMap<>();
+        Map<E, E> rightMap = new HashMap<>();
         values.toSet(left).forEach(e -> leftMap.put(e, e));
         values.toSet(right).forEach(e -> rightMap.put(e, e));
 
-        Set<E> keys = values.getEquivalence().newSet();
+        Set<E> keys = new HashSet<>();
         keys.addAll(leftMap.keySet());
         keys.addAll(rightMap.keySet());
 

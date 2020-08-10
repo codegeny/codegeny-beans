@@ -67,9 +67,9 @@ public class Person {
                 .addMiddleName("Patrick") //
                 .addMiddleName("Fitzgerald") //
                 .setLastName("Doe") //
-                .setCurrentAddress(new Address().setStreet("Evergreen Terrasse").setZipCode("90210").setCountry("USA")) //
-                .addFormerAddress(new Address().setStreet("Champs Elysées").setZipCode("1000").setCountry("France")) //
-                .addFormerAddress(new Address().setStreet("Grand Place").setZipCode("1000").setCountry("Belgium"));
+                .setCurrentAddress(new Address("Evergreen Terrasse", "90210", "USA")) //
+                .addFormerAddress(new Address("Champs Elysées", "1000", "France")) //
+                .addFormerAddress(new Address("Grand Place", "1000", "Belgium"));
     }
 
     public Person addFormerAddress(Address formerAddress) {

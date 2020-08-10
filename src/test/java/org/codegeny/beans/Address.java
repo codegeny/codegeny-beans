@@ -21,46 +21,66 @@ package org.codegeny.beans;
 
 import org.codegeny.beans.model.Model;
 
+import java.util.Objects;
+
 import static org.codegeny.beans.model.Model.STRING;
 import static org.codegeny.beans.model.Model.bean;
 import static org.codegeny.beans.model.Model.property;
 
-public class Address {
+public final class Address {
 
     public static final Model<Address> MODEL = bean(Address.class, //
-            property("street", Address::getStreet, Address::setStreet, STRING), //
-            property("zipCode", Address::getZipCode, Address::setZipCode, STRING), //
-            property("country", Address::getCountry, Address::setCountry, STRING) //
+            property("street", Address::getStreet, STRING), //
+            property("zipCode", Address::getZipCode, STRING), //
+            property("country", Address::getCountry, STRING) //
     );
 
-    private String country;
-    private String street;
-    private String zipCode;
+    private final String country;
+    private final String street;
+    private final String zipCode;
+
+    public Address(String street, String zipCode, String country) {
+        this.street = street;
+        this.zipCode = zipCode;
+        this.country = country;
+    }
 
     public String getCountry() {
         return country;
     }
 
-    public Address setCountry(String country) {
-        this.country = country;
-        return this;
+    public Address withCountry(String country) {
+        return new Address(street, zipCode, country);
     }
 
     public String getStreet() {
         return street;
     }
 
-    public Address setStreet(String street) {
-        this.street = street;
-        return this;
+    public Address withStreet(String street) {
+        return new Address(street, zipCode, country);
     }
 
     public String getZipCode() {
         return zipCode;
     }
 
-    public Address setZipCode(String zipCode) {
-        this.zipCode = zipCode;
-        return this;
+    public Address withZipCode(String zipCode) {
+        return new Address(street, zipCode, country);
+    }
+
+    @Override
+    public boolean equals(Object that) {
+        return super.equals(that) || that instanceof Address && equals((Address) that);
+
+    }
+
+    private boolean equals(Address that) {
+        return Objects.equals(country, that.country) && Objects.equals(street, that.street) && Objects.equals(zipCode, that.zipCode);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(country, street, zipCode);
     }
 }
