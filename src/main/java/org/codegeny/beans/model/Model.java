@@ -20,14 +20,12 @@
 package org.codegeny.beans.model;
 
 import org.codegeny.beans.diff.Diff;
-import org.codegeny.beans.hash.Hasher;
 import org.codegeny.beans.model.visitor.CompareModelVisitor;
+import org.codegeny.beans.model.visitor.ComputeDiffModelVisitor;
 import org.codegeny.beans.model.visitor.DescribeModelVisitor;
 import org.codegeny.beans.model.visitor.GetModelVisitor;
-import org.codegeny.beans.model.visitor.HashModelVisitor;
 import org.codegeny.beans.model.visitor.SetModelVisitor;
 import org.codegeny.beans.model.visitor.ToStringModelVisitor;
-import org.codegeny.beans.model.visitor.ComputeDiffModelVisitor;
 import org.codegeny.beans.path.Converter;
 import org.codegeny.beans.path.Path;
 
@@ -325,17 +323,6 @@ public interface Model<T> extends Comparator<T> {
      */
     default <S> Object get(T target, Path<S> path) {
         return get(target, path, Converter.Identity.INSTANCE);
-    }
-
-    /**
-     * Hash the given target using the given {@link Hasher}
-     *
-     * @param target The target to hash.
-     * @param hasher The hasher.
-     * @return The hash result.
-     */
-    default int hash(T target, Hasher hasher) {
-        return accept(new HashModelVisitor<>(target, hasher)).toHash();
     }
 
     /**

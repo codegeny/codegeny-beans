@@ -30,7 +30,7 @@ import java.lang.reflect.Type;
 public interface Converter<S> {
 
     /**
-     * Identity typer which casts the value to the model type.
+     * Identity converter which casts the value to the model type.
      */
     enum Identity implements Converter<Object> {
 
