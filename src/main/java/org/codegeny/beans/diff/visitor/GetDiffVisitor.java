@@ -24,10 +24,13 @@ import org.codegeny.beans.diff.Diff;
 import org.codegeny.beans.diff.DiffVisitor;
 import org.codegeny.beans.diff.ListDiff;
 import org.codegeny.beans.diff.MapDiff;
+import org.codegeny.beans.diff.SetDiff;
 import org.codegeny.beans.diff.SimpleDiff;
 import org.codegeny.beans.path.Path;
 
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 
 /**
@@ -65,25 +68,32 @@ public final class GetDiffVisitor<T> implements DiffVisitor<T, Diff<?>> {
      * {@inheritDoc}
      */
     @Override
-    public <E> Diff<?> visitList(ListDiff<T, E> list) {
-        return followNestedOrGetValue(list, pathElement -> list.get(((Number) pathElement).intValue()));
+    public <E> Diff<?> visitSet(SetDiff<T, E> setDiff) {
+        return followNestedOrGetValue(setDiff, pathElement -> setDiff.getSet().stream().filter(d -> Objects.equals(d.getLeft(), pathElement) || Objects.equals(d.getRight(), pathElement)).findFirst().orElse(null));
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    @SuppressWarnings("SuspiciousMethodCalls")
-    public <K, V> Diff<?> visitMap(MapDiff<T, K, V> map) {
-        return followNestedOrGetValue(map, map::get);
+    public <E> Diff<?> visitList(ListDiff<T, E> listDiff) {
+        return followNestedOrGetValue(listDiff, pathElement -> listDiff.getList().get(((Number) pathElement).intValue()));
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public Diff<?> visitSimple(SimpleDiff<T> simple) {
-        return followNestedOrGetValue(simple, pathElement -> {
+    public <K, V> Diff<?> visitMap(MapDiff<T, K, V> mapDiff) {
+        return followNestedOrGetValue(mapDiff, pathElement -> mapDiff.getMap().entrySet().stream().filter(e -> Objects.equals(e.getKey().getLeft(), pathElement) || Objects.equals(e.getKey().getRight(), pathElement)).findFirst().map(Map.Entry::getValue).orElse(null));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public Diff<?> visitSimple(SimpleDiff<T> simpleDiff) {
+        return followNestedOrGetValue(simpleDiff, pathElement -> {
             throw new IllegalArgumentException("SimpleDiff must be terminal");
         });
     }
@@ -92,8 +102,8 @@ public final class GetDiffVisitor<T> implements DiffVisitor<T, Diff<?>> {
      * {@inheritDoc}
      */
     @Override
-    public Diff<?> visitBean(BeanDiff<T> bean) {
-        return followNestedOrGetValue(bean, pathElement -> bean.getProperty((String) pathElement));
+    public Diff<?> visitBean(BeanDiff<T> beanDiff) {
+        return followNestedOrGetValue(beanDiff, pathElement -> beanDiff.getProperty((String) pathElement));
     }
 
     /**

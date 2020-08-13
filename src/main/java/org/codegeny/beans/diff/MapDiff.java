@@ -19,12 +19,9 @@
  */
 package org.codegeny.beans.diff;
 
-import java.util.AbstractMap;
 import java.util.Map;
-import java.util.Set;
 
 import static java.util.Collections.unmodifiableMap;
-import static java.util.Objects.requireNonNull;
 
 /**
  * Implementation of <code>{@link Diff}</code> for maps.
@@ -34,27 +31,12 @@ import static java.util.Objects.requireNonNull;
  * @param <V> The type of map value.
  * @author Xavier DURY
  */
-public final class MapDiff<M, K, V> extends AbstractMap<Diff<K>, Diff<V>> implements Diff<M> {
+public final class MapDiff<M, K, V> extends Diff<M> {
 
     /**
      * @see java.io.Serializable
      */
     private static final long serialVersionUID = 1L;
-
-    /**
-     * The left value.
-     */
-    private final M left;
-
-    /**
-     * The right value.
-     */
-    private final M right;
-
-    /**
-     * The status.
-     */
-    private final Status status;
 
     /**
      * The map of diffs.
@@ -70,9 +52,7 @@ public final class MapDiff<M, K, V> extends AbstractMap<Diff<K>, Diff<V>> implem
      * @param map    The map of diffs.
      */
     MapDiff(Status status, M left, M right, Map<? extends Diff<K>, ? extends Diff<V>> map) {
-        this.status = requireNonNull(status, "Status cannot be null");
-        this.left = left;
-        this.right = right;
+        super(status, left, right);
         this.map = unmodifiableMap(map);
     }
 
@@ -85,46 +65,11 @@ public final class MapDiff<M, K, V> extends AbstractMap<Diff<K>, Diff<V>> implem
     }
 
     /**
-     * {@inheritDoc}
+     * Return the map of diffs.
+     *
+     * @return The map of diffs.
      */
-    @Override
-    public M getLeft() {
-        return left;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public M getRight() {
-        return right;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Status getStatus() {
-        return status;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Set<Entry<Diff<K>, Diff<V>>> entrySet() {
-        return map.entrySet();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String toString() {
-        return "MapDiff{" +
-                "left=" + left +
-                ", right=" + right +
-                ", status=" + status +
-                '}';
+    public Map<Diff<K>, Diff<V>> getMap() {
+        return map;
     }
 }

@@ -29,6 +29,15 @@ package org.codegeny.beans.diff;
 public interface DiffVisitor<T, R> {
 
     /**
+     * Visit a <code>{@link SetDiff}&lt;T, E&gt;</code>
+     *
+     * @param set The set to visit.
+     * @param <E> The type of elements.
+     * @return The computed result.
+     */
+    <E> R visitSet(SetDiff<T, E> set);
+
+    /**
      * Visit a <code>{@link ListDiff}&lt;T, E&gt;</code>
      *
      * @param list The list to visit.

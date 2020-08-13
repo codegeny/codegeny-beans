@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.BiConsumer;
 
 import static java.util.Objects.requireNonNull;
@@ -39,7 +40,22 @@ import static java.util.Objects.requireNonNull;
  * @param <T> The type of the 2 compared objects.
  * @author Xavier DURY
  */
-public interface Diff<T> extends Serializable {
+public abstract class Diff<T> implements Serializable {
+
+    /**
+     * Static method factory for <code>{@link SetDiff}</code>.
+     *
+     * @param status The status.
+     * @param left   The left set.
+     * @param right  The right set.
+     * @param set    The diff'ed elements as a set.
+     * @param <L>    The type of set.
+     * @param <E>    The type of the set elements.
+     * @return A <code>{@link SetDiff}</code>.
+     */
+    public static <L, E> SetDiff<L, E> set(Status status, L left, L right, Set<? extends Diff<E>> set) {
+        return new SetDiff<>(status, left, right, set);
+    }
 
     /**
      * Static method factory for <code>{@link ListDiff}</code>.
@@ -52,7 +68,7 @@ public interface Diff<T> extends Serializable {
      * @param <E>    The type of the list elements.
      * @return A <code>{@link ListDiff}</code>.
      */
-    static <L, E> ListDiff<L, E> list(Status status, L left, L right, List<? extends Diff<E>> list) {
+    public static <L, E> ListDiff<L, E> list(Status status, L left, L right, List<? extends Diff<E>> list) {
         return new ListDiff<>(status, left, right, list);
     }
 
@@ -68,7 +84,7 @@ public interface Diff<T> extends Serializable {
      * @param <V>    The type of the map values.
      * @return A <code>{@link MapDiff}</code>.
      */
-    static <M, K, V> MapDiff<M, K, V> map(Status status, M left, M right, Map<? extends Diff<K>, ? extends Diff<V>> map) {
+    public static <M, K, V> MapDiff<M, K, V> map(Status status, M left, M right, Map<? extends Diff<K>, ? extends Diff<V>> map) {
         return new MapDiff<>(status, left, right, map);
     }
 
@@ -82,7 +98,7 @@ public interface Diff<T> extends Serializable {
      * @param <B>    The type of the bean.
      * @return A <code>{@link BeanDiff}</code>.
      */
-    static <B> BeanDiff<B> bean(Status status, B left, B right, Map<String, ? extends Diff<?>> map) {
+    public static <B> BeanDiff<B> bean(Status status, B left, B right, Map<String, ? extends Diff<?>> map) {
         return new BeanDiff<>(status, left, right, map);
     }
 
@@ -95,8 +111,41 @@ public interface Diff<T> extends Serializable {
      * @param <T>    The type of the value.
      * @return A <code>{@link SimpleDiff}</code>.
      */
-    static <T> SimpleDiff<T> simple(Status status, T left, T right) {
+    public static <T> SimpleDiff<T> simple(Status status, T left, T right) {
         return new SimpleDiff<>(status, left, right);
+    }
+
+    /**
+     * @see java.io.Serializable
+     */
+    private static final long serialVersionUID = 1L;
+
+    /**
+     * The left value.
+     */
+    private final T left;
+
+    /**
+     * The right value.
+     */
+    private final T right;
+
+    /**
+     * The status.
+     */
+    private final Status status;
+
+    /**
+     * Constructor.
+     *
+     * @param status The status.
+     * @param left   The left value.
+     * @param right  The right value.
+     */
+    Diff(Status status, T left, T right) {
+        this.status = requireNonNull(status, "Status cannot be null");
+        this.left = left;
+        this.right = right;
     }
 
     /**
@@ -106,14 +155,16 @@ public interface Diff<T> extends Serializable {
      * @param <R>     The visitor result type.
      * @return The result.
      */
-    <R> R accept(DiffVisitor<T, R> visitor);
+    public abstract <R> R accept(DiffVisitor<T, R> visitor);
 
     /**
      * Get the left value for this diff.
      *
      * @return The left value.
      */
-    T getLeft();
+    public final T getLeft() {
+        return left;
+    }
 
     /**
      * Get the right value for this diff.
@@ -121,24 +172,25 @@ public interface Diff<T> extends Serializable {
      * @return The right value.
      */
 
-    T getRight();
+    public final T getRight() {
+        return right;
+    }
 
     /**
      * Get the status for this diff which can be either <code>ADDED</code>, <code>REMOVED</code>, <code>MODIFIED</code> or <code>UNCHANGED</code>.
      *
      * @return The status.
      */
-    Status getStatus();
+    public final Status getStatus() {
+        return status;
+    }
 
     /**
-     * Transform this diff to a map [path &rarr; <code>{@link Diff}</code>].
-     *
-     * @return A map.
+     * {@inheritDoc}
      */
-    default Map<String, Diff<?>> toMap() {
-        Map<String, Diff<?>> map = new LinkedHashMap<>();
-        traverse((p, d) -> map.put(p.toString(), d));
-        return map;
+    @Override
+    public final String toString() {
+        return String.format("%s{status=%s, left=%s, right=%s}", getClass().getSimpleName(), status, left, right);
     }
 
     /**
@@ -146,7 +198,7 @@ public interface Diff<T> extends Serializable {
      *
      * @return A string.
      */
-    default String describe() {
+    public final String describe() {
         StringBuilder builder = new StringBuilder();
         traverse((p, d) -> builder.append(p.toString()).append(" = ").append(d).append(System.lineSeparator()));
         return builder.toString();
@@ -158,7 +210,7 @@ public interface Diff<T> extends Serializable {
      * @param path The path.
      * @return The resulting diff.
      */
-    default Diff<?> get(Path<?> path) {
+    public final Diff<?> get(Path<?> path) {
         return accept(new GetDiffVisitor<>(path));
     }
 
@@ -167,7 +219,7 @@ public interface Diff<T> extends Serializable {
      *
      * @param consumer The consumer.
      */
-    default void traverse(BiConsumer<? super Path<?>, ? super Diff<?>> consumer) {
+    public final void traverse(BiConsumer<? super Path<?>, ? super Diff<?>> consumer) {
         accept(new TraversingDiffVisitor<>(consumer));
     }
 
@@ -180,7 +232,7 @@ public interface Diff<T> extends Serializable {
      * <li><code>UNCHANGED</code> (both values exist and are the same or both values do not exist)</li>
      * </ul>
      */
-    enum Status {
+    public enum Status {
 
         /**
          * The value as been added to the right side and did not exist on the left side.
@@ -206,7 +258,7 @@ public interface Diff<T> extends Serializable {
          * Combine 2 statuses given the following rules:
          * <ol>
          * <li>2 identical statuses must give the same status</li>
-         * <li><code>MODIFIED</code> + any status must give <code>MODIFIED</code></li>
+         * <li>2 different statuses must give the <code>MODIFIED</code> status</li>
          * </ol>
          *
          * @param that The other status.

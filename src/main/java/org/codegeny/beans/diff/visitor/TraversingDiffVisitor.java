@@ -24,6 +24,7 @@ import org.codegeny.beans.diff.Diff;
 import org.codegeny.beans.diff.DiffVisitor;
 import org.codegeny.beans.diff.ListDiff;
 import org.codegeny.beans.diff.MapDiff;
+import org.codegeny.beans.diff.SetDiff;
 import org.codegeny.beans.diff.SimpleDiff;
 import org.codegeny.beans.path.Path;
 
@@ -96,9 +97,20 @@ public final class TraversingDiffVisitor<T> implements DiffVisitor<T, Void> {
      * {@inheritDoc}
      */
     @Override
+    public <E> Void visitSet(SetDiff<T, E> setDiff) {
+        if (processor.test(path, setDiff)) {
+            setDiff.getSet().forEach(v -> v.accept(newVisitor(path.append(v))));
+        }
+        return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public <E> Void visitList(ListDiff<T, E> listDiff) {
         if (processor.test(path, listDiff)) {
-            forEachIndexed(listDiff, (n, i) -> n.accept(newVisitor(path.append(i))));
+            forEachIndexed(listDiff.getList(), (n, i) -> n.accept(newVisitor(path.append(i))));
         }
         return null;
     }
@@ -109,7 +121,7 @@ public final class TraversingDiffVisitor<T> implements DiffVisitor<T, Void> {
     @Override
     public <K, V> Void visitMap(MapDiff<T, K, V> mapDiff) {
         if (processor.test(path, mapDiff)) {
-            mapDiff.forEach((k, v) -> v.accept(newVisitor(path.append(k))));
+            mapDiff.getMap().forEach((k, v) -> v.accept(newVisitor(path.append(k))));
         }
         return null;
     }
@@ -129,7 +141,7 @@ public final class TraversingDiffVisitor<T> implements DiffVisitor<T, Void> {
     @Override
     public Void visitBean(BeanDiff<T> beanDiff) {
         if (processor.test(path, beanDiff)) {
-            beanDiff.forEach((k, v) -> v.accept(newVisitor(path.append(k))));
+            beanDiff.getProperties().forEach((k, v) -> v.accept(newVisitor(path.append(k))));
         }
         return null;
     }

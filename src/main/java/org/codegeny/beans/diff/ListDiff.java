@@ -19,11 +19,9 @@
  */
 package org.codegeny.beans.diff;
 
-import java.util.AbstractList;
 import java.util.List;
 
 import static java.util.Collections.unmodifiableList;
-import static java.util.Objects.requireNonNull;
 
 /**
  * Implementation of <code>{@link Diff}</code> for lists.
@@ -32,27 +30,12 @@ import static java.util.Objects.requireNonNull;
  * @param <E> The type of list element.
  * @author Xavier DURY
  */
-public final class ListDiff<L, E> extends AbstractList<Diff<E>> implements Diff<L> {
+public final class ListDiff<L, E> extends Diff<L> {
 
     /**
      * @see java.io.Serializable
      */
     private static final long serialVersionUID = 1L;
-
-    /**
-     * The left value.
-     */
-    private final L left;
-
-    /**
-     * The right value.
-     */
-    private final L right;
-
-    /**
-     * The status.
-     */
-    private final Status status;
 
     /**
      * The list of diffs.
@@ -68,9 +51,7 @@ public final class ListDiff<L, E> extends AbstractList<Diff<E>> implements Diff<
      * @param list   The list of diffs.
      */
     ListDiff(Status status, L left, L right, List<? extends Diff<E>> list) {
-        this.status = requireNonNull(status, "Status cannot be null");
-        this.left = left;
-        this.right = right;
+        super(status, left, right);
         this.list = unmodifiableList(list);
     }
 
@@ -83,54 +64,11 @@ public final class ListDiff<L, E> extends AbstractList<Diff<E>> implements Diff<
     }
 
     /**
-     * {@inheritDoc}
+     * Return the list of diffs.
+     *
+     * @return The list of diffs.
      */
-    @Override
-    public L getLeft() {
-        return left;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public L getRight() {
-        return right;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Status getStatus() {
-        return status;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Diff<E> get(int index) {
-        return list.get(index);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public int size() {
-        return list.size();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String toString() {
-        return "ListDiff{" +
-                "left=" + left +
-                ", right=" + right +
-                ", status=" + status +
-                '}';
+    public List<Diff<E>> getList() {
+        return list;
     }
 }

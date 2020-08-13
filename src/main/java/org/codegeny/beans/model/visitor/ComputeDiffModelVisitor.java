@@ -185,8 +185,8 @@ public final class ComputeDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>
         Set<E> keys = new HashSet<>();
         keys.addAll(leftMap.keySet());
         keys.addAll(rightMap.keySet());
-        List<Diff<E>> result = keys.stream().map(e -> set.acceptElement(newVisitor(leftMap.get(e), rightMap.get(e)))).collect(Collectors.toList());
-        return Diff.list(Status.combineAll(result), left, right, result);
+        Set<Diff<E>> result = keys.stream().map(e -> set.acceptElement(newVisitor(leftMap.get(e), rightMap.get(e)))).collect(Collectors.toSet());
+        return Diff.set(Status.combineAll(result), left, right, result);
     }
 
     /**

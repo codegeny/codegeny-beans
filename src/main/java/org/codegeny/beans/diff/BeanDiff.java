@@ -19,12 +19,9 @@
  */
 package org.codegeny.beans.diff;
 
-import java.util.AbstractMap;
 import java.util.Map;
-import java.util.Set;
 
 import static java.util.Collections.unmodifiableMap;
-import static java.util.Objects.requireNonNull;
 
 /**
  * Implementation of <code>{@link Diff}</code> for beans.
@@ -32,27 +29,12 @@ import static java.util.Objects.requireNonNull;
  * @param <B> The type of bean.
  * @author Xavier DURY
  */
-public final class BeanDiff<B> extends AbstractMap<String, Diff<?>> implements Diff<B> {
+public final class BeanDiff<B> extends Diff<B> {
 
     /**
      * @see java.io.Serializable
      */
     private static final long serialVersionUID = 1L;
-
-    /**
-     * The left value.
-     */
-    private final B left;
-
-    /**
-     * The right value.
-     */
-    private final B right;
-
-    /**
-     * The status.
-     */
-    private final Status status;
 
     /**
      * The map of diffs.
@@ -68,9 +50,7 @@ public final class BeanDiff<B> extends AbstractMap<String, Diff<?>> implements D
      * @param properties The map of diffs.
      */
     BeanDiff(Status status, B left, B right, Map<String, ? extends Diff<?>> properties) {
-        this.status = requireNonNull(status, "Status cannot be null");
-        this.left = left;
-        this.right = right;
+        super(status, left, right);
         this.properties = unmodifiableMap(properties);
     }
 
@@ -80,14 +60,6 @@ public final class BeanDiff<B> extends AbstractMap<String, Diff<?>> implements D
     @Override
     public <R> R accept(DiffVisitor<B, R> visitor) {
         return visitor.visitBean(this);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Set<Entry<String, Diff<?>>> entrySet() {
-        return properties.entrySet();
     }
 
     /**
@@ -107,41 +79,5 @@ public final class BeanDiff<B> extends AbstractMap<String, Diff<?>> implements D
      */
     public Diff<?> getProperty(String name) {
         return properties.get(name);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public B getLeft() {
-        return left;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public B getRight() {
-        return right;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public Status getStatus() {
-        return status;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String toString() {
-        return "MapDiff{" +
-                "left=" + left +
-                ", right=" + right +
-                ", status=" + status +
-                '}';
     }
 }
