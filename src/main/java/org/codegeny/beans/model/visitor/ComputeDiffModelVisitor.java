@@ -32,12 +32,10 @@ import org.codegeny.beans.model.ValueModel;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
@@ -49,10 +47,7 @@ import static org.codegeny.beans.diff.Diff.Status.UNCHANGED;
 
 /**
  * {@link ModelVisitor} which implements {@link Diff} computation for {@link org.codegeny.beans.model.Model}s.
- * This visitor needs the 2 instances to be diff'ed. This visitor can also be parameterized with a threshold
- * representing the limit (which must be in ]0;1]) of when 2 objects are considered the same (for example, at 0.8, any
- * 2 objects which have a matching score greater or equals to 0.8 could be considered the same instance with
- * modifications).
+ * This visitor needs the 2 instances to be diff'ed.
  *
  * @param <T> The model type.
  * @author Xavier DURY
@@ -72,8 +67,8 @@ public final class ComputeDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>
     /**
      * Constructor.
      *
-     * @param left      The left value to diff.
-     * @param right     The right value to diff.
+     * @param left  The left value to diff.
+     * @param right The right value to diff.
      */
     public ComputeDiffModelVisitor(T left, T right) {
         this.left = left;
@@ -97,7 +92,7 @@ public final class ComputeDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>
         Set<K> keys = new HashSet<>();
         keys.addAll(leftMap.keySet());
         keys.addAll(rightMap.keySet());
-        Map<Diff<K>, Diff<V>> result = keys.stream().collect(toMap(k -> map.acceptKey(newVisitor(leftKeys.get(k), rightKeys.get(k))), k -> map.acceptValue(newVisitor(leftMap.get(k), rightMap.get(k)))));
+        Map<Diff<K>, Diff<V>> result = keys.stream().collect(toMap(k -> map.getKeyModel().diff(leftKeys.get(k), rightKeys.get(k)), k -> map.getValueModel().diff(leftMap.get(k), rightMap.get(k))));
         return Diff.map(Status.combineAll(result.values()), left, right, result);
     }
 
@@ -117,13 +112,13 @@ public final class ComputeDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>
         if (left == null ^ right == null) {
             return bean.accept(left == null ? added(right) : removed(left));
         }
-        Map<String, Diff<?>> properties = bean.getProperties().stream().collect(toMap(Property::getName, this::visitProperty, throwingMerger(), LinkedHashMap::new));
+        Map<String, Diff<?>> properties = bean.getProperties().stream().collect(toMap(Property::getName, this::visitProperty));
         return Diff.bean(Status.combineAll(properties.values()), left, right, properties);
     }
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Using Myers diff algorithm.
      */
     @Override
@@ -157,10 +152,10 @@ public final class ComputeDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>
                         int px = v[z + pk];
                         int py = px - pk;
                         while (x > px && y > py) {
-                            result.add(0, list.acceptElement(newVisitor(leftList.get(--x), rightList.get(--y))));
+                            result.add(0, list.getElementModel().diff(leftList.get(--x), rightList.get(--y)));
                         }
                         if (d > 0) {
-                            result.add(0, list.acceptElement(newVisitor(x == px ? null : leftList.get(x = px), y == py ? null : rightList.get(y = py))));
+                            result.add(0, list.getElementModel().diff(x == px ? null : leftList.get(x = px), y == py ? null : rightList.get(y = py)));
                         }
                     } while (--d >= 0);
                     return Diff.list(Diff.Status.combineAll(result), left, right, result);
@@ -185,7 +180,7 @@ public final class ComputeDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>
         Set<E> keys = new HashSet<>();
         keys.addAll(leftMap.keySet());
         keys.addAll(rightMap.keySet());
-        Set<Diff<E>> result = keys.stream().map(e -> set.acceptElement(newVisitor(leftMap.get(e), rightMap.get(e)))).collect(Collectors.toSet());
+        Set<Diff<E>> result = keys.stream().map(e -> set.getElementModel().diff(leftMap.get(e), rightMap.get(e))).collect(Collectors.toSet());
         return Diff.set(Status.combineAll(result), left, right, result);
     }
 
@@ -197,31 +192,7 @@ public final class ComputeDiffModelVisitor<T> implements ModelVisitor<T, Diff<T>
      * @return A diff.
      */
     private <P> Diff<P> visitProperty(Property<? super T, P> property) {
-        return property.getModel().accept(newVisitor(property.get(left), property.get(right)));
-    }
-
-    /**
-     * Binary operator which prevent merging two keys.
-     *
-     * @param <T> The key type.
-     * @return A binary operator.
-     */
-    private static <T> BinaryOperator<T> throwingMerger() {
-        return (u, v) -> {
-            throw new IllegalStateException(String.format("Duplicate key %s", u));
-        };
-    }
-
-    /**
-     * Create a new visitor.
-     *
-     * @param left  The new left value.
-     * @param right The new right value.
-     * @param <T>   The model type for the new visitor.
-     * @return A new visitor.
-     */
-    private static <T> ComputeDiffModelVisitor<T> newVisitor(T left, T right) {
-        return new ComputeDiffModelVisitor<>(left, right);
+        return property.getModel().diff(property.get(left), property.get(right));
     }
 
     /**

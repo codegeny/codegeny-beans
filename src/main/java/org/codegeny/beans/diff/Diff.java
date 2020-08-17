@@ -25,7 +25,6 @@ import org.codegeny.beans.path.Path;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,8 +33,7 @@ import java.util.function.BiConsumer;
 import static java.util.Objects.requireNonNull;
 
 /**
- * A diff represents a comparison between 2 objects (left and right). A diff provides a matching score (between 0 and 1 inclusive) and a <code>{@link Status}</code>.
- * All implementations must be immutable, thread-safe and <code>{@link Serializable}</code> (as long as &lt;T&gt; type is also <code>{@link Serializable}</code>).
+ * A diff represents a comparison between 2 objects (left and right).
  *
  * @param <T> The type of the 2 compared objects.
  * @author Xavier DURY
