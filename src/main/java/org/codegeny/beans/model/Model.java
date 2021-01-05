@@ -343,6 +343,6 @@ public interface Model<T> extends Comparator<T> {
      * @return The diff.
      */
     default Diff<T> diff(T left, T right) {
-        return accept(new ComputeDiffModelVisitor<>(left, right));
+        return accept(ComputeDiffModelVisitor.of(left, right));
     }
 }

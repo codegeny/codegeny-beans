@@ -33,7 +33,6 @@ import java.util.Comparator;
 import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
-import static org.codegeny.beans.util.Utils.forEachIndexed;
 
 /**
  * Generic <code>toString()</code> visitor.
@@ -86,10 +85,11 @@ public final class ToStringModelVisitor<T> implements ModelVisitor<T, StringBuil
     @Override
     public StringBuilder visitBean(BeanModel<T> bean) {
         builder.append("{");
-        int count = forEachIndexed(bean.getProperties(), (property, index) -> {
+        int count = bean.getProperties().stream().reduce(0, (index, property) -> {
             builder.append(index > 0 ? "," : "").append("\n").append(indent).append("  ").append(property.getName()).append(": ");
             visitProperty(property);
-        });
+            return index + 1;
+        }, Integer::max);
         return builder.append(count > 0 ? "\n" : "").append(indent).append("}");
     }
 
@@ -110,7 +110,10 @@ public final class ToStringModelVisitor<T> implements ModelVisitor<T, StringBuil
         Comparator<K> comparator = map.getKeyModel();
         Map<K, V> entries = map.toMap(target);
         Collection<K> sorted = entries.keySet().stream().sorted(comparator).collect(toList());
-        int count = forEachIndexed(sorted, (value, index) -> map.acceptValue(new ToStringModelVisitor<>(entries.get(value), builder.append(index > 0 ? "," : "").append("\n").append(indent).append("  ").append(value).append(": "), indent.concat("  "))));
+        int count = sorted.stream().reduce(0, (index, value) -> {
+            map.acceptValue(new ToStringModelVisitor<>(entries.get(value), builder.append(index > 0 ? "," : "").append("\n").append(indent).append("  ").append(value).append(": "), indent.concat("  ")));
+            return index + 1;
+        }, Integer::max);
         return builder.append(count > 0 ? "\n".concat(indent) : "").append("]");
     }
 
@@ -140,7 +143,10 @@ public final class ToStringModelVisitor<T> implements ModelVisitor<T, StringBuil
      */
     private <E> StringBuilder visitCollection(Model<E> elementModel, Collection<? extends E> collection) {
         builder.append("[");
-        int count = forEachIndexed(collection, (value, index) -> elementModel.accept(new ToStringModelVisitor<>(value, builder.append(index > 0 ? "," : "").append("\n").append(indent).append("  "), indent.concat("  "))));
+        int count = collection.stream().reduce(0, (index, value) -> {
+            elementModel.accept(new ToStringModelVisitor<>(value, builder.append(index > 0 ? "," : "").append("\n").append(indent).append("  "), indent.concat("  ")));
+            return index + 1;
+        }, Integer::max);
         return builder.append(count > 0 ? "\n".concat(indent) : "").append("]");
     }
 

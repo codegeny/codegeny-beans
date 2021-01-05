@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 import static java.util.Objects.requireNonNull;
 
@@ -188,7 +189,8 @@ public abstract class Diff<T> implements Serializable {
      */
     @Override
     public final String toString() {
-        return String.format("%s{status=%s, left=%s, right=%s}", getClass().getSimpleName(), status, left, right);
+        //return String.format("%s{status=%s, left=%s, right=%s}", getClass().getSimpleName(), status, left, right);
+        return status.print(this);
     }
 
     /**
@@ -235,22 +237,36 @@ public abstract class Diff<T> implements Serializable {
         /**
          * The value as been added to the right side and did not exist on the left side.
          */
-        ADDED,
+        ADDED(diff -> String.format("+{%s}", diff.getRight())),
 
         /**
          * The value was present on the left side and has been removed from the right.
          */
-        REMOVED,
+        REMOVED(diff -> String.format("-{%s}", diff.getLeft())),
 
         /**
          * The value has changed between the left and right sides.
          */
-        MODIFIED,
+        MODIFIED(diff -> String.format("~{%s}:{%s}", diff.getLeft(), diff.getRight())),
 
         /**
          * The value is the same on the right and the left.
          */
-        UNCHANGED;
+        UNCHANGED(diff -> String.format("={%s}", diff.getLeft()));
+
+        /**
+         * The print function.
+         */
+        private final Function<Diff<?>, String> printer;
+
+        /**
+         * Constructor.
+         *
+         * @param printer The print function.
+         */
+        Status(Function<Diff<?>, String> printer) {
+            this.printer = printer;
+        }
 
         /**
          * Combine 2 statuses given the following rules:
@@ -283,6 +299,16 @@ public abstract class Diff<T> implements Serializable {
          */
         public static Status combineAll(Collection<? extends Diff<?>> diffs) {
             return diffs.stream().map(Diff::getStatus).reduce(Status::combineWith).orElse(UNCHANGED);
+        }
+
+        /**
+         * Print a diff.
+         *
+         * @param diff The diff.
+         * @return The string form.
+         */
+        public String print(Diff<?> diff) {
+            return printer.apply(diff);
         }
     }
 }

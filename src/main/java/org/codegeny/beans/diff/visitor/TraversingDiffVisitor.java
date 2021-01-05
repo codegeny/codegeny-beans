@@ -31,8 +31,6 @@ import org.codegeny.beans.path.Path;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 
-import static org.codegeny.beans.util.Utils.forEachIndexed;
-
 /**
  * Visitor which will traverse the whole diff tree.
  *
@@ -110,7 +108,10 @@ public final class TraversingDiffVisitor<T> implements DiffVisitor<T, Void> {
     @Override
     public <E> Void visitList(ListDiff<T, E> listDiff) {
         if (processor.test(path, listDiff)) {
-            forEachIndexed(listDiff.getList(), (n, i) -> n.accept(newVisitor(path.append(i))));
+            listDiff.getList().stream().reduce(0, (i, n) -> {
+                n.accept(newVisitor(path.append(i)));
+                return i + 1;
+            }, Integer::max);
         }
         return null;
     }

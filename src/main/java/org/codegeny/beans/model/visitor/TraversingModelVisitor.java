@@ -30,8 +30,6 @@ import org.codegeny.beans.path.Path;
 
 import java.util.function.BiConsumer;
 
-import static org.codegeny.beans.util.Utils.forEachIndexed;
-
 /**
  * Visitor which will traverse the whole model tree for a given instance of &gt;T&lt;.
  *
@@ -94,7 +92,10 @@ public final class TraversingModelVisitor<T> implements ModelVisitor<T, Void> {
     @Override
     public <E> Void visitList(ListModel<T, E> list) {
         process();
-        forEachIndexed(list.toList(target), (n, i) -> list.acceptElement(newVisitor(n, path.append(i))));
+        list.toList(target).stream().reduce(0, (i, n) -> {
+            list.acceptElement(newVisitor(n, path.append(i)));
+            return i + 1;
+        }, Integer::max);
         return null;
     }
 
@@ -114,7 +115,7 @@ public final class TraversingModelVisitor<T> implements ModelVisitor<T, Void> {
     @Override
     public <E> Void visitSet(SetModel<T, E> set) {
         process();
-        forEachIndexed(set.toSet(target), (n, i) -> set.acceptElement(newVisitor(n, path.append(i))));
+        set.toSet(target).forEach(v -> set.acceptElement(newVisitor(v, path.append(v))));
         return null;
     }
 
